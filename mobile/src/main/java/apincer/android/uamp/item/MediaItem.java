@@ -182,6 +182,7 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
     @Override
     public boolean filter(String constraint) {
         return (StringUtils.contains(getTitle(), constraint) 
+               || StringUtils.contains(getSubtitle(), constraint)
                || StringUtils.contains(getArtist(), constraint)
                || StringUtils.contains(getAlbum(), constraint) 
                || StringUtils.contains(getDisplayPath(), constraint));
