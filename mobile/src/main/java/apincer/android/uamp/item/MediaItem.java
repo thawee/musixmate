@@ -162,23 +162,29 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
         if (adapter.hasSearchText()) {
             Utils.highlightText(holder.mTitle, getTitle(), adapter.getSearchText());
             Utils.highlightText(holder.mSubtitle, getSubtitle(), adapter.getSearchText());
+            Utils.highlightText(holder.mExtra, getDisplayPath(), adapter.getSearchText());
         } else if (((BrowserViewPagerFragment.BrowserFlexibleAdapter)adapter).isListeningTitle(getTitle(),getArtist(), getAlbum())) {
             Utils.highlightText(holder.mTitle, getTitle(), getTitle());
             Utils.highlightText(holder.mSubtitle, getSubtitle(), getArtist(), getAlbum());
+            holder.mExtra.setText(getDisplayPath());
             //holder.mSubtitle.setText(getSubtitle());
             //holder.getRearRightView().
         } else {
             holder.mTitle.setText(getTitle());
             holder.mSubtitle.setText(getSubtitle());
+            holder.mExtra.setText(getDisplayPath());
         }
         //holder.mSubtitle.setText(getSubtitle());
         holder.mDuration.setText(MediaProvider.formatDuration(getDuration()));
-        holder.mExtra.setText(getDisplayPath());
+        //holder.mExtra.setText(getDisplayPath());
     }
 
     @Override
     public boolean filter(String constraint) {
-        return StringUtils.contains(getTitle(), constraint) || StringUtils.contains(getArtist(), constraint);
+        return (StringUtils.contains(getTitle(), constraint) 
+               || StringUtils.contains(getArtist(), constraint)
+               || StringUtils.contains(getAlbum(), constraint) 
+               || StringUtils.contains(getDisplayPath(), constraint));
         //return getTitle() != null && getTitle().toLowerCase().trim().contains(constraint) ||
         //        getSubtitle() != null && getSubtitle().toLowerCase().trim().contains(constraint);
     }

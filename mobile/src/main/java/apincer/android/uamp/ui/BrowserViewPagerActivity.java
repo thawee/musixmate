@@ -647,10 +647,10 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
             fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.TITLE));
-            fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.ARTIST));
+            //fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.ARTIST));
             //fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.ALBUM));
             fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.SIMILARITY));
-            fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.FOLDER));
+            fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.FILES));
         }
 
         @Override

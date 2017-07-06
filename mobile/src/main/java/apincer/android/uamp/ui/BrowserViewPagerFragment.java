@@ -379,7 +379,7 @@ public class BrowserViewPagerFragment extends Fragment {
                         // artist
                         mediaItemList.addAll(mProvider.getSongByArtist(getContext()));
                         break;
-                    case FOLDER:
+                    case FILES:
                         // artist
                         mediaItemList.addAll(mProvider.getSongForFolder(getContext()));
                         break;
@@ -479,7 +479,7 @@ public class BrowserViewPagerFragment extends Fragment {
             IFlexible iFlexible = getItem(position);
             if (iFlexible == null) return "";
             String text = iFlexible.toString();
-            if (mMediaType == MediaTag.MediaTypes.ARTIST || mMediaType == MediaTag.MediaTypes.FOLDER) {
+            if (mMediaType == MediaTag.MediaTypes.ARTIST || mMediaType == MediaTag.MediaTypes.FILES) {
                 if (iFlexible instanceof MediaItem) {
                     // get header for artist
                     if (((MediaItem) iFlexible).getHeader() != null) {
@@ -490,8 +490,7 @@ public class BrowserViewPagerFragment extends Fragment {
                     return text.trim();
                 }
             }
-			return StringUtils.getFirstWord(text);
-            //return text.length() >= BUBBLE_TITLE_SIZE ? text.substring(0, BUBBLE_TITLE_SIZE).toUpperCase() : text.substring(0, text.length()).toUpperCase();
+	    return StringUtils.getFirstWord(text);
         }
 
 		@Override
