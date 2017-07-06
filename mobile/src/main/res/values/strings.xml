@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2014 The Android Open Source Project
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+<resources>
+
+    <string name="app_name">Musix Mate</string>
+    <string name="error_no_metadata">Unable to retrieve metadata.</string>
+    <string name="browse_title">Songs</string>
+    <string name="error_loading_media">Error Loading Media</string>
+    <string name="action_listen">Listen</string>
+    <string name="open_content_drawer">Open the main menu</string>
+    <string name="close_content_drawer">Close the main menu</string>
+    <string name="drawer_allmusic_title">Songs</string>
+    <string name="drawer_artist_title">Artists</string>
+    <string name="drawer_album_title">Albums</string>
+    <string name="drawer_similarity_title">Similarity</string>
+    <string name="drawer_preferences_title">Preferences</string>
+    <string name="drawer_listening_title">Now Listening</string>
+    <string name="drawer_delete_title">Delete File</string>
+    <string name="drawer_select_all_title">Select All</string>
+    <string name="drawer_select_none_title">Select None</string>
+    <string name="background_image_str">Background image for album art</string>
+    <string name="search_queue_title">Search results</string>
+    <string name="no_search_results">No search results.</string>
+    <string name="loading">Loading…</string>
+    <string name="menu_reload_media_items_title">Reload…</string>
+
+    <string name="tab_allmusic_title">Songs</string>
+    <string name="tab_artist_title">Artists</string>
+    <string name="tab_album_title">Albums</string>
+    <string name="tab_similarity_title">Similarity</string>
+
+    <!-- alert -->
+    <string name="alert_delete_selected_message">Delete selected media files from Android.</string>
+    <string name="alert_delete_message">Delete media file from Android…</string>
+    <string name="alert_delete_confirm">DELETE</string>
+    <string name="alert_delete_cancel">CANCEL</string>
+    <string name="alert_organize_title">Move media file to music library</string>
+    <string name="alert_organize_already">Media file already organized in music library</string>
+    <string name="alert_organize_confirm">MOVE</string>
+    <string name="alert_organize_cancel">CANCEL</string>
+    <string name="alert_organize_fail">Cannot move media file to music library</string>
+    <string name="alert_back_to_exit">Press BACK again to exit</string>
+    <string name="alert_invalid_media_file">Media file for \'%1$s\' is not valid, could not open with editor!</string>
+    <string name="alert_listening_not_found">Now playing \'%1$s\', is not found</string>
+    <string name="alert_listening_title">Now playing \'%1$s\ - %2$s\'</string>
+
+    <string name="preference_cache">Clean cache</string>
+    <string name="preference_cache_sub">Free up some space cleaning cached data</string>
+    <string name="preference_folder_pick">Choose music folders</string>
+    <string name="preference_permission">SD Card permission</string>
+    <string name="preference_permission_sub">On Android 5+, due to Google restrictions, please enable SD card writing permissions</string>
+    <string name="preference_pick_sub">Decide which folders to scan for music files</string>
+    <string name="preference_rename">File renaming</string>
+    <string name="preference_rename_sub">Choose how to rename files depending on their tags</string>
+    <string name="preferences_rename_choose">File renaming</string>
+    <string name="preference_target_charset">Tag Encoding</string>
+    <string name="preference_target_charset_sub">Choose preferred charset for music tags</string>
+    <string name="preferences_target_charset_choose">Target Encoding</string>
+    <string name="preferences_sub_advanced">Advanced</string>
+    <string name="preferences_sub_tags">Tags</string>
+
+    <!-- Action -->
+    <string name="action_search">Search...</string>
+
+    <!-- Action Mode -->
+    <string name="action_delete">Delete</string>
+    <string name="action_select_all">Select All</string>
+    <string name="action_selected_one">%1$s selected</string>
+    <string name="action_selected_many">%1$s selected</string>
+    <string name="action_deleted">Deleted</string>
+
+    <!-- Scrollable Headers/Footer/ProgressItem -->
+    <string name="no_more_load_retry">No more items to load. Refresh to retry.</string>
+    <string name="endless_disabled">No more items to load (max reached).</string>
+    <string name="endless_cancel">Cancelled by the user.</string>
+    <string name="endless_error">An error occurred while loading more items.</string>
+
+    <!-- Extras -->
+    <string name="no_items">No items</string>
+    <string name="err_no_edit">Nothing to modify</string> 
+
+</resources>

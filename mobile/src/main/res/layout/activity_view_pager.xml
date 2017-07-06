@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+	android:id="@+id/main_view"
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:fitsSystemWindows="true"
+	tools:context=".ui.BrowserViewPagerActivity">
+
+	<!-- Toolbar -->
+	<android.support.design.widget.AppBarLayout
+		android:id="@+id/app_bar"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:theme="@style/AppTheme.AppBarOverlay">
+
+		<android.support.design.widget.CollapsingToolbarLayout
+			android:id="@+id/toolbar_layout"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			app:popupTheme="@style/AppTheme.PopupOverlay">
+			<include layout="@layout/toolbar"/>
+			<com.gigamole.navigationtabstrip.NavigationTabStrip
+				android:id="@+id/nts_tabs"
+				android:layout_width="match_parent"
+				android:layout_height="?attr/actionBarSize"
+				android:layout_marginTop="?attr/actionBarSize"
+				android:layout_gravity="fill"
+				android:layout_weight="1"
+				app:nts_type="line"
+				app:nts_active_color="@color/colorAccent_light"
+				app:nts_color="@color/colorAccent_light"
+				app:nts_corners_radius="3dp"
+				app:nts_inactive_color="@color/grey200"
+				app:nts_size="15sp"
+				app:nts_titles="@array/tabTitles"
+				app:nts_animation_duration="300"
+				app:nts_weight="3dp"/>
+		</android.support.design.widget.CollapsingToolbarLayout>
+
+	</android.support.design.widget.AppBarLayout>
+
+	<!-- Main Content -->
+	<android.support.v4.view.ViewPager
+		android:id="@+id/view_pager"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+
+
+<!--
+	<include layout="@layout/include_fab_media_listening"/>
+-->
+</android.support.design.widget.CoordinatorLayout>

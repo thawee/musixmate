@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="charsetModeValues">
+        <item>None</item>
+        <item>TIS-620</item>
+        <item>UTF-8</item>
+    </array>
+    <array name="charsetModes">
+        <item>None</item>
+        <item>Thai</item>
+        <item>Unicode</item>
+    </array>
+    <array name="tabTitles">
+        <item>Songs</item>
+        <item>Artist</item>
+        <!--
+        <item>Album</item>
+        -->
+        <item>Similarity</item>
+    </array>
+</resources>

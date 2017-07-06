@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2014 The Android Open Source Project
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+<resources>
+    <color name="tv_branding">#ffff5722</color>
+    <color name="tv_branding_dark">#ffbf360c</color>
+    <color name="tv_branding_accent">#00B8D4</color>
+    <color name="bt_accent">#00B8D4</color>
+    <color name="media_item_icon_playing">@color/bt_accent</color>
+    <color name="media_item_icon_not_playing">#ccc</color>
+    <color name="drawer_header_background">@color/bt_accent</color>
+    <color name="error_message_background">#ffff1600</color>
+    <color name="drawer_item_selected_background">#feee</color>
+    <color name="drawer_item_tint_color">#ff333333</color>
+    <color name="fullscreen_secondary_line_color">#E5CCCCCC</color>
+    <color name="fullscreen_line_color">#E5FFFFFF</color>
+    <color name="tv_search_button">#ff0097A7</color>
+    <color name="background_gradient_start">#000000</color>
+    <color name="background_gradient_end">#DDDDDD</color>
+    <color name="default_background">#0096a6</color>
+
+    <!-- Menu Brackground -->
+    <color name="menu_editor_background">#FF00FF</color>
+    <color name="menu_delete_background">#ffff1600</color>
+    <color name="menu_save_background">#0096a6</color>
+    <color name="menu_play_background">#2979FF</color>
+    <color name="menu_tag_background">#0096a6</color>
+    <color name="menu_charset_background">#0096a6</color>
+
+    <color name="blue_accent200">#2979FF</color>
+    <color name="list_item_selected_background">#2979FF</color>
+    <color name="list_item_background">#FFFFFF</color>
+
+    <!-- Light Theme -->
+    <color name="colorPrimary_light">#380396</color><!-- Deep Purple 500 -->
+    <color name="colorPrimaryDark_light">#5b15d8</color><!-- Deep Purple 700 -->
+    <color name="colorAccent_light">#ff4081</color><!-- Pink A200 -->
+    <color name="colorAccentDark_light">#c51162</color><!-- Pink A700: for statusBar in actionMode -->
+    <color name="colorPrimaryText_light">#de000000</color>
+
+    <!-- FAB colors-->
+    <color name="fab_delete_background">#ffff1600</color>
+    <color name="fab_save_background">#4CAF50</color>
+    <color name="fab_organize_background">#0000FF</color>
+    <color name="fab_charset_background">#FF00FF</color>
+    <color name="fab_listening_background">#FF8000</color>
+    <color name="fab_listening_background_alpha">#E6FF8000</color>
+
+    <!-- Greyscales -->
+    <color name="grey200">#EEEEEE</color>
+    <color name="grey600">#757575</color>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+
+    <!-- Transparent colors-->
+    <color name="black_alpha_12">#1F000000</color>
+    <color name="black_alpha_30">#4D000000</color>
+    <color name="colorPrimary_alpha_12">#1F380396</color>
+    <color name="colorPrimary_alpha_30">#4D380396</color>
+
+    <!-- Common colors -->
+    <color name="list_choice_normal_bg_light">#fffafafa</color>
+    <color name="list_choice_pressed_bg_light">#fddd</color>
+
+</resources>
