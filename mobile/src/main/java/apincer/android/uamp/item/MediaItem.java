@@ -33,7 +33,6 @@ import eu.davidea.flipview.FlipView;
 import eu.davidea.viewholders.FlexibleViewHolder;
 
 /**
- * You should extend directly from
  * {@link apincer.android.uamp.item.AbstractItem} to benefit of the already
  * implemented methods (getter and setters).
  */
@@ -152,18 +151,18 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
             DrawableUtils.setBackgroundCompat(holder.frontView, drawable);
         }
 
-        if(iconBitmap!=null) {
-            holder.mFlipView.setFrontImageBitmap(iconBitmap);
-        }
+        //if(iconBitmap!=null) {
+        //    holder.mFlipView.setFrontImageBitmap(iconBitmap);
+        //}
 
-        // DemoApp: INNER ANIMATION EXAMPLE! ImageView - Handle Flip Animation
-		if (adapter.isSelectAll() || adapter.isLastItemInActionMode()) {
-			// Consume the Animation
-			holder.mFlipView.flip(adapter.isSelected(position), 200L);
-		} else {
-        // Display the current flip status
-        holder.mFlipView.flipSilently(adapter.isSelected(position));
-		}
+        // INNER ANIMATION ImageView - Handle Flip Animation
+	if (adapter.isSelectAll() || adapter.isLastItemInActionMode()) {
+		// Consume the Animation
+		holder.mFlipView.flip(adapter.isSelected(position), 200L);
+	} else {
+        	// Display the current flip status
+        	holder.mFlipView.flipSilently(adapter.isSelected(position));
+	}
 
         // In case of searchText matches with Title or with a field this will be highlighted
         if (adapter.hasSearchText()) {
@@ -172,10 +171,9 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
             Utils.highlightText(holder.mExtra, getDisplayPath(), adapter.getSearchText());
         } else if (((BrowserViewPagerFragment.BrowserFlexibleAdapter)adapter).isListeningTitle(getTitle(),getArtist(), getAlbum())) {
             Utils.highlightText(holder.mTitle, getTitle(), getTitle());
-            Utils.highlightText(holder.mSubtitle, getSubtitle(), getArtist(), getAlbum());
+            Utils.highlightText(holder.mSubtitle, getSubtitle(), getSubtitle());
             holder.mExtra.setText(getDisplayPath());
             //holder.mSubtitle.setText(getSubtitle());
-            //holder.getRearRightView().
         } else {
             holder.mTitle.setText(getTitle());
             holder.mSubtitle.setText(getSubtitle());
