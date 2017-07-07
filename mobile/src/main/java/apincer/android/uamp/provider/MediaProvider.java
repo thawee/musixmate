@@ -279,7 +279,7 @@ public class MediaProvider {
             long mediaDuration = cur.getLong(durationColumn);
             MediaItem item = newMediaItem(context, header, mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration);
             //similarity
-            if (StringUtils.similarity(mediaTitle, preTitle)>0.9d) {
+            if (StringUtils.similarity(mediaTitle, preTitle)>=0.8) {
                 if(!preAdded && preItem != null) {
                     mItems.add(preItem);
                 }

@@ -283,13 +283,10 @@ public class BrowserViewPagerFragment extends Fragment {
 		// Add FastScroll to the RecyclerView, after the Adapter has been attached the RecyclerView!!!
 		FastScroller fastScroller = (FastScroller) getView().findViewById(R.id.fast_scroller);
 		fastScroller.setVisibility(View.VISIBLE);
-		//mAdapter.setFastScroller(fastScroller, ContextCompat.getColor(getContext(), R.color.colorAccent_light));
-        mAdapter.setFastScroller(fastScroller);
-        mAdapter.toggleFastScroller();
+        	mAdapter.toggleFastScroller();
 
 		mSwipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.swipeRefreshLayout);
 		mSwipeRefreshLayout.setEnabled(true);
-		//mListener.onFragmentChange(this, mSwipeRefreshLayout, mRecyclerView, SelectableAdapter.MODE_IDLE);
 
 		mListener.onFragmentChange(this, mSwipeRefreshLayout, mRecyclerView, selectionMode);
 
@@ -462,20 +459,19 @@ public class BrowserViewPagerFragment extends Fragment {
             if(listeners instanceof BrowserViewPagerActivity) {
                 this.activity = (BrowserViewPagerActivity) listeners;
             }
-		}
+	}
 
-		@Override
-		public void onFastScrollerStateChange(boolean scrolling) {
-			// Example
-			if (scrolling)  {
-				hideFloatingActionBar();
-			} else {
-				showFloatingActionBar();
-			}
+	@Override
+	public void onFastScrollerStateChange(boolean scrolling) {
+		if (scrolling)  {
+			hideFloatingActionBar();
+		} else {
+			showFloatingActionBar();
 		}
+	}
 
-		@Override
-		public String onCreateBubbleText(int position) {
+	@Override
+	public String onCreateBubbleText(int position) {
             IFlexible iFlexible = getItem(position);
             if (iFlexible == null) return "";
             String text = iFlexible.toString();
@@ -493,57 +489,57 @@ public class BrowserViewPagerFragment extends Fragment {
 	    return StringUtils.getFirstWord(text);
         }
 
-		@Override
-		protected void onPostUpdate() {
-			super.onPostUpdate();
-			onUpdateEmptyView(mAdapter.getItemCount());
-		}
+	@Override
+	protected void onPostUpdate() {
+		super.onPostUpdate();
+		onUpdateEmptyView(mAdapter.getItemCount());
+	}
 
-		public boolean setListeningTitle(String newTitle, String newArtist, String newAlbum) {
-			listenTitle = newTitle;
-			listenArtist = newArtist;
+	public boolean setListeningTitle(String newTitle, String newArtist, String newAlbum) {
+		listenTitle = newTitle;
+		listenArtist = newArtist;
             listenAlbum = newAlbum;
             mListener.setListeningTitle(listenTitle,listenArtist);
-			int position = scrollToPositionByTitle(8);
-			if(position<0) return false;
+		int position = scrollToPositionByTitle(8);
+		if(position<0) return false;
 
-			notifyDataSetChanged();
-			SmoothScrollLinearLayoutManager layoutManager = (SmoothScrollLinearLayoutManager) mRecyclerView.getLayoutManager();
-			layoutManager.smoothScrollToPosition(mRecyclerView,null,position==0?position:(position-1));
+		notifyDataSetChanged();
+		SmoothScrollLinearLayoutManager layoutManager = (SmoothScrollLinearLayoutManager) mRecyclerView.getLayoutManager();
+		layoutManager.smoothScrollToPosition(mRecyclerView,null,position==0?position:(position-1));
             return true;
-		}
+	}
 
-		private int scrollToPositionByTitle(int offset) {
-			int position = -1;
-			if(StringUtils.isEmpty(listenTitle)) return position;
-			int count = getItemCount();
-			for (int i = 0; i < count; i++) {
-				IFlexible flex = getItem(i);
-				if(flex instanceof MediaItem) {
-					MediaItem item = (MediaItem) flex;
-					if (StringUtils.compare(item.getTitle(), listenTitle) && StringUtils.compare(item.getAlbum(), listenAlbum) && StringUtils.compare(item.getArtist(), listenArtist)) {
-							position = i;
-							break;
-					}
+	private int scrollToPositionByTitle(int offset) {
+		int position = -1;
+		if(StringUtils.isEmpty(listenTitle)) return position;
+		int count = getItemCount();
+		for (int i = 0; i < count; i++) {
+			IFlexible flex = getItem(i);
+			if(flex instanceof MediaItem) {
+				MediaItem item = (MediaItem) flex;
+				if (StringUtils.compare(item.getTitle(), listenTitle) && StringUtils.compare(item.getAlbum(), listenAlbum) && StringUtils.compare(item.getArtist(), listenArtist)) {
+					position = i;
+					break;
 				}
 			}
-			if(position>=0) {
-				int positionWithOffset = position - offset;
-				if (positionWithOffset < 0) {
-					positionWithOffset = 0;
-				}
-				mRecyclerView.scrollToPosition(positionWithOffset);
+		}
+		if(position>=0) {
+			int positionWithOffset = position - offset;
+			if (positionWithOffset < 0) {
+				positionWithOffset = 0;
 			}
-
-			return position;
+			mRecyclerView.scrollToPosition(positionWithOffset);
 		}
 
-		public boolean isListeningTitle(String title, String artist,String album) {
-			if(listeningMode) {
-				if (StringUtils.isEmpty(listenTitle)) return false;
-				return StringUtils.compare(title, listenTitle) && StringUtils.compare(artist, listenArtist) && StringUtils.compare(album, listenAlbum);
-			}
-			return false;
+		return position;
+	}
+
+	public boolean isListeningTitle(String title, String artist,String album) {
+	    if(listeningMode) {
+		if (StringUtils.isEmpty(listenTitle)) return false;
+	     	return StringUtils.compare(title, listenTitle) && StringUtils.compare(artist, listenArtist) && StringUtils.compare(album, listenAlbum);
+	    }
+	    return false;
         }
 
         public MediaItem getMediaItemById(String id) {
@@ -578,9 +574,9 @@ public class BrowserViewPagerFragment extends Fragment {
             return 0;
         }
 
-		public void setListeningMode(boolean listeningMode) {
-			this.listeningMode = listeningMode;
-		}
+	public void setListeningMode(boolean listeningMode) {
+	    this.listeningMode = listeningMode;
+	}
 
         public MediaItem loadMediaItemFromMediaStore(BrowserViewPagerActivity browserViewPagerActivity, String path) {
             return mProvider.loadMediaItemFromMediaStore(browserViewPagerActivity, path);

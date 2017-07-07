@@ -20,8 +20,7 @@ import eu.davidea.viewholders.FlexibleViewHolder;
  * <p><b>Note:</b> THIS ITEM IS NOT A SCROLLABLE HEADER.</p>
  * A Section should not contain others Sections and headers are not Sectionable!
  */
-public class HeaderItem extends AbstractHeaderItem<HeaderItem.HeaderViewHolder>  implements IFilterable {
-
+public class HeaderItem extends AbstractHeaderItem<HeaderItem.HeaderViewHolder> {
 	private String id;
 	private String title;
 	private String subtitle;
@@ -97,11 +96,6 @@ public class HeaderItem extends AbstractHeaderItem<HeaderItem.HeaderViewHolder> 
 		String subTitle = (sectionableList.isEmpty() ? "Empty List" :
 				sectionableList.size() + " songs");
 		holder.mSubtitle.setText(subTitle);
-	}
-
-	@Override
-	public boolean filter(String constraint) {
-		return getTitle() != null && getTitle().toLowerCase().trim().contains(constraint);
 	}
 
 	static class HeaderViewHolder extends FlexibleViewHolder {
