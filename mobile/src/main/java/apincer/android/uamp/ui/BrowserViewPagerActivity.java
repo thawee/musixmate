@@ -440,15 +440,11 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
 
         MediaItem newItem = loadMediaItemFromMediaStore(path);
         MediaItem item = getMediaItemByPosition(position);
-        //newItem.setHeader(item.getHeader());
         if(newItem!=null && item !=null) {
             item.setArtist(newItem.getArtist());
             item.setAlbum(newItem.getAlbum());
             item.setTitle(newItem.getTitle());
-            //mAdapter.updateItem(position, newItem, null);
         }
-        //mAdapter.removeItem(position, Payload.MOVE);
-        //mAdapter.addItem(position, newItem);
         mAdapter.notifyItemChanged(position);
     }
 
@@ -458,9 +454,7 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
 
         MediaItem newItem = loadMediaItemFromMediaStore(path);
         MediaItem item = getMediaItemByPosition(position);
-        //newItem.setHeader(item.getHeader());
 
-        //MediaItem item = getMediaItemByPosition(position);
         if(item!=null && newItem!=null) {
             item.setArtist(newItem.getArtist());
             item.setAlbum(newItem.getAlbum());
@@ -469,10 +463,7 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
             try {
                 item.setDisplayPath(mAdapter.getDisplayPath(this, path));
             }catch (Exception ex){}
-            //mAdapter.updateItem(position, item, null);
         }
-        //mAdapter.removeItem(position, Payload.MOVE);
-        //mAdapter.addItem(position, newItem);
         mAdapter.notifyItemChanged(position);
     }
 
@@ -534,17 +525,6 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
     @Override
     public boolean onQueryTextChange(String newText) {
         return mFragment.filterItems(newText);
-        /*
-        if (mAdapter.hasNewSearchText(newText)) {
-            LogHelper.d(TAG, "onQueryTextChange newText: " + newText);
-            mAdapter.setSearchText(newText);
-            // Fill and Filter mItems with your custom list and automatically animate the changes
-            mAdapter.filterItems(mFragment.getMediaItems(), 400);
-        }
-        // Disable SwipeRefresh if search is active!!
-        mSwipeRefreshLayout.setEnabled(!mAdapter.hasSearchText());
-        return true;
-        */
     }
 
     @Override
@@ -553,9 +533,9 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
         return onQueryTextChange(query);
     }
 
-	/* ==========================
-	 * ACTION MODE IMPLEMENTATION
-	 * ========================== */
+    /* ==========================
+     * ACTION MODE IMPLEMENTATION
+     * ========================== */
 
     @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -663,7 +643,6 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
 
         @Override
         public int getCount() {
-            // Show 4 total pages.
             return fragmentList.size();
         }
 

@@ -156,26 +156,17 @@ public class BrowserViewPagerFragment extends Fragment {
 		View rootView = inflater.inflate(R.layout.fragment_view_pager, container, false);
 
 		//FAB listening
-		//fraListeningFloat = (FrameLayout) rootView.findViewById(R.id.fraMediaListFloat);
 		fabListeningAction = (FloatingActionButton) rootView.findViewById(R.id.fabListeningAction);
 		ViewCompat.animate(fabListeningAction).scaleX(0f).scaleY(0f).alpha(0f).start();
-		//fabListeningAction.setVisibility(View.INVISIBLE);
-		//linFabListeningAction = (LinearLayout) rootView.findViewById(R.id.linFabListeningAction);
-		//lblFabListeningAction = (TextView) rootView.findViewById(R.id.lblFabListeningAction);
-		//fraListeningFloat.setBackgroundColor(Color.argb(0, 255, 255, 255));
-		//linFabListeningAction.setVisibility(View.INVISIBLE);
-        //lblFabListeningAction.setClickable(true);
 		// listening action
 		fabListeningAction.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				if(!mAdapter.setListeningTitle(listenTitle, listenArtist,listenAlbum)) {
-					String message = getString(R.string.alert_listening_not_found, listenTitle);
-					Snackbar.make(getActivity().findViewById(R.id.main_view), message, Snackbar.LENGTH_SHORT).show();
-                    //Toast.makeText(getContext(), "Cannot locate "+listenTitle+" in list.", Toast.LENGTH_LONG)
-                    //        .show();
-                }
-			}
+		    @Override
+		    public void onClick(View view) {
+			if(!mAdapter.setListeningTitle(listenTitle, listenArtist,listenAlbum)) {
+			    String message = getString(R.string.alert_listening_not_found, listenTitle);
+			    Snackbar.make(getActivity().findViewById(R.id.main_view), message, Snackbar.LENGTH_SHORT).show();
+                	}
+		    }
 		});
 
 		showFloatingActionBar();
@@ -217,83 +208,80 @@ public class BrowserViewPagerFragment extends Fragment {
     }
 
 	// Listing FAB
-	public void showFloatingActionBar() {
-		if(!StringUtils.isEmpty(listenTitle)) {
+    public void showFloatingActionBar() {
+        if (mAdapter!=null && mAdapter.hasSearchText()) return; // not show on searching
+
+	if(!StringUtils.isEmpty(listenTitle)) {
             mListener.setListeningTitle(listenTitle, listenArtist);
-			//lblFabListeningAction.setText(StringUtils.truncate(listenTitle, 40));
-			//linFabListeningAction.setVisibility(View.VISIBLE);
-			if(mMediaType == MediaTag.MediaTypes.TITLE) {
-				ViewCompat.animate(fabListeningAction)
-						.scaleX(1f).scaleY(1f)
-						.alpha(1f).setDuration(200)
-						.setStartDelay(300L)
-						.start();
-			}
-		}
-	}
-
-	public void hideFloatingActionBar() {
-		//linFabListeningAction.setVisibility(View.INVISIBLE);
+	    //lblFabListeningAction.setText(StringUtils.truncate(listenTitle, 40));
+	    //linFabListeningAction.setVisibility(View.VISIBLE);
+	    if(mMediaType == MediaTag.MediaTypes.TITLE) {
 		ViewCompat.animate(fabListeningAction)
-				.scaleX(0f).scaleY(0f)
-				.alpha(0f).setDuration(100)
+				.scaleX(1f).scaleY(1f)
+				.alpha(1f).setDuration(200)
+				.setStartDelay(300L)
 				.start();
+	    }
 	}
+    }
 
-	private void initializeRecyclerView() {
-		// Initialize Adapter and RecyclerView
-		// Use of stableIds, I strongly suggest to implement 'item.hashCode()'
-		//mAdapter = new FlexibleAdapter<>(createMediaItemList(), getActivity(), true);
-		mAdapter = new BrowserFlexibleAdapter(loadMediaItems(), getActivity());
-		mAdapter.setListeningMode(mMediaType == MediaTag.MediaTypes.TITLE);
+    public void hideFloatingActionBar() {
+	//linFabListeningAction.setVisibility(View.INVISIBLE);
+        ViewCompat.animate(fabListeningAction)
+			.scaleX(0f).scaleY(0f)
+			.alpha(0f).setDuration(100)
+			.start();
+    }
 
-		// Experimenting NEW features (v5.0.0)
-		//mAdapter.setAnimationOnScrolling(true);
-        // Experimenting NEW features (v5.0.0)
+    private void initializeRecyclerView() {
+	// Initialize Adapter and RecyclerView
+	mAdapter = new BrowserFlexibleAdapter(loadMediaItems(), getActivity());
+	mAdapter.setListeningMode(mMediaType == MediaTag.MediaTypes.TITLE);
+
+	// Experimenting NEW features (v5.0.0)
         mAdapter.setOnlyEntryAnimation(true)
                 .setAnimationInterpolator(new DecelerateInterpolator())
                 .setAnimationInitialDelay(500L)
                 .setAnimationDelay(70L);
 
-		mRecyclerView = (RecyclerView) getView().findViewById(R.id.recycler_view);
+	mRecyclerView = (RecyclerView) getView().findViewById(R.id.recycler_view);
         mRecyclerView.setItemViewCacheSize(0); //Setting ViewCache to 0 (default=2) will animate items better while scrolling down+up with LinearLayout
         mRecyclerView.setWillNotCacheDrawing(true);
         mRecyclerView.setLayoutManager(new SmoothScrollLinearLayoutManager(getActivity()));
-		mRecyclerView.setAdapter(mAdapter);
-		mRecyclerView.setHasFixedSize(true); //Size of RV will not change
-		// NOTE: Use default item animator 'canReuseUpdatedViewHolder()' will return true if
-		// a Payload is provided. FlexibleAdapter is actually sending Payloads onItemChange.
-		mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-		// Divider item decorator with DrawOver enabled
-		FlexibleItemDecoration itemDecoration = new FlexibleItemDecoration(getActivity());
-		mRecyclerView.addItemDecoration(itemDecoration.withDivider(R.drawable.divider).withDrawOver(true));
+	mRecyclerView.setAdapter(mAdapter);
+	mRecyclerView.setHasFixedSize(true); //Size of RV will not change
+	// NOTE: Use default item animator 'canReuseUpdatedViewHolder()' will return true if
+	// a Payload is provided. FlexibleAdapter is actually sending Payloads onItemChange.
+	mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+	// Divider item decorator with DrawOver enabled
+	FlexibleItemDecoration itemDecoration = new FlexibleItemDecoration(getActivity());
+	mRecyclerView.addItemDecoration(itemDecoration.withDivider(R.drawable.divider).withDrawOver(true));
 
-		mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-			@Override
-			public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-				super.onScrollStateChanged(recyclerView, newState);
-				if(newState == RecyclerView.SCROLL_STATE_IDLE) {
-					showFloatingActionBar();
-				}else {
-					hideFloatingActionBar();
-				}
+	mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+		@Override
+		public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+			super.onScrollStateChanged(recyclerView, newState);
+			if(newState == RecyclerView.SCROLL_STATE_IDLE) {
+				showFloatingActionBar();
+			}else {
+				hideFloatingActionBar();
 			}
-		});
+		}
+	});
 
-		// Add FastScroll to the RecyclerView, after the Adapter has been attached the RecyclerView!!!
-		FastScroller fastScroller = (FastScroller) getView().findViewById(R.id.fast_scroller);
-		fastScroller.setVisibility(View.VISIBLE);
-        	mAdapter.toggleFastScroller();
+	// Add FastScroll to the RecyclerView, after the Adapter has been attached the RecyclerView!!!
+	FastScroller fastScroller = (FastScroller) getView().findViewById(R.id.fast_scroller);
+	fastScroller.setVisibility(View.VISIBLE);
+        mAdapter.toggleFastScroller();
 
-		mSwipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.swipeRefreshLayout);
-		mSwipeRefreshLayout.setEnabled(true);
+	mSwipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.swipeRefreshLayout);
+	mSwipeRefreshLayout.setEnabled(true);
 
-		mListener.onFragmentChange(this, mSwipeRefreshLayout, mRecyclerView, selectionMode);
+	mListener.onFragmentChange(this, mSwipeRefreshLayout, mRecyclerView, selectionMode);
 
-		// Sticky Headers
-		mAdapter.setDisplayHeadersAtStartUp(true)
-				.setStickyHeaders(true);
-	}
+	// Sticky Headers
+	mAdapter.setDisplayHeadersAtStartUp(true).setStickyHeaders(true);
+    }
 
     private void initializeSwipeToRefresh() {
         // Swipe down to force synchronize
@@ -380,10 +368,6 @@ public class BrowserViewPagerFragment extends Fragment {
                         // artist
                         mediaItemList.addAll(mProvider.getSongForFolder(getContext()));
                         break;
-                    //case 2:
-                    // album
-                    //	mediaItemList.addAll(mProvider.getSongByAlbum(getContext()));
-                    //	break;
                     case SIMILARITY:
                         // similarity
                         mediaItemList.addAll(mProvider.getSimilarSongList(getContext()));
@@ -415,19 +399,17 @@ public class BrowserViewPagerFragment extends Fragment {
     }
 
     public List<MediaItem> getMediaItems() {
-		//List newList = new ArrayList();
-		//newList.addAll(mediaItems);
         return mediaItems;
     }
 
-	public void reloadMediaItems() {
+    public void reloadMediaItems() {
         // Passing true as parameter we always animate the changes between the old and the new data set
-		mSwipeRefreshLayout.setRefreshing(true);
-		mAdapter.updateDataSet(loadMediaItems(), true);
-		//mActionModeHelper.destroyActionModeIfCan();
-		mAdapter.notifyDataSetChanged();
-		mSwipeRefreshLayout.setRefreshing(false);
-	}
+	mSwipeRefreshLayout.setRefreshing(true);
+	mAdapter.updateDataSet(loadMediaItems(), true);
+	//mActionModeHelper.destroyActionModeIfCan();
+	mAdapter.notifyDataSetChanged();
+	mSwipeRefreshLayout.setRefreshing(false);
+    }
 
     public void setActionModeHelper(ActionModeHelper mActionModeHelper) {
         this.mActionModeHelper = mActionModeHelper;
@@ -441,7 +423,8 @@ public class BrowserViewPagerFragment extends Fragment {
             mAdapter.filterItems(mediaItems, 100);
         }
         // Disable SwipeRefresh if search is active!!
-        mSwipeRefreshLayout.setEnabled(!mAdapter.hasSearchText());
+        mSwipeRefreshLayout.setEnabled(false);
+	hideFloatingActionBar();
         return true;
     }
 

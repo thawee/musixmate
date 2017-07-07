@@ -96,6 +96,8 @@ public class StringUtils {
 	if(s1==null || s2==null) {
 		return false;
 	}
+	s1 = s1.trim().toLowerCase();
+	s2 = s2.trim().toLowerCase();
 
         String longer = s1, shorter = s2;
         if (s1.length() < s2.length()) { // longer should always have greater length
