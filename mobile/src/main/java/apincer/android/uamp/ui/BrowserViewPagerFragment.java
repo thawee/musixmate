@@ -272,6 +272,8 @@ public class BrowserViewPagerFragment extends Fragment {
 	// Add FastScroll to the RecyclerView, after the Adapter has been attached the RecyclerView!!!
 	FastScroller fastScroller = (FastScroller) getView().findViewById(R.id.fast_scroller);
 	fastScroller.setVisibility(View.VISIBLE);
+	// Finally, assign the Fastscroller to the Adapter
+	mAdapter.setFastScroller(fastScroller);
         mAdapter.toggleFastScroller();
 
 	mSwipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.swipeRefreshLayout);
