@@ -27,5 +27,4 @@
         android:ellipsize="marquee"
         android:marqueeRepeatLimit="marquee_forever"
         tools:text="Subtitle"/>
-
 </apincer.android.uamp.ui.views.HeaderView>

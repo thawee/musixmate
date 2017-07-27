@@ -46,10 +46,12 @@
     <!-- alert -->
     <string name="alert_delete_selected_message">Delete selected media files from Android.</string>
     <string name="alert_delete_message">Delete media file from Android…</string>
+    <string name="alert_delete_fail">Cannot delete media file</string>
+    <string name="alert_write_tag_fail">Cannot update tags on media file</string>
     <string name="alert_delete_confirm">DELETE</string>
     <string name="alert_delete_cancel">CANCEL</string>
-    <string name="alert_organize_title">Move media file to music library</string>
-    <string name="alert_organize_already">Media file already organized in music library</string>
+    <string name="alert_organize_title">Move media file to Music Library</string>
+    <string name="alert_organize_already">Media file already organized in Music Library</string>
     <string name="alert_organize_confirm">MOVE</string>
     <string name="alert_organize_cancel">CANCEL</string>
     <string name="alert_organize_fail">Cannot move media file to music library</string>
@@ -57,6 +59,15 @@
     <string name="alert_invalid_media_file">Media file for \'%1$s\' is not valid, could not open with editor!</string>
     <string name="alert_listening_not_found">Now playing \'%1$s\', is not found</string>
     <string name="alert_listening_title">Now playing \'%1$s\ - %2$s\'</string>
+    <string name="alert_file_not_exists">This file is no longer available</string>
+
+    <string name="progress_organize_file">Moving file to Music Library</string>
+    <string name="progress_move_from_sd">Moving file from SD Card</string>
+    <string name="progress_move_to_sd">Moving file back to SD Card</string>
+    <string name="progress_write_tags">Writing media tags</string>
+    <string name="progress_update_media_store">Updating Android Media Store</string>
+    <string name="progress_delete_file">Deleting file</string>
+    <string name="progress_download_artwork">Downloading artwork</string>
 
     <string name="preference_cache">Clean cache</string>
     <string name="preference_cache_sub">Free up some space cleaning cached data</string>

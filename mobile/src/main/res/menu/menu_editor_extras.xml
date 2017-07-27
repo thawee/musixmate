@@ -20,7 +20,7 @@
         <item
             android:icon="@drawable/ic_format_color_text_black_24dp"
             android:id="@+id/menu_format_tag"
-            android:title="Clean and Format Tags"
+            android:title="Format Tags"
             app:showAsAction="always|withText"/>
     </group>
 
@@ -36,7 +36,7 @@
             android:icon="@drawable/ic_translate_black_24dp"
             android:id="@+id/menu_charset_thai"
             app:itemBackground="@color/menu_editor_background"
-            android:title="Convert Tag to Thai"
+            android:title="Tags to Thai Charset"
             app:showAsAction="always|withText" />
 <!--        <item
             android:icon="@drawable/ic_translate_black_24dp"
@@ -56,7 +56,13 @@
             android:icon="@drawable/ic_label_outline_black_24dp"
             android:id="@+id/menu_label_smart_reader"
             app:itemBackground="@color/menu_editor_background"
-            android:title="Update Tags by Smart Reader"
+            android:title="Update Tags by SmartReader"
+            app:showAsAction="always|withText" />
+        <item
+            android:icon="@drawable/ic_label_outline_black_24dp"
+            android:id="@+id/menu_label_smart_reader2"
+            app:itemBackground="@color/menu_editor_background"
+            android:title="Update Tags by SmartReader (II)"
             app:showAsAction="always|withText" />
 <!--        <item
             android:icon="@drawable/ic_label_outline_black_24dp"

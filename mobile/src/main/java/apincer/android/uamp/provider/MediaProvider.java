@@ -10,6 +10,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.design.widget.Snackbar;
+import android.view.View;
 
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
@@ -23,8 +25,11 @@ import org.jaudiotagger.tag.TagOptionSingleton;
 import org.jaudiotagger.tag.images.Artwork;
 import org.jaudiotagger.tag.reference.ID3V2Version;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,10 +37,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import apincer.android.uamp.R;
 import apincer.android.uamp.file.AndroidFile;
 import apincer.android.uamp.item.HeaderItem;
 import apincer.android.uamp.item.MediaItem;
-import apincer.android.uamp.ui.BrowserViewPagerActivity;
 import apincer.android.uamp.utils.LogHelper;
 import apincer.android.uamp.utils.StringUtils;
 import eu.davidea.flexibleadapter.items.IHeader;
@@ -48,10 +53,12 @@ public class MediaProvider {
     private static final String TAG = LogHelper.makeLogTag(MediaProvider.class);
     private Context context;
     private AndroidFile androidFile;
+    private List<MediaItem> mMediaItems;
 
     public MediaProvider(Context context) {
         this.context = context;
         this.androidFile = new AndroidFile(context);
+        mMediaItems = new ArrayList<>();
 
         //TagOptionSingleton.getInstance().setAndroid(true);
         TagOptionSingleton.getInstance().setID3V2Version(ID3V2Version.ID3_V23);
@@ -64,10 +71,17 @@ public class MediaProvider {
         TagOptionSingleton.getInstance().setPersistedUri(androidFile.getPersistedUri());
     }
 
-    public Collection getAllSongList(Context context) {
-        List<MediaItem> mItems = new ArrayList<>();
-        HeaderItem header = newHeader("ALL_SONGS");
-        header.setTitle("All Songs");
+    public Collection getAllSongList(boolean forceReload) {
+        if (forceReload || mMediaItems.isEmpty()) {
+            loadMediaItems();
+        }
+        return mMediaItems;
+    }
+
+    private boolean loadMediaItems() {
+        mMediaItems.clear();
+        HeaderItem header = newHeader("MEDIAITEMS");
+        header.setTitle("Music");
         ContentResolver mContentResolver = context.getContentResolver();
         Uri uri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         // Perform a query on the content resolver. The URI we're passing specifies that we
@@ -75,11 +89,12 @@ public class MediaProvider {
         Cursor cur = mContentResolver.query(uri, null, MediaStore.Audio.Media.IS_MUSIC + " = 1", null, "LOWER ("+MediaStore.Audio.Media.TITLE+") ASC");
         if (cur == null) {
             // Query failed...
-            return new ArrayList();
+            return false;
         }
         if (!cur.moveToFirst()) {
             // Nothing to query. There is no music on the device. How boring.
-            return new ArrayList();
+            cur.close();
+            return false;
         }
         // retrieve the indices of the columns where the ID, title, etc. of the song are
         int artistColumn = cur.getColumnIndex(MediaStore.Audio.Media.ARTIST);
@@ -95,105 +110,12 @@ public class MediaProvider {
             String mediaAlbum = cur.getString(albumColumn);
             String mediaArtist = cur.getString(artistColumn);
             long mediaDuration = cur.getLong(durationColumn);
-            mItems.add(newMediaItem(context, header, mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration));
+            mMediaItems.add(newMediaItem(header, mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration));
         } while (cur.moveToNext());
 
         cur.close();
 
-        return mItems;
-    }
-
-
-    public Collection getSongByArtist(Context context) {
-        List<MediaItem> mItems = new ArrayList<>();
-        Map<String, HeaderItem> headers = new HashMap<>();
-        //HeaderItem header = newHeader("All Songs", 0);
-        ContentResolver mContentResolver = context.getContentResolver();
-        Uri uri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        // Perform a query on the content resolver. The URI we're passing specifies that we
-        // want to query for all audio media on external storage (e.g. SD card)
-        Cursor cur = mContentResolver.query(uri, null, MediaStore.Audio.Media.IS_MUSIC + " = 1", null, "LOWER (" + MediaStore.Audio.Media.ARTIST + ") ASC, LOWER (" + MediaStore.Audio.Media.TITLE + ") ASC");
-        if (cur == null) {
-            // Query failed...
-            return new ArrayList();
-        }
-        if (!cur.moveToFirst()) {
-            // Nothing to query. There is no music on the device. How boring.
-            return new ArrayList();
-        }
-        // retrieve the indices of the columns where the ID, title, etc. of the song are
-        int artistColumn = cur.getColumnIndex(MediaStore.Audio.Media.ARTIST);
-        int albumArtistColumn = cur.getColumnIndex(MediaStore.Audio.AlbumColumns.ARTIST);
-        int titleColumn = cur.getColumnIndex(MediaStore.Audio.Media.TITLE);
-        int albumColumn = cur.getColumnIndex(MediaStore.Audio.Media.ALBUM);
-        int durationColumn = cur.getColumnIndex(MediaStore.Audio.Media.DURATION);
-        int dataColumn = cur.getColumnIndex(MediaStore.Audio.Media.DATA);
-
-        // add each song to mItems
-        do {
-            String mediaPath = cur.getString(dataColumn);
-            String mediaTitle = cur.getString(titleColumn);
-            String mediaAlbumArtist = cur.getString(albumArtistColumn);
-            String mediaAlbum = cur.getString(albumColumn);
-            String mediaArtist = cur.getString(artistColumn);
-            long mediaDuration = cur.getLong(durationColumn);
-            String artist = mediaArtist;
-            if(!StringUtils.isEmpty(mediaAlbumArtist)) {
-                artist = mediaAlbumArtist;
-            }
-            HeaderItem header = headers.get(artist);
-            if(header==null) {
-                header = newHeader(artist);
-                header.setTitle(artist);
-                headers.put(artist, header);
-            }
-            mItems.add(newMediaItem(context, header, mediaTitle, mediaArtist, mediaAlbum, mediaPath, mediaDuration));
-        } while (cur.moveToNext());
-
-        return mItems;
-    }
-
-    public Collection getSongByAlbum(Context context) {
-        List<MediaItem> mItems = new ArrayList<>();
-        Map<String, HeaderItem> headers = new HashMap<>();
-        //HeaderItem header = newHeader("All Songs", 0);
-        ContentResolver mContentResolver = context.getContentResolver();
-        Uri uri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        // Perform a query on the content resolver. The URI we're passing specifies that we
-        // want to query for all audio media on external storage (e.g. SD card)
-        Cursor cur = mContentResolver.query(uri, null, MediaStore.Audio.Media.IS_MUSIC + " = 1", null, "LOWER (" + MediaStore.Audio.Media.ALBUM + ") ASC, LOWER (" + MediaStore.Audio.Media.TITLE + ") ASC");
-        if (cur == null) {
-            // Query failed...
-            return new ArrayList();
-        }
-        if (!cur.moveToFirst()) {
-            // Nothing to query. There is no music on the device. How boring.
-            return new ArrayList();
-        }
-        // retrieve the indices of the columns where the ID, title, etc. of the song are
-        int artistColumn = cur.getColumnIndex(MediaStore.Audio.Media.ARTIST);
-        int titleColumn = cur.getColumnIndex(MediaStore.Audio.Media.TITLE);
-        int albumColumn = cur.getColumnIndex(MediaStore.Audio.Media.ALBUM);
-        int durationColumn = cur.getColumnIndex(MediaStore.Audio.Media.DURATION);
-        int dataColumn = cur.getColumnIndex(MediaStore.Audio.Media.DATA);
-
-        // add each song to mItems
-        do {
-            String mediaPath = cur.getString(dataColumn);
-            String mediaTitle = cur.getString(titleColumn);
-            String mediaAlbum = cur.getString(albumColumn);
-            String mediaArtist = cur.getString(artistColumn);
-            long mediaDuration = cur.getLong(durationColumn);
-            HeaderItem header = headers.get(mediaAlbum);
-            if(header==null) {
-                header = newHeader(mediaAlbum);
-                header.setTitle(mediaAlbum);
-                headers.put(mediaAlbum, header);
-            }
-            mItems.add(newMediaItem(context, header, mediaTitle, mediaArtist, mediaAlbum, mediaPath, mediaDuration));
-        } while (cur.moveToNext());
-
-        return mItems;
+        return true;
     }
 
     public  Collection getSongForFolder(Context context) {
@@ -235,12 +157,37 @@ public class MediaProvider {
                 header.setTitle(displayPath);
                 headers.put(displayPath, header);
             }
-            mItems.add(newMediaItem(context, header, mediaTitle, mediaArtist, mediaAlbum, mediaPath, mediaDuration));
+            mItems.add(newMediaItem(header, mediaTitle, mediaArtist, mediaAlbum, mediaPath, mediaDuration));
         } while (cur.moveToNext());
 
         return mItems;
     }
 
+
+    public  Collection getSimilarTitles(boolean forceReload) {
+        List<MediaItem> similarTitles = new ArrayList<>();
+        getAllSongList(forceReload);
+
+        MediaItem preItem = null;
+        String preTitle = "";
+        boolean preAdded = false;
+        for (MediaItem item:mMediaItems) {
+            //similarity
+            if (StringUtils.similarity(item.getTitle(), preTitle)>=0.8) {
+                if(!preAdded && preItem != null) {
+                    similarTitles.add(preItem);
+                }
+                similarTitles.add(item);
+                preAdded = true;
+            }else {
+                preAdded = false;
+            }
+            preTitle = item.getTitle();
+            preItem = item;
+        }
+
+        return similarTitles;
+    }
 
     public  Collection getSimilarSongList(Context context) {
         List<MediaItem> mItems = new ArrayList<>();
@@ -277,7 +224,7 @@ public class MediaProvider {
             String mediaAlbum = cur.getString(albumColumn);
             String mediaArtist = cur.getString(artistColumn);
             long mediaDuration = cur.getLong(durationColumn);
-            MediaItem item = newMediaItem(context, header, mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration);
+            MediaItem item = newMediaItem(header, mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration);
             //similarity
             if (StringUtils.similarity(mediaTitle, preTitle)>=0.8) {
                 if(!preAdded && preItem != null) {
@@ -295,9 +242,9 @@ public class MediaProvider {
         return mItems;
     }
 
-    public Bitmap getArtworkFromPath(Uri path) {
+    public Bitmap getArtworkFromFile(String path) {
         try {
-            AudioFile read = AudioFileIO.read(new File(path.toString()));
+            AudioFile read = AudioFileIO.read(new File(path));
             return getArtwork(read.getTagOrCreateDefault());
         } catch (CannotReadException e) {
             e.printStackTrace();
@@ -314,17 +261,21 @@ public class MediaProvider {
     }
 
     public void deleteFromMediaStore(String pathToDelete) {
-        ContentResolver contentResolver = context.getContentResolver();
-        if (contentResolver != null) {
-            Cursor query = contentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Audio.Media._ID, "_data"}, "_data = ?", new String[]{pathToDelete}, null);
-            if (query != null && query.getCount() > 0) {
-                query.moveToFirst();
-                while (!query.isAfterLast()) {
-                    context.getContentResolver().delete(ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, (long) query.getInt(query.getColumnIndex(MediaStore.Audio.Media._ID))), null, null);
-                    query.moveToNext();
+        try {
+            ContentResolver contentResolver = context.getContentResolver();
+            if (contentResolver != null) {
+                Cursor query = contentResolver.query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Audio.Media._ID, "_data"}, "_data = ?", new String[]{pathToDelete}, null);
+                if (query != null && query.getCount() > 0) {
+                    query.moveToFirst();
+                    while (!query.isAfterLast()) {
+                        context.getContentResolver().delete(ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, (long) query.getInt(query.getColumnIndex(MediaStore.Audio.Media._ID))), null, null);
+                        query.moveToNext();
+                    }
+                    query.close();
                 }
-                query.close();
             }
+        }catch (Exception ex) {
+            // ignore
         }
     }
 
@@ -430,7 +381,7 @@ public class MediaProvider {
         }
     }
 
-    public boolean saveMediaFile(String mediaPath, MediaTag tagUpdate) {
+    public boolean saveMediaFile(String mediaPath, MediaTag tagUpdate, View view) {
         if (mediaPath == null) {
             return false;
         }
@@ -440,65 +391,72 @@ public class MediaProvider {
             File file = new File(mediaPath);
             if(!androidFile.isWritable(file)) {
                 isCacheMode = true;
-                LogHelper.d(TAG, "saf document:"+file.getAbsolutePath());
+                Snackbar.make(view, context.getString(R.string.progress_move_from_sd), Snackbar.LENGTH_SHORT).show();
+                //LogHelper.d(TAG, "saf document:"+file.getAbsolutePath());
                 file = androidFile.safToCache(file);
-                LogHelper.d(TAG, "cached saf document:"+file.getAbsolutePath());
+                //LogHelper.d(TAG, "cached saf document:"+file.getAbsolutePath());
             }
 
+            Snackbar.make(view, context.getString(R.string.progress_write_tags), Snackbar.LENGTH_SHORT).show();
             AudioFile audioFile = AudioFileIO.read(file);
             Tag newTag = audioFile.getTagOrCreateAndSetDefault();
             updateTag(tagUpdate, newTag);
             audioFile.commit();
 
             if(isCacheMode) {
-                LogHelper.i(TAG, "saf path:"+mediaPath);
+                Snackbar.make(view, context.getString(R.string.progress_move_to_sd), Snackbar.LENGTH_SHORT).show();
+                //LogHelper.i(TAG, "saf path:"+mediaPath);
                 androidFile.safFromCache(file, mediaPath);
             }
+            Snackbar.make(view, context.getString(R.string.progress_update_media_store), Snackbar.LENGTH_SHORT).show();
             updateOnMediaStore(mediaPath, tagUpdate);
         } catch (Exception e) {
-            LogHelper.i(TAG, "Exception: ", e.getMessage());
+            Snackbar.make(view, context.getString(R.string.alert_write_tag_fail), Snackbar.LENGTH_SHORT).show();
             LogHelper.e(TAG, e);
             return false;
         }
         return true;
     }
 
-    public boolean deleteMediaFile(String mediaPath) {
-       // AndroidFile.deleteFile(mediaPath, context);
+    public boolean deleteMediaFile(String mediaPath, View view) {
        try {
+           Snackbar.make(view, context.getString(R.string.progress_delete_file), Snackbar.LENGTH_SHORT).show();
            if (androidFile.deleteFile(new File(mediaPath))) {
+               Snackbar.make(view, context.getString(R.string.progress_update_media_store), Snackbar.LENGTH_SHORT).show();
                deleteFromMediaStore(mediaPath);
                return true;
            }
        }catch(Exception e) {
-           LogHelper.i(TAG, "Exception: ", e.getMessage());
+           Snackbar.make(view, context.getString(R.string.alert_delete_fail), Snackbar.LENGTH_SHORT).show();
            LogHelper.e(TAG, e);
        }
        return false;
     }
 
-    public boolean moveMediaFile(String path, String organizedPath) {
+    public boolean moveMediaFile(String path, String organizedPath, View view) {
         try {
+            Snackbar.make(view, context.getString(R.string.progress_organize_file), Snackbar.LENGTH_SHORT).show();
             if(androidFile.moveFile(path, organizedPath) ) {
+                Snackbar.make(view, context.getString(R.string.progress_update_media_store), Snackbar.LENGTH_SHORT).show();
                 updatePathOnMediaStore(path, organizedPath);
                 return true;
             }
         }catch(Exception e) {
-            LogHelper.i(TAG, "Exception: ", e.getMessage());
+            Snackbar.make(view, context.getString(R.string.alert_organize_fail), Snackbar.LENGTH_SHORT).show();
             LogHelper.e(TAG, e);
         }
         return false;
     }
 
     private boolean updateOnMediaStore(String path, MediaTag tag) {
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Audio.Media.TITLE, sqlEscapeString(tag.getTitle()));
-        values.put(MediaStore.Audio.Media.ALBUM, sqlEscapeString(tag.getAlbum()));
-        values.put(MediaStore.Audio.Media.ARTIST, sqlEscapeString(tag.getArtist()));
-        boolean successMediaStore = context.getContentResolver().update(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values,
-                MediaStore.Audio.Media.DATA + "=?", new String[]{ path }) == 1;
-        return successMediaStore;
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Audio.Media.TITLE, sqlEscapeString(tag.getTitle()));
+            values.put(MediaStore.Audio.Media.ALBUM, sqlEscapeString(tag.getAlbum()));
+            values.put(MediaStore.Audio.Media.ARTIST, sqlEscapeString(tag.getArtist()));
+            boolean successMediaStore = context.getContentResolver().update(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values,
+                    MediaStore.Audio.Media.DATA + "=?", new String[]{path}) == 1;
+            return successMediaStore;
     }
 
     private String sqlEscapeString(String sqlString) {
@@ -519,12 +477,16 @@ public class MediaProvider {
     }
 
     private boolean updatePathOnMediaStore(String path, String newPath) {
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Audio.Media.DATA, sqlEscapeString(newPath));
-        boolean successMediaStore = context.getContentResolver().update(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values,
-                MediaStore.Audio.Media.DATA + "=?", new String[]{ path }) == 1;
-        return successMediaStore;
+        try {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Audio.Media.DATA, sqlEscapeString(newPath));
+            boolean result = context.getContentResolver().update(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values,
+                    MediaStore.Audio.Media.DATA + "=?", new String[]{path}) == 1;
+         }catch (Exception ex) {
+            deleteFromMediaStore(path);
+        }
+        return true;
     }
 
     public  MediaItem loadMediaItemFromMediaStore(Context context, String path) {
@@ -554,7 +516,7 @@ public class MediaProvider {
             String mediaAlbum = cur.getString(albumColumn);
             String mediaArtist = cur.getString(artistColumn);
             long mediaDuration = cur.getLong(durationColumn);
-            MediaItem item = newMediaItem(context, null, mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration);
+            MediaItem item = newMediaItem(null, mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration);
             cur.close();
             return item;
 
@@ -798,7 +760,7 @@ public class MediaProvider {
             String mediaAlbum = read.getTag().getFirst(FieldKey.KEY.ALBUM);
             String mediaArtist = read.getTag().getFirst(FieldKey.KEY.ARTIST);
             long mediaDuration = read.getAudioHeader().getTrackLength();
-            return newMediaItem(context, null, mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration);
+            return newMediaItem(null, mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration);
         } catch (CannotReadException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -826,10 +788,7 @@ public class MediaProvider {
     /*
      * Creates a normal item with a Header linked.
     */
-    protected MediaItem newMediaItem(Context context, IHeader header, String mediaTitle, String mediaArtist, String mediaAlbum, String mediaPath, long mediaDuration) {
-        // if(albumArtCache==null) {
-        //     albumArtCache = AlbumArtCache.getInstance(new MediaProvider(context));
-        //}
+    protected MediaItem newMediaItem(IHeader header, String mediaTitle, String mediaArtist, String mediaAlbum, String mediaPath, long mediaDuration) {
         final MediaItem item = new MediaItem(mediaPath, (HeaderItem) header);
         item.setTitle(mediaTitle);
         item.setAlbum(mediaAlbum);
@@ -837,21 +796,37 @@ public class MediaProvider {
         item.setPath(mediaPath);
         item.setDuration(mediaDuration);
         item.setDisplayPath(androidFile.getDisplayPath(item.getPath()));
-        // FIXME get icon bitmap
-        /*
-        Bitmap art = albumArtCache.getIconImage(path);
-        if(art==null) {
-            albumArtCache.fetch(pth, new AlbumArtCache.FetchListener() {
-                @Override
-                public void onFetched(String artUrl, Bitmap bigImage, Bitmap iconImage) {
-                    item.setIconBitmap(iconImage);
-                }
-            });
-        }*/
         return item;
     }
 
-    public String getDisplayPath(BrowserViewPagerActivity browserViewPagerActivity, String path) {
+    public String getDisplayPath(String path) {
         return androidFile.getDisplayPath(path);
+    }
+
+    public Collection getFoldersForSongs(Context context, String parentFolder) {
+        List<MediaItem> mItems = new ArrayList<>();
+        if(parentFolder==null) {
+            // list all internal Memory  and SDCARD
+        }else {
+            // list all directory and music files
+        }
+        return mItems;
+    }
+
+    public InputStream openCoverArtInputStream(MediaItem model) throws Exception {
+        AudioFile read = AudioFileIO.read(new File(model.getPath()));
+        Artwork artwork = read.getTagOrCreateDefault().getFirstArtwork();
+        Bitmap bitmap = null;
+        if (null != artwork) {
+            byte[] artworkData = artwork.getBinaryData();
+            bitmap = BitmapFactory.decodeByteArray(artworkData, 0, artworkData.length);
+         }else {
+            LogHelper.logToFile("NOT FOUND", model.getPath());
+            bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_notification);
+        }
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return new ByteArrayInputStream(stream.toByteArray());
     }
 }

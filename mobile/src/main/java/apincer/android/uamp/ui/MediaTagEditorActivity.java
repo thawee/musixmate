@@ -27,6 +27,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -400,14 +401,11 @@ public class MediaTagEditorActivity extends AppCompatActivity {
     }
 
     private void saveMediaItem() {
-        if(mediaStoreHelper.saveMediaFile(mediaPath, tagUpdate)) {
+        if(mediaStoreHelper.saveMediaFile(mediaPath, tagUpdate,findViewById(R.id.main_view))) {
             hideFab();
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
             saveResult("SAVED", tagUpdate.getMediaPath(),null);
             ///onBackPressed();
-        }else {
-            Toast.makeText(MediaTagEditorActivity.this, "Cannot write tags", Toast.LENGTH_LONG)
-                    .show();
         }
     }
 
@@ -415,8 +413,7 @@ public class MediaTagEditorActivity extends AppCompatActivity {
         final String path = mediaPath;
         final String organizedPath = mediaStoreHelper.getOrganizedPath(path);
         if(path.equals(organizedPath)) {
-            Toast.makeText(MediaTagEditorActivity.this, getString(R.string.alert_organize_already), Toast.LENGTH_LONG)
-                    .show();
+            Snackbar.make(findViewById(R.id.main_view), getString(R.string.alert_organize_already), Snackbar.LENGTH_SHORT).show();
             return;
         }
         AlertDialog.Builder alert = new AlertDialog.Builder(MediaTagEditorActivity.this);
@@ -425,13 +422,10 @@ public class MediaTagEditorActivity extends AppCompatActivity {
         alert.setPositiveButton(getString(R.string.alert_organize_confirm), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if(mediaStoreHelper.moveMediaFile(path, organizedPath)) {
+                if(mediaStoreHelper.moveMediaFile(path, organizedPath,findViewById(R.id.main_view))) {
                     hideFab();
                     saveResult("ORGANIZED", organizedPath, path);
                     onBackPressed();
-                }else {
-                    Toast.makeText(MediaTagEditorActivity.this, getString(R.string.alert_organize_fail), Toast.LENGTH_LONG)
-                            .show();
                 }
                 dialog.dismiss();
             }
@@ -452,13 +446,10 @@ public class MediaTagEditorActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
-                if(mediaStoreHelper.deleteMediaFile(mediaPath)) {
+                if(mediaStoreHelper.deleteMediaFile(mediaPath,findViewById(R.id.main_view))) {
                     hideFab();
                     saveResult("DELETED", tagUpdate.getMediaPath(),null);
                     onBackPressed();
-                }else {
-                    Toast.makeText(MediaTagEditorActivity.this, "Cannot delete music file,\n"+mediaPath, Toast.LENGTH_LONG)
-                            .show();
                 }
                 dialog.dismiss();
             }
@@ -599,6 +590,7 @@ public class MediaTagEditorActivity extends AppCompatActivity {
                         updateTagByFilename(title, artist, album,albumArtist, track, comment);
                         break;
                     case R.id.menu_label_smart_reader:
+                    case R.id.menu_label_smart_reader2:
                         //<tract>. <arist> (<featering>) - <tltle>
                         String featuring = "";
                         int trackIndx = title.indexOf(".");
@@ -620,8 +612,11 @@ public class MediaTagEditorActivity extends AppCompatActivity {
                         title.trim();
                         track.trim();
                         artist.trim();
-
-                        updateTagByFilename(title, artist, album,albumArtist, track, comment);
+                        if(item.getItemId() == R.id.menu_label_smart_reader) {
+                            updateTagByFilename(title, artist, album, albumArtist, track, comment);
+                        }else {
+                            updateTagByFilename(artist, title, album, albumArtist, track, comment);
+                        }
                         break;
                     case R.id.menu_label_folder_artist:
                         //replace title/album by filename, artist by folder
@@ -635,6 +630,7 @@ public class MediaTagEditorActivity extends AppCompatActivity {
                         break;
                     case R.id.menu_charset_default:
                         updateViewByCharset(null);
+                        break;
                     case R.id.menu_charset_thai:
                         updateViewByCharset("TIS-620");
                         break;

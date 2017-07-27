@@ -7,7 +7,7 @@ public class MediaTag {
         return displayPlath;
     }
 
-    public enum MediaTypes {TITLE,ARTIST,SIMILARITY,FILES};
+    public enum MediaTypes {SONGS,SIMILARITY,FILES}
     protected String mediaPath;
     protected String displayPlath;
     protected String mediaSampleRate;

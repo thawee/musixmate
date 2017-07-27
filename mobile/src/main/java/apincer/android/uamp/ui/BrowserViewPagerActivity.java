@@ -213,6 +213,8 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
         super.onResume();
         if(changedPosition>=0 && mAdapter!=null) {
             mAdapter.notifyItemChanged(changedPosition);
+            mHeaderView = (HeaderView) findViewById(R.id.toolbar_header_view);
+            mHeaderView.bindTo(getString(R.string.app_name), mAdapter.getItemCount() +" songs"); //getString(R.string.viewpager));
         }
     }
 
@@ -377,7 +379,7 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
                 //final int takeFlags = resultData.getFlags()
                 //        & (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                 this.getContentResolver().takePersistableUriPermission(treeUri, (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION));
-                mAdapter.updateDataSet(mFragment.loadMediaItems());
+                mAdapter.updateDataSet(mFragment.loadMediaItems(false));
                 mAdapter.notifyDataSetChanged();
                 //mFragment.onUpdateEmptyView(mFragment.loadMediaItems().size());
             }
@@ -427,7 +429,7 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
             try {
                 if(!StringUtils.isEmpty(path) && !path.equals(item.getPath())) {
                 item.setPath(path);
-                    item.setDisplayPath(mAdapter.getDisplayPath(this, path));
+                    item.setDisplayPath(mAdapter.getDisplayPath(path));
                 }
             } catch (Exception ex) {}
         }
@@ -461,7 +463,7 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
             item.setTitle(newItem.getTitle());
             item.setPath(path);
             try {
-                item.setDisplayPath(mAdapter.getDisplayPath(this, path));
+                item.setDisplayPath(mAdapter.getDisplayPath(path));
             }catch (Exception ex){}
         }
         mAdapter.notifyItemChanged(position);
@@ -481,15 +483,6 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
 
     private MediaItem loadMediaItemFromMediaStore(String path) {
         return mAdapter.loadMediaItemFromMediaStore(this, path);
-    }
-
-    private MediaItem loadMediaItemByPath(String path) {
-        // load pending media from path by jaudiotagger
-        return mAdapter.getMediaItemByPath(this, path);
-    }
-
-    private int getMediaPositionById(String id) {
-        return mAdapter.getMediaPositionById(id);
     }
 
     private MediaItem getMediaItemById(String id) {
@@ -524,13 +517,15 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        return mFragment.filterItems(newText);
+        //return mFragment.filterItems(newText);
+        return false;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
         LogHelper.i(TAG, "onQueryTextSubmit called!");
-        return onQueryTextChange(query);
+       // return onQueryTextChange(query);
+        return mFragment.filterItems(query);
     }
 
     /* ==========================
@@ -626,7 +621,7 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
-            fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.TITLE));
+            fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.SONGS));
             //fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.ARTIST));
             //fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.ALBUM));
             fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.SIMILARITY));

@@ -18,7 +18,6 @@ public class HeaderView extends LinearLayout {
 	@BindView(R.id.header_view_sub_title)
 	TextView subTitle;
 
-
 	public HeaderView(Context context) {
 		this(context, null);
 	}

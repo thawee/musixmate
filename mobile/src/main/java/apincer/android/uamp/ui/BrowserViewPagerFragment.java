@@ -50,7 +50,6 @@ import eu.davidea.flipview.FlipView;
  */
 public class BrowserViewPagerFragment extends Fragment {
 
-
 	/**
 	 * The fragment argument representing the section number for this
 	 * fragment.
@@ -124,7 +123,7 @@ public class BrowserViewPagerFragment extends Fragment {
 			mMediaType = MediaTag.MediaTypes.valueOf(name);
             mTitle = name;
 			if(mMediaType==null) {
-				mMediaType = MediaTag.MediaTypes.TITLE;
+				mMediaType = MediaTag.MediaTypes.SONGS;
                 mTitle = mMediaType.name();
 			}
 			//mTitle = mMediaType.name();
@@ -215,7 +214,7 @@ public class BrowserViewPagerFragment extends Fragment {
             mListener.setListeningTitle(listenTitle, listenArtist);
 	    //lblFabListeningAction.setText(StringUtils.truncate(listenTitle, 40));
 	    //linFabListeningAction.setVisibility(View.VISIBLE);
-	    if(mMediaType == MediaTag.MediaTypes.TITLE) {
+	    if(mMediaType == MediaTag.MediaTypes.SONGS) {
 		ViewCompat.animate(fabListeningAction)
 				.scaleX(1f).scaleY(1f)
 				.alpha(1f).setDuration(200)
@@ -235,8 +234,8 @@ public class BrowserViewPagerFragment extends Fragment {
 
     private void initializeRecyclerView() {
 	// Initialize Adapter and RecyclerView
-	mAdapter = new BrowserFlexibleAdapter(loadMediaItems(), getActivity());
-	mAdapter.setListeningMode(mMediaType == MediaTag.MediaTypes.TITLE);
+	mAdapter = new BrowserFlexibleAdapter(loadMediaItems(false), getActivity());
+	mAdapter.setListeningMode(mMediaType == MediaTag.MediaTypes.SONGS);
 
 	// Experimenting NEW features (v5.0.0)
         mAdapter.setOnlyEntryAnimation(true)
@@ -296,7 +295,7 @@ public class BrowserViewPagerFragment extends Fragment {
             public void onRefresh() {
                 // Passing true as parameter we always animate the changes between the old and the new data set
                 mSwipeRefreshLayout.setRefreshing(true);
-                mAdapter.updateDataSet(loadMediaItems(), true);
+                mAdapter.updateDataSet(loadMediaItems(true), true);
                 //mActionModeHelper.destroyActionModeIfCan();
                 mSwipeRefreshLayout.setRefreshing(false);
                 mAdapter.notifyDataSetChanged();
@@ -349,7 +348,7 @@ public class BrowserViewPagerFragment extends Fragment {
 	}
 
 	// MediaItem
-	public List<MediaItem> loadMediaItems() {
+	public List<MediaItem> loadMediaItems(final boolean forceReload) {
         final List mediaItemList = new ArrayList();
         PermissionManager permissionManager = PermissionManager.getInstance((BrowserViewPagerActivity)getActivity());
         List<String> permissions = Arrays.asList(BrowserViewPagerActivity.PERMISSIONS_ALL);
@@ -358,25 +357,25 @@ public class BrowserViewPagerFragment extends Fragment {
             public void onPermissionGranted() {
 
                 switch (mMediaType) {
-                    case TITLE:
+                    case SONGS:
                         //all songs
-                        mediaItemList.addAll(mProvider.getAllSongList(getContext()));
+                        mediaItemList.addAll(mProvider.getAllSongList(forceReload));
                         break;
-                    case ARTIST:
+                    //case ARTIST:
                         // artist
-                        mediaItemList.addAll(mProvider.getSongByArtist(getContext()));
-                        break;
+                     //   mediaItemList.addAll(mProvider.getSongByArtist(getContext()));
+                     //   break;
                     case FILES:
-                        // artist
-                        mediaItemList.addAll(mProvider.getSongForFolder(getContext()));
+                        // files
+                        mediaItemList.addAll(mProvider.getFoldersForSongs(getContext(),null));
                         break;
                     case SIMILARITY:
                         // similarity
-                        mediaItemList.addAll(mProvider.getSimilarSongList(getContext()));
+                        mediaItemList.addAll(mProvider.getSimilarTitles(forceReload));
                         break;
                     default:
                         // all songs
-                        mediaItemList.addAll(mProvider.getAllSongList(getContext()));
+                        mediaItemList.addAll(mProvider.getAllSongList(forceReload));
                 }
             }
 
@@ -404,10 +403,10 @@ public class BrowserViewPagerFragment extends Fragment {
         return mediaItems;
     }
 
-    public void reloadMediaItems() {
+    public void reloadMediaItems(boolean forceReload) {
         // Passing true as parameter we always animate the changes between the old and the new data set
 	mSwipeRefreshLayout.setRefreshing(true);
-	mAdapter.updateDataSet(loadMediaItems(), true);
+	mAdapter.updateDataSet(loadMediaItems(forceReload), true);
 	//mActionModeHelper.destroyActionModeIfCan();
 	mAdapter.notifyDataSetChanged();
 	mSwipeRefreshLayout.setRefreshing(false);
@@ -425,8 +424,14 @@ public class BrowserViewPagerFragment extends Fragment {
             mAdapter.filterItems(mediaItems, 100);
         }
         // Disable SwipeRefresh if search is active!!
-        mSwipeRefreshLayout.setEnabled(false);
-	hideFloatingActionBar();
+        if(StringUtils.isEmpty(newText)) {
+			mSwipeRefreshLayout.setEnabled(false);
+			hideFloatingActionBar();
+		}else {
+			mSwipeRefreshLayout.setEnabled(true);
+			showFloatingActionBar();
+		}
+
         return true;
     }
 
@@ -438,10 +443,11 @@ public class BrowserViewPagerFragment extends Fragment {
 	public class BrowserFlexibleAdapter extends FlexibleAdapter<MediaItem> {
 		private BrowserViewPagerActivity activity;
 		private boolean listeningMode;
+
 		public BrowserFlexibleAdapter(List<MediaItem> items, Object listeners) {
 			//stableIds ? true = Items implement hashCode() so they can have stableIds!
 			super(items, listeners, true);
-            if(listeners instanceof BrowserViewPagerActivity) {
+			if(listeners instanceof BrowserViewPagerActivity) {
                 this.activity = (BrowserViewPagerActivity) listeners;
             }
 	}
@@ -460,7 +466,7 @@ public class BrowserViewPagerFragment extends Fragment {
             IFlexible iFlexible = getItem(position);
             if (iFlexible == null) return "";
             String text = iFlexible.toString();
-            if (mMediaType == MediaTag.MediaTypes.ARTIST || mMediaType == MediaTag.MediaTypes.FILES) {
+            if (mMediaType == MediaTag.MediaTypes.FILES) {
                 if (iFlexible instanceof MediaItem) {
                     // get header for artist
                     if (((MediaItem) iFlexible).getHeader() != null) {
@@ -545,19 +551,6 @@ public class BrowserViewPagerFragment extends Fragment {
             return activity;
         }
 
-        public int getMediaPositionById(String id) {
-            int count = getItemCount();
-            for (int i = 0; i < count; i++) {
-                IFlexible flex = getItem(i);
-                if(flex instanceof MediaItem) {
-                    MediaItem item = (MediaItem) flex;
-                    if (item != null && id.equals(item.getId())) {
-                        return i;
-                    }
-                }
-            }
-            return 0;
-        }
 
 	public void setListeningMode(boolean listeningMode) {
 	    this.listeningMode = listeningMode;
@@ -567,12 +560,8 @@ public class BrowserViewPagerFragment extends Fragment {
             return mProvider.loadMediaItemFromMediaStore(browserViewPagerActivity, path);
         }
 
-        public MediaItem getMediaItemByPath(BrowserViewPagerActivity browserViewPagerActivity, String path) {
-            return mProvider.getMediaItemByPath(browserViewPagerActivity, path);
-        }
-
-        public String getDisplayPath(BrowserViewPagerActivity browserViewPagerActivity, String path) {
-            return mProvider.getDisplayPath(browserViewPagerActivity, path);
+        public String getDisplayPath(String path) {
+            return mProvider.getDisplayPath(path);
         }
     }
 }

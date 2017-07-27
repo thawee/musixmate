@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import apincer.android.uamp.BuildConfig;
+import timber.log.Timber;
 
 public class LogHelper {
 
@@ -53,36 +54,43 @@ public class LogHelper {
 
     public static void v(String tag, Object... messages) {
         // Only log VERBOSE if build type is DEBUG
-        if (BuildConfig.DEBUG) {
-            log(tag, Log.VERBOSE, null, messages);
-        }
+        //if (BuildConfig.DEBUG) {
+        //    log(tag, Log.VERBOSE, null, messages);
+        //}
+        Timber.v(tag,messages);
     }
 
     public static void d(String tag, Object... messages) {
         // Only log DEBUG if build type is DEBUG
-        if (BuildConfig.DEBUG) {
-            log(tag, Log.DEBUG, null, messages);
-        }
+        //if (BuildConfig.DEBUG) {
+         //   log(tag, Log.DEBUG, null, messages);
+        //}
+        Timber.d(tag, messages);
     }
 
     public static void i(String tag, Object... messages) {
-        log(tag, Log.INFO, null, messages);
+        //log(tag, Log.INFO, null, messages);
+        Timber.i(tag, messages);
     }
 
     public static void w(String tag, Object... messages) {
-        log(tag, Log.WARN, null, messages);
+        //log(tag, Log.WARN, null, messages);
+        Timber.w(tag,messages);
     }
 
     public static void w(String tag, Throwable t, Object... messages) {
-        log(tag, Log.WARN, t, messages);
+        //log(tag, Log.WARN, t, messages);
+        Timber.w(t,tag,messages);
     }
 
     public static void e(String tag, Object... messages) {
-        log(tag, Log.ERROR, null, messages);
+        //log(tag, Log.ERROR, null, messages);
+        Timber.e(tag,messages);
     }
 
     public static void e(String tag, Throwable t, Object... messages) {
-        log(tag, Log.ERROR, t, messages);
+        //log(tag, Log.ERROR, t, messages);
+        Timber.e(t,tag,messages);
     }
 
     public static void log(String tag, int level, Throwable t, Object... messages) {
@@ -101,10 +109,11 @@ public class LogHelper {
                 }
                 message = sb.toString();
             }
+            //Timber.
             Log.println(level, tag, message);
-            if(t != null) {
-                logToFile(level+":"+tag, message);
-            }
+            //if(t != null) {
+             //   logToFile(level+":"+tag, message);
+            //}
         }
     }
 
@@ -115,7 +124,7 @@ public class LogHelper {
                 (DateFormat.SHORT, DateFormat.MEDIUM, Locale.CANADA_FRENCH).format(dateNow));
     }
 
-    private static void logToFile(String logMessageTag, String logMessage) {
+    public static void logToFile(String logMessageTag, String logMessage) {
         try {
             // Gets the log file from the root of the primary storage. If it does
             // not exist, the file is created.

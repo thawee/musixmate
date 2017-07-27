@@ -9,18 +9,24 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+
 import java.io.Serializable;
 import java.util.List;
 
 import apincer.android.uamp.R;
+import apincer.android.uamp.glide.CoverArtGlideModule;
 import apincer.android.uamp.provider.MediaProvider;
 import apincer.android.uamp.ui.BrowserViewPagerFragment;
 import apincer.android.uamp.ui.MediaTagEditorActivity;
+import apincer.android.uamp.utils.LogHelper;
 import apincer.android.uamp.utils.StringUtils;
 import apincer.android.uamp.utils.Utils;
 import eu.davidea.flexibleadapter.FlexibleAdapter;
@@ -126,12 +132,6 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
         return R.layout.recycler_media_item;
     }
 
-    /*
-    @Override
-    public MediaItemViewHolder createViewHolder(FlexibleAdapter adapter, LayoutInflater inflater, ViewGroup parent) {
-        return new MediaItemViewHolder(inflater.inflate(getLayoutRes(), parent, false), adapter);
-    } */
-
     @Override
     public MediaItemViewHolder createViewHolder(View view, FlexibleAdapter adapter) {
         return new MediaItemViewHolder(view, adapter);
@@ -151,9 +151,12 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
             DrawableUtils.setBackgroundCompat(holder.frontView, drawable);
         }
 
-        //if(iconBitmap!=null) {
-        //    holder.mFlipView.setFrontImageBitmap(iconBitmap);
-        //}
+        try {
+            //Glide.with(adapter.getRecyclerView().getContext()).load(this).into(holder.mFlipView.getFrontImageView());
+            Glide.with(adapter.getRecyclerView().getContext()).load(this).apply(RequestOptions.circleCropTransform()).into(holder.mFlipView.getFrontImageView());
+        }catch (Exception ex) {
+            LogHelper.logToFile("GLIDE", Log.getStackTraceString(ex));
+        }
 
         // INNER ANIMATION ImageView - Handle Flip Animation
 	if (adapter.isSelectAll() || adapter.isLastItemInActionMode()) {
@@ -261,6 +264,7 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
         public void onClick(View view) {
             super.onClick(view);
             if(mAdapter.getMode()== SelectableAdapter.Mode.SINGLE) {
+                mAdapter.clearSelection();
                 int position = getAdapterPosition();
                 if (!MediaTagEditorActivity.navigate(((BrowserViewPagerFragment.BrowserFlexibleAdapter)mAdapter).getActivity(), ((MediaItem) this.mAdapter.getItem(position)),position)) {
                     mAdapter.removeItem(position);
