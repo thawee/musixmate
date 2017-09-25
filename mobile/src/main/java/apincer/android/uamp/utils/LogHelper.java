@@ -27,7 +27,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import apincer.android.uamp.BuildConfig;
 import timber.log.Timber;
 
 public class LogHelper {
@@ -57,63 +56,67 @@ public class LogHelper {
         //if (BuildConfig.DEBUG) {
         //    log(tag, Log.VERBOSE, null, messages);
         //}
-        Timber.v(tag,messages);
+        Timber.v(tag, messages);
+        log(tag, null, messages);
     }
 
     public static void d(String tag, Object... messages) {
         // Only log DEBUG if build type is DEBUG
         //if (BuildConfig.DEBUG) {
-         //   log(tag, Log.DEBUG, null, messages);
+        //   log(tag, Log.DEBUG, null, messages);
         //}
         Timber.d(tag, messages);
+        log(tag, null, messages);
     }
 
     public static void i(String tag, Object... messages) {
         //log(tag, Log.INFO, null, messages);
         Timber.i(tag, messages);
+        log(tag, null, messages);
     }
 
     public static void w(String tag, Object... messages) {
         //log(tag, Log.WARN, null, messages);
-        Timber.w(tag,messages);
+        Timber.w(tag, messages);
+        log(tag, null, messages);
     }
 
     public static void w(String tag, Throwable t, Object... messages) {
         //log(tag, Log.WARN, t, messages);
-        Timber.w(t,tag,messages);
+        Timber.w(t, tag, messages);
+        log(tag, null, messages);
     }
 
     public static void e(String tag, Object... messages) {
         //log(tag, Log.ERROR, null, messages);
-        Timber.e(tag,messages);
+        Timber.e(tag, messages);
+        log(tag, null, messages);
     }
 
     public static void e(String tag, Throwable t, Object... messages) {
         //log(tag, Log.ERROR, t, messages);
-        Timber.e(t,tag,messages);
+        Timber.e(t, tag, messages);
+        log(tag, t, messages);
     }
 
-    public static void log(String tag, int level, Throwable t, Object... messages) {
-        if (Log.isLoggable(tag, level)) {
-            String message;
-            if (t == null && messages != null && messages.length == 1) {
-                // handle this common case without the extra cost of creating a stringbuffer:
-                message = messages[0].toString();
-            } else {
-                StringBuilder sb = new StringBuilder();
-                if (messages != null) for (Object m : messages) {
-                    sb.append(m);
-                }
-                if (t != null) {
-                    sb.append("\n").append(Log.getStackTraceString(t));
-                }
-                message = sb.toString();
+    public static void log(String tag, Throwable t, Object... messages) {
+
+        String message;
+        if (t == null && messages != null && messages.length == 1) {
+            // handle this common case without the extra cost of creating a stringbuffer:
+            message = messages[0].toString();
+        } else {
+            StringBuilder sb = new StringBuilder();
+            if (messages != null) for (Object m : messages) {
+                sb.append(m);
             }
-            //Timber.
-            Log.println(level, tag, message);
-            //if(t != null) {
-             //   logToFile(level+":"+tag, message);
-            //}
+            if (t != null) {
+                sb.append("\n").append(Log.getStackTraceString(t));
+            }
+            message = sb.toString();
+        }
+        if(t!=null) {
+            logToFile(tag, message);
         }
     }
 
@@ -138,9 +141,7 @@ public class LogHelper {
             writer.write(String.format("%1s [%2s]:%3s\r\n",
                     getDateTimeStamp(), logMessageTag, logMessage));
             writer.close();
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             Log.e("LogHelper", "Unable to log exception to file.");
         }
     }

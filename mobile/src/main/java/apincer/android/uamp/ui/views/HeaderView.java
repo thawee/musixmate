@@ -8,14 +8,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import apincer.android.uamp.R;
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 public class HeaderView extends LinearLayout {
-
-	@BindView(R.id.header_view_title)
 	TextView title;
-	@BindView(R.id.header_view_sub_title)
 	TextView subTitle;
 
 	public HeaderView(Context context) {
@@ -38,19 +33,24 @@ public class HeaderView extends LinearLayout {
 	@Override
 	protected void onFinishInflate() {
 		super.onFinishInflate();
-		ButterKnife.bind(this);
-	}
-
-	public void bindTo(CharSequence title) {
-		bindTo(title, "");
+		title = (TextView) findViewById(R.id.header_view_title);
+		subTitle = (TextView) findViewById(R.id.header_view_sub_title);
 	}
 
 	public void bindTo(CharSequence title, CharSequence subTitle) {
+        if(this.title==null) {
+            this.title = (TextView) findViewById(R.id.header_view_title);
+        }
 		hideOrSetText(this.title, title);
+        if(this.subTitle==null) {
+            this.subTitle = (TextView) findViewById(R.id.header_view_sub_title);
+        }
 		hideOrSetText(this.subTitle, subTitle);
 	}
 
 	private static void hideOrSetText(TextView tv, CharSequence text) {
+        if(tv==null) return;
+
 		if (text == null || text.equals(""))
 			tv.setVisibility(GONE);
 		else

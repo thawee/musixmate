@@ -157,7 +157,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Comment"
-            android:inputType="text"
+            android:inputType="textMultiLine"
             android:imeOptions="actionNext" />
     </android.support.design.widget.TextInputLayout>
 

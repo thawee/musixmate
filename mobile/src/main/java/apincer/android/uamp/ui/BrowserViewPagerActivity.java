@@ -90,7 +90,7 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
     private ViewPager mViewPager;
 
     protected Toast exitToast;
-    protected MediaItem mListeningItem;
+    //protected MediaItem mListeningItem;
 
     protected MediaProvider tagHelper;
 
@@ -128,13 +128,13 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
             permissionManager.checkPermissions(permissions, new PermissionManager.PermissionRequestListener() {
                 @Override
                 public void onPermissionGranted() {
-                    Toast.makeText(BrowserViewPagerActivity.this, "Permissions Granted", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(BrowserViewPagerActivity.this, "Permissions Granted", Toast.LENGTH_SHORT).show();
                     triggerStorageAccessFramework();
                 }
 
                 @Override
                 public void onPermissionDenied() {
-                    Toast.makeText(BrowserViewPagerActivity.this, "Permissions Denied", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(BrowserViewPagerActivity.this, "Permissions Denied", Toast.LENGTH_LONG).show();
                 }
             });
         }catch (Exception ex) {
@@ -149,6 +149,7 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        //getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mHeaderView = (HeaderView) findViewById(R.id.toolbar_header_view);
@@ -214,7 +215,9 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
         if(changedPosition>=0 && mAdapter!=null) {
             mAdapter.notifyItemChanged(changedPosition);
             mHeaderView = (HeaderView) findViewById(R.id.toolbar_header_view);
-            mHeaderView.bindTo(getString(R.string.app_name), mAdapter.getItemCount() +" songs"); //getString(R.string.viewpager));
+            if(mHeaderView!=null) {
+                mHeaderView.bindTo(getString(R.string.app_name), mAdapter.getItemCount() + " songs"); //getString(R.string.viewpager));
+            }
         }
     }
 
@@ -248,11 +251,19 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
             mFragment = (BrowserViewPagerFragment) fragment;
             mAdapter = (BrowserViewPagerFragment.BrowserFlexibleAdapter) recyclerView.getAdapter();
             initializeActionModeHelper(mode);
-        }
-    }
 
-    public BrowserViewPagerFragment getCurrentFragment() {
-        return mSectionsPagerAdapter.getItem(mViewPager.getCurrentItem());
+            if(getIntent()!=null) {
+                try {
+                    Bundle extras = getIntent().getExtras();
+                    String listenTitle = extras.getString("title", "");
+                    String listenArtist = extras.getString("artist", "");
+                    String listenAlbum = extras.getString("album", "");
+                    if (!listenTitle.isEmpty()) {
+                        mAdapter.setListeningTitle(listenTitle, listenArtist, listenAlbum);
+                    }
+                }catch(Exception ignore) {}
+            }
+        }
     }
 
 	/* ======================
@@ -289,7 +300,7 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
     public boolean onPrepareOptionsMenu(Menu menu) {
         LogHelper.v(TAG, "onPrepareOptionsMenu called!");
 
-        if (mSearchView != null) {
+        if (mSearchView != null && mAdapter != null) {
             //Has searchText?
             if (!mAdapter.hasSearchText()) {
                 LogHelper.d(TAG, "onPrepareOptionsMenu Clearing SearchView!");
@@ -311,14 +322,31 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+     /*   int id = item.getItemId();
 
-        if (id == android.R.id.home) {
-            super.onBackPressed();
+        if (id == R.id.action_settings) {
+            onBackPressed();
             return true;
         }
 
-        return super.onOptionsItemSelected(item);
+        if (id == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);*/
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                Intent myIntent = new Intent(this, SettingsActivity.class);
+                //myIntent.putExtra("key", value); //Optional parameters
+                startActivity(myIntent);
+                return true;
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -495,7 +523,7 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
 
     public void initSearchView(final Menu menu) {
         // Associate searchable configuration with the SearchView
-        LogHelper.d(TAG, "onCreateOptionsMenu setup SearchView!");
+        LogHelper.i(TAG, "onCreateOptionsMenu setup SearchView!");
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         MenuItem searchItem = menu.findItem(R.id.action_search);
         if (searchItem != null) {
@@ -510,14 +538,20 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
 
     @Override
     public void setListeningTitle(String listenTitle, String listenArtist) {
-        if(mHeaderView!=null) {
-            mHeaderView.bindTo(getString(R.string.app_name), listenTitle + " - " + listenArtist);
+       /* if(mHeaderView==null) {
+            mHeaderView = (HeaderView) findViewById(R.id.toolbar_header_view);;
         }
+        if(mHeaderView!=null) {
+            mHeaderView.bindTo("Now Listening", listenTitle + " - " + listenArtist);
+        } */
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        //return mFragment.filterItems(newText);
+        LogHelper.i(TAG, "onQueryTextChange called!");
+        if(newText.isEmpty() || newText.length()>2) {
+            return mFragment.filterItems(newText);
+        }
         return false;
     }
 
@@ -625,7 +659,7 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
             //fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.ARTIST));
             //fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.ALBUM));
             fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.SIMILARITY));
-            fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.FILES));
+            //fragmentList.add(BrowserViewPagerFragment.newInstance(MediaTag.MediaTypes.FILES));
         }
 
         @Override

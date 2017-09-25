@@ -86,6 +86,7 @@
 
     <!-- Action -->
     <string name="action_search">Search...</string>
+    <string name="action_settings">Settings</string>
 
     <!-- Action Mode -->
     <string name="action_delete">Delete</string>

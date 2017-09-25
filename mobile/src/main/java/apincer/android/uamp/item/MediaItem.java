@@ -2,7 +2,6 @@ package apincer.android.uamp.item;
 
 import android.animation.Animator;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
@@ -15,14 +14,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.io.Serializable;
 import java.util.List;
 
 import apincer.android.uamp.R;
-import apincer.android.uamp.glide.CoverArtGlideModule;
 import apincer.android.uamp.provider.MediaProvider;
 import apincer.android.uamp.ui.BrowserViewPagerFragment;
 import apincer.android.uamp.ui.MediaTagEditorActivity;
@@ -45,6 +43,8 @@ import eu.davidea.viewholders.FlexibleViewHolder;
 public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
         implements ISectionable<MediaItem.MediaItemViewHolder, HeaderItem>, IFilterable, Serializable {
 
+    private RequestManager glide;
+
     /* The header of this item */
     HeaderItem header;
     private String path;
@@ -52,7 +52,33 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
     private String artist;
     private String album;
     private long duration;
-    private Bitmap iconBitmap;
+    private String mediaType;
+
+    public void setMediaFormat(String mediaFormat) {
+        this.mediaFormat = mediaFormat;
+    }
+
+    public void setMediaBitRate(String mediaBitRate) {
+        this.mediaBitRate = mediaBitRate;
+    }
+
+    public void setMediaSampleRate(String mediaSampleRate) {
+        this.mediaSampleRate = mediaSampleRate;
+    }
+
+    public void setMediaFileSize(String mediaFileSize) {
+        this.mediaFileSize = mediaFileSize;
+    }
+
+    public void setMediaDuration(String mediaDuration) {
+        this.mediaDuration = mediaDuration;
+    }
+
+    private String mediaFormat = "";
+    private String mediaBitRate ="";
+    private String mediaSampleRate = "";
+    private String mediaFileSize = "";
+    private String mediaDuration = "";
 
     private MediaItem(String id) {
         super(id);
@@ -74,6 +100,9 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
     }
 
     public String getArtist() {
+        if("<unknown>".equalsIgnoreCase(artist)) {
+            return "";
+        }
         return artist;
     }
 
@@ -82,6 +111,9 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
     }
 
     public String getAlbum() {
+        if("<unknown>".equalsIgnoreCase(album)) {
+            return "";
+        }
         return album;
     }
 
@@ -95,14 +127,7 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
 
     public void setDuration(long dutation) {
         this.duration = dutation;
-    }
-
-    public Bitmap getIconBitmap() {
-        return iconBitmap;
-    }
-
-    public void setIconBitmap(Bitmap iconBitmap) {
-        this.iconBitmap = iconBitmap;
+        this.mediaDuration = MediaProvider.formatDuration(dutation);
     }
 
     @Override
@@ -152,39 +177,55 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
         }
 
         try {
-            //Glide.with(adapter.getRecyclerView().getContext()).load(this).into(holder.mFlipView.getFrontImageView());
-            Glide.with(adapter.getRecyclerView().getContext()).load(this).apply(RequestOptions.circleCropTransform()).into(holder.mFlipView.getFrontImageView());
-        }catch (Exception ex) {
+            glide.load(this).apply(RequestOptions.circleCropTransform()).into(holder.mFlipView.getFrontImageView());
+        } catch (Exception ex) {
             LogHelper.logToFile("GLIDE", Log.getStackTraceString(ex));
         }
 
         // INNER ANIMATION ImageView - Handle Flip Animation
-	if (adapter.isSelectAll() || adapter.isLastItemInActionMode()) {
-		// Consume the Animation
-		holder.mFlipView.flip(adapter.isSelected(position), 200L);
-	} else {
-        	// Display the current flip status
-        	holder.mFlipView.flipSilently(adapter.isSelected(position));
-	}
+        if (adapter.isSelectAll() || adapter.isLastItemInActionMode()) {
+            // Consume the Animation
+            holder.mFlipView.flip(adapter.isSelected(position), 200L);
+        } else {
+            // Display the current flip status
+            holder.mFlipView.flipSilently(adapter.isSelected(position));
+        }
 
         // In case of searchText matches with Title or with a field this will be highlighted
         if (adapter.hasSearchText()) {
             Utils.highlightText(holder.mTitle, getTitle(), adapter.getSearchText());
             Utils.highlightText(holder.mSubtitle, getSubtitle(), adapter.getSearchText());
-            Utils.highlightText(holder.mExtra, getDisplayPath(), adapter.getSearchText());
-        } else if (((BrowserViewPagerFragment.BrowserFlexibleAdapter)adapter).isListeningTitle(getTitle(),getArtist(), getAlbum())) {
+            Utils.highlightText(holder.mExtra, getRelativePath(), adapter.getSearchText());
+        } else if (((BrowserViewPagerFragment.BrowserFlexibleAdapter) adapter).isListeningTitle(getTitle(), getArtist(), getAlbum())) {
             Utils.highlightText(holder.mTitle, getTitle(), getTitle());
             Utils.highlightText(holder.mSubtitle, getSubtitle(), getSubtitle());
-            holder.mExtra.setText(getDisplayPath());
+            holder.mExtra.setText(getRelativePath());
             //holder.mSubtitle.setText(getSubtitle());
         } else {
             holder.mTitle.setText(getTitle());
             holder.mSubtitle.setText(getSubtitle());
-            holder.mExtra.setText(getDisplayPath());
+            holder.mExtra.setText(getRelativePath());
         }
-        //holder.mSubtitle.setText(getSubtitle());
-        holder.mDuration.setText(MediaProvider.formatDuration(getDuration()));
-        //holder.mExtra.setText(getDisplayPath());
+        holder.mDuration.setText(mediaDuration);
+        holder.mFormat.setText(mediaType.toUpperCase());
+        if(StringUtils.isEmpty(mediaBitRate)) {
+            holder.mBitRate.setVisibility(View.GONE);
+        }else {
+            holder.mBitRate.setText(mediaBitRate);
+            holder.mBitRate.setVisibility(View.VISIBLE);
+        }
+        if(StringUtils.isEmpty(mediaSampleRate)) {
+            holder.mSampleRate.setVisibility(View.GONE);
+        }else {
+            holder.mSampleRate.setText(mediaSampleRate);
+            holder.mSampleRate.setVisibility(View.VISIBLE);
+        }
+        if(StringUtils.isEmpty(mediaFileSize)) {
+            holder.mFileSize.setVisibility(View.GONE);
+        }else {
+            holder.mFileSize.setText(mediaFileSize);
+            holder.mFileSize.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -207,8 +248,29 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
         return displayPath;
     }
 
+    public String getRelativePath() {
+        int musicIndx = displayPath.indexOf("/Music/");
+        if(musicIndx>0) {
+            displayPath = "../" + displayPath.substring(musicIndx + "/Music/".length(), displayPath.length());
+        }
+
+        return displayPath;
+    }
+
     public void setDisplayPath(String displayPath) {
         this.displayPath = displayPath;
+    }
+
+    public RequestManager getGlide() {
+        return glide;
+    }
+
+    public void setGlide(RequestManager glide) {
+        this.glide = glide;
+    }
+
+    public void setMediaType(String mediaType) {
+        this.mediaType = mediaType;
     }
 
     static final class MediaItemViewHolder extends FlexibleViewHolder {
@@ -217,20 +279,33 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
         TextView mTitle;
         TextView mSubtitle;
         TextView mExtra;
+        TextView mFormat;
+        TextView mBitRate;
+        TextView mSampleRate;
+        TextView mFileSize;
         TextView mDuration;
         ImageView mHandleView;
         Context mContext;
         View frontView;
         View rearLeftView;
         View rearRightView;
+        View mediaPanel;
 
         MediaItemViewHolder(View view, FlexibleAdapter adapter) {
             super(view, adapter);
             this.mContext = view.getContext();
             this.mTitle = (TextView) view.findViewById(R.id.title);
             this.mSubtitle = (TextView) view.findViewById(R.id.subtitle);
-            this.mDuration = (TextView) view.findViewById(R.id.duration);
+            //this.mDuration = (TextView) view.findViewById(R.id.duration);
             this.mExtra = (TextView) view.findViewById(R.id.extra);
+            // meta data
+            this.mDuration = (TextView) view.findViewById(R.id.media_duration);
+            this.mediaPanel = view.findViewById(R.id.media_panel);
+            this.mFormat = (TextView) view.findViewById(R.id.media_format);
+            this.mBitRate = (TextView) view.findViewById(R.id.media_bitrate);
+            this.mSampleRate = (TextView) view.findViewById(R.id.media_samplerate);
+            this.mFileSize = (TextView) view.findViewById(R.id.media_filesize);
+
             this.mFlipView = (FlipView) view.findViewById(R.id.image);
             this.mFlipView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -264,7 +339,6 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
         public void onClick(View view) {
             super.onClick(view);
             if(mAdapter.getMode()== SelectableAdapter.Mode.SINGLE) {
-                mAdapter.clearSelection();
                 int position = getAdapterPosition();
                 if (!MediaTagEditorActivity.navigate(((BrowserViewPagerFragment.BrowserFlexibleAdapter)mAdapter).getActivity(), ((MediaItem) this.mAdapter.getItem(position)),position)) {
                     mAdapter.removeItem(position);
@@ -342,6 +416,13 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
             swiped = (mActionState == ItemTouchHelper.ACTION_STATE_SWIPE);
             super.onItemReleased(position);
         }
+    }
+
+    public boolean isTagSupported() {
+        if("WAV".equalsIgnoreCase(mediaType)) {
+            return false;
+        }
+        return true;
     }
 
 }

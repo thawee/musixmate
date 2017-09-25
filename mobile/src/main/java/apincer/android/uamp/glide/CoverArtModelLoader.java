@@ -72,9 +72,12 @@ public class CoverArtModelLoader implements ModelLoader<MediaItem,InputStream> {
         public void loadData(Priority priority, DataCallback<? super InputStream> callback) {
             try {
                 inputStream = mediaprovider.openCoverArtInputStream(model);
-                callback.onDataReady(inputStream);
+                if (inputStream!=null) {
+                    callback.onDataReady(inputStream);
+                }else {
+                    callback.onLoadFailed(new Exception("No Cover Art"));
+                }
             } catch (Exception e) {
-                LogHelper.logToFile("GLIDE", Log.getStackTraceString(e));
                 callback.onLoadFailed(e);
                 return;
             }

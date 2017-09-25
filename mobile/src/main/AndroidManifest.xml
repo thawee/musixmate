@@ -56,19 +56,25 @@
                 android:value=".ui.BrowserViewPagerActivity"/>
         </activity>
 
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:screenOrientation="portrait"
+            android:label="@string/app_name">
+        </activity>
+
         <!-- Main music service, provides media browsing and media playback services to
          consumers through MediaBrowserService and MediaSession. Consumers connect to it through
          MediaBrowser (for browsing) and MediaController (for play session control) -->
         <service
             android:name=".MusicService"
-            android:exported="false"
-            tools:ignore="ExportedService">
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibilityservice"/>
         </service>
-
-        <meta-data
-            android:name="apincer.android.uamp.glide.CoverArtGlideModule"
-            android:value="GlideModule" />
-
     </application>
 
 </manifest>

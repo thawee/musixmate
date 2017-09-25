@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -19,7 +20,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.TextView;
 
 import com.intentfilter.androidpermissions.PermissionManager;
@@ -137,16 +137,12 @@ public class BrowserViewPagerFragment extends Fragment {
 		// start listener
 		IntentFilter iF = new IntentFilter();
 		iF.addAction(MusicService.LISTENING_INTENT);
-		getActivity().registerReceiver(mReceiver, iF);
-
+		LocalBroadcastManager.getInstance(getContext()).registerReceiver(mReceiver,iF);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-        if(mReceiver!=null) {
-			getActivity().unregisterReceiver(mReceiver);
-		}
 	}
 
 	@Override
@@ -210,18 +206,18 @@ public class BrowserViewPagerFragment extends Fragment {
     public void showFloatingActionBar() {
         if (mAdapter!=null && mAdapter.hasSearchText()) return; // not show on searching
 
-	if(!StringUtils.isEmpty(listenTitle)) {
+	    if(!StringUtils.isEmpty(listenTitle) && mListener!=null) {
             mListener.setListeningTitle(listenTitle, listenArtist);
 	    //lblFabListeningAction.setText(StringUtils.truncate(listenTitle, 40));
 	    //linFabListeningAction.setVisibility(View.VISIBLE);
-	    if(mMediaType == MediaTag.MediaTypes.SONGS) {
-		ViewCompat.animate(fabListeningAction)
+	        if(mMediaType == MediaTag.MediaTypes.SONGS) {
+		    ViewCompat.animate(fabListeningAction)
 				.scaleX(1f).scaleY(1f)
 				.alpha(1f).setDuration(200)
 				.setStartDelay(300L)
 				.start();
+	        }
 	    }
-	}
     }
 
     public void hideFloatingActionBar() {
@@ -236,12 +232,15 @@ public class BrowserViewPagerFragment extends Fragment {
 	// Initialize Adapter and RecyclerView
 	mAdapter = new BrowserFlexibleAdapter(loadMediaItems(false), getActivity());
 	mAdapter.setListeningMode(mMediaType == MediaTag.MediaTypes.SONGS);
+		//
+		mAdapter.setAnimationOnScrolling(true);
+		mAdapter.setAnimationOnReverseScrolling(true);
 
 	// Experimenting NEW features (v5.0.0)
-        mAdapter.setOnlyEntryAnimation(true)
-                .setAnimationInterpolator(new DecelerateInterpolator())
-                .setAnimationInitialDelay(500L)
-                .setAnimationDelay(70L);
+     //   mAdapter.setOnlyEntryAnimation(true)
+      //          .setAnimationInterpolator(new DecelerateInterpolator())
+      //          .setAnimationInitialDelay(500L)
+      //          .setAnimationDelay(70L);
 
 	mRecyclerView = (RecyclerView) getView().findViewById(R.id.recycler_view);
         mRecyclerView.setItemViewCacheSize(0); //Setting ViewCache to 0 (default=2) will animate items better while scrolling down+up with LinearLayout
@@ -273,7 +272,12 @@ public class BrowserViewPagerFragment extends Fragment {
 	fastScroller.setVisibility(View.VISIBLE);
 	// Finally, assign the Fastscroller to the Adapter
 	mAdapter.setFastScroller(fastScroller);
-        mAdapter.toggleFastScroller();
+        //mAdapter.setLongPressDragEnabled(true) //Enable long press to drag items
+         //.setHandleDragEnabled(true) //Enable handle drag (handle view must be set in the VH)
+     //mAdapter.setSwipeEnabled(true); //Enable swipe items
+     mAdapter.setDisplayHeadersAtStartUp(true); //Show Headers at startUp!
+        mAdapter.setStickyHeaders(true); //Make headers sticky (headers need to be shown)!
+      mAdapter.toggleFastScroller();
 
 	mSwipeRefreshLayout = (SwipeRefreshLayout) getView().findViewById(R.id.swipeRefreshLayout);
 	mSwipeRefreshLayout.setEnabled(true);
@@ -355,7 +359,6 @@ public class BrowserViewPagerFragment extends Fragment {
         permissionManager.checkPermissions(permissions, new PermissionManager.PermissionRequestListener() {
             @Override
             public void onPermissionGranted() {
-
                 switch (mMediaType) {
                     case SONGS:
                         //all songs
@@ -377,7 +380,11 @@ public class BrowserViewPagerFragment extends Fragment {
                         // all songs
                         mediaItemList.addAll(mProvider.getAllSongList(forceReload));
                 }
+                if(mActionModeHelper!=null) {
+					mActionModeHelper.destroyActionModeIfCan();
+            	}
             }
+
 
             @Override
             public void onPermissionDenied() {
@@ -397,10 +404,6 @@ public class BrowserViewPagerFragment extends Fragment {
     public int getContextMenuResId() {
         //default Menu Context is returned
         return R.menu.menu_context;
-    }
-
-    public List<MediaItem> getMediaItems() {
-        return mediaItems;
     }
 
     public void reloadMediaItems(boolean forceReload) {
@@ -425,18 +428,20 @@ public class BrowserViewPagerFragment extends Fragment {
         }
         // Disable SwipeRefresh if search is active!!
         if(StringUtils.isEmpty(newText)) {
-			mSwipeRefreshLayout.setEnabled(false);
-			hideFloatingActionBar();
+            mSwipeRefreshLayout.setEnabled(true);
+            showFloatingActionBar();
 		}else {
-			mSwipeRefreshLayout.setEnabled(true);
-			showFloatingActionBar();
+            mSwipeRefreshLayout.setEnabled(false);
+            hideFloatingActionBar();
 		}
 
         return true;
     }
 
     public void onPageSelected() {
-        mListener.onFragmentChange(this, mSwipeRefreshLayout, mRecyclerView, selectionMode);
+		if(mListener!=null) {
+			mListener.onFragmentChange(this, mSwipeRefreshLayout, mRecyclerView, selectionMode);
+		}
     }
 
     // Internal class
@@ -489,8 +494,8 @@ public class BrowserViewPagerFragment extends Fragment {
 	public boolean setListeningTitle(String newTitle, String newArtist, String newAlbum) {
 		listenTitle = newTitle;
 		listenArtist = newArtist;
-            listenAlbum = newAlbum;
-            mListener.setListeningTitle(listenTitle,listenArtist);
+        listenAlbum = newAlbum;
+        mListener.setListeningTitle(listenTitle,listenArtist);
 		int position = scrollToPositionByTitle(8);
 		if(position<0) return false;
 

@@ -75,4 +75,8 @@
     <color name="list_choice_normal_bg_light">#fffafafa</color>
     <color name="list_choice_pressed_bg_light">#fddd</color>
 
+    <color name="devider">#757575</color>
+    <color name="text_info_roundect_value">#000000</color>
+    <color name="text_info_roundect_value_invert">#ffffff</color>
+
 </resources>

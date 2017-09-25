@@ -3,6 +3,12 @@ package apincer.android.uamp.provider;
 import android.graphics.Bitmap;
 
 public class MediaTag {
+    public String getMediaBitsPerSample() {
+        return mediaBitsPerSample;
+    }
+
+    public String mediaBitsPerSample;
+
     public String getDisplayPath() {
         return displayPlath;
     }
@@ -10,6 +16,12 @@ public class MediaTag {
     public enum MediaTypes {SONGS,SIMILARITY,FILES}
     protected String mediaPath;
     protected String displayPlath;
+
+    public String getMediaFormat() {
+        return mediaFormat;
+    }
+
+    protected String mediaFormat;
     protected String mediaSampleRate;
     protected String mediaBitrate;
     protected String mediaSize;

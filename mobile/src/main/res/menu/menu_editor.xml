@@ -16,6 +16,29 @@
   -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto" >
+
+    <group android:id="@+id/grpFormat">
+        <item
+            android:icon="@drawable/ic_border_color_black_24dp"
+            android:id="@+id/menu_format_tag"
+            android:title="Edit Media Tag"
+            app:showAsAction="always|withText"/>
+    </group>
+    <group android:id="@+id/grpTag">
+        <item
+            android:icon="@drawable/ic_tag_outline_black_24dp"
+            android:id="@+id/menu_get_tag"
+            android:title="Edit Media Tag"
+            app:showAsAction="always|withText"/>
+    </group>
+    <group android:id="@+id/grpFile">
+        <item
+            android:icon="@drawable/ic_library_music_black_24dp"
+            android:id="@+id/menu_manage_file"
+            android:title="Manage Media File"
+            app:showAsAction="always|withText"/>
+    </group>
+    <!--
     <group android:id="@+id/grpFile">
         <item
             android:icon="@drawable/ic_delete_black_24dp"
@@ -28,13 +51,15 @@
             android:title="Organize media file"
             app:showAsAction="always|withText"/>
     </group>
+    -->
+    <!--
     <group android:id="@+id/grpMedia">
         <item
             android:icon="@drawable/ic_border_color_black_24dp"
             android:id="@+id/menu_edit_tag"
             android:title="Edit Media Tag"
             app:showAsAction="always|withText"/>
-        <!--
+
        <item
            android:icon="@drawable/ic_label_outline_black_24dp"
            android:id="@+id/menu_tag_from_filename"
@@ -53,6 +78,6 @@
                    android:id="@+id/menu_language"
                    android:title="Change language"
                    app:showAsAction="always|withText"/>
-                   -->
-    </group>
+
+    </group>-->
 </menu>

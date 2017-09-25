@@ -5,7 +5,7 @@ import java.util.Locale;
 
 public class StringUtils {
 
-    public static String MUSIC_SEP = " "+(char)166+" ";
+    public static String MUSIC_SEP = "/"; //+(char)166+"";
 
     public static boolean isEmpty(String input) {
         if(input == null) {
@@ -21,7 +21,7 @@ public class StringUtils {
         if (StringUtils.isEmpty(str) || delimLen == 0) {
             return str;
         }
-        final char[] buffer = str.toLowerCase().toCharArray();
+        final char[] buffer = str.toCharArray();
         boolean capitalizeNext = true;
         for (int i = 0; i < buffer.length; i++) {
             final char ch = buffer[i];
@@ -30,6 +30,8 @@ public class StringUtils {
             } else if (capitalizeNext) {
                 buffer[i] = Character.toTitleCase(ch);
                 capitalizeNext = false;
+            }else {
+                buffer[i] = Character.toLowerCase(ch);
             }
         }
         return new String(buffer);
@@ -168,5 +170,10 @@ public class StringUtils {
         int start = boundary.first();
         int end = boundary.next();
         return text.substring(start, end);
+    }
+
+    public static String trimToEmpty(String substring) {
+        if(substring==null) return "";
+        return substring.trim();
     }
 }

@@ -44,7 +44,22 @@
 	<include layout="@layout/empty_view"/>
 	<!-- FastScroller Layout must be at the end of ViewHierarchy
 		 in order to be displayed at the top of every views -->
-	<include layout="@layout/fast_scroller"/>
+	<!--include layout="@layout/fast_scroller"/-->
+	<eu.davidea.fastscroller.FastScroller
+		android:id="@+id/fast_scroller"
+		android:layout_width="wrap_content"
+		android:layout_height="match_parent"
+		android:layout_centerHorizontal="true"
+		android:layout_alignTop="@+id/swipeRefreshLayout"
+		android:layout_alignBottom="@+id/swipeRefreshLayout"
+		android:layout_alignParentEnd="true"
+		android:layout_alignParentRight="true"
+		app:fastScrollerAutoHideEnabled="true"
+		app:fastScrollerAutoHideDelayInMillis="1000"
+		app:fastScrollerBubblePosition="adjacent"
+		app:fastScrollerBubbleEnabled="true"
+		app:fastScrollerIgnoreTouchesOutsideHandle="false"
+		tools:visibility="visible"/>
 
 	<!-- FAB -->
 	<!--

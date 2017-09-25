@@ -17,11 +17,15 @@ package apincer.android.uamp.ui;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -38,11 +42,14 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.transition.Slide;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,11 +58,12 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 
+import apincer.android.uamp.MusicService;
 import apincer.android.uamp.R;
-import apincer.android.uamp.file.AndroidFile;
 import apincer.android.uamp.item.MediaItem;
 import apincer.android.uamp.provider.MediaProvider;
 import apincer.android.uamp.provider.MediaTag;
+import apincer.android.uamp.provider.TagReader;
 import apincer.android.uamp.utils.LogHelper;
 import apincer.android.uamp.utils.StringUtils;
 
@@ -83,11 +91,11 @@ public class MediaTagEditorActivity extends AppCompatActivity {
     private long mediaDuration;
     private int mediaPosition;
     private TextView mTitleView;
-    private TextView mArtistView;
-    private TextView mAlbumView;
+    private AutoCompleteTextView mArtistView;
+    private AutoCompleteTextView mAlbumView;
     private TextView mAlbumArtistView;
     private TextView mGenreView;
-    private TextView mCountryView;
+    private AutoCompleteTextView mCountryView;
     private TextView mCommentView;
     private TextView mLyricsView;
     private TextView mTrackView;
@@ -165,10 +173,26 @@ public class MediaTagEditorActivity extends AppCompatActivity {
             mMediaPathView.setText(tagUpdate.getDisplayPath());
 
             // file info
-            mMediaInfoView = (TextView) findViewById(R.id.media_info);
-            mMediaInfoView.setText(tagUpdate.getMediaDuration()+ StringUtils.MUSIC_SEP+tagUpdate.getMediaSampleRate()+StringUtils.MUSIC_SEP+tagUpdate.getMediaBitrate()+StringUtils.MUSIC_SEP+tagUpdate.getMediaSize());
+           // mMediaInfoView = (TextView) findViewById(R.id.media_info);
+           // mMediaInfoView.setText(tagUpdate.getMediaDuration()+ StringUtils.MUSIC_SEP+tagUpdate.getMediaSampleRate()+StringUtils.MUSIC_SEP+tagUpdate.getMediaBitrate()+StringUtils.MUSIC_SEP+tagUpdate.getMediaSize());
 
-            // title
+           TextView view = (TextView) findViewById(R.id.media_format);
+           view.setText(tagUpdate.getMediaFormat());
+
+        view = (TextView) findViewById(R.id.media_samplerate);
+        view.setText(tagUpdate.getMediaBitsPerSample()+ StringUtils.MUSIC_SEP+tagUpdate.getMediaSampleRate());
+
+        view = (TextView) findViewById(R.id.media_bitrate);
+        view.setText(tagUpdate.getMediaBitrate());
+
+           view = (TextView) findViewById(R.id.media_duration);
+           view.setText(tagUpdate.getMediaDuration());
+
+        view = (TextView) findViewById(R.id.media_filesize);
+        view.setText(tagUpdate.getMediaSize());
+
+
+        // title
             mTitleView = (TextView) findViewById(R.id.title);
             mTitleView.setText(tagUpdate.getTitle());
             setTitle("");
@@ -180,7 +204,7 @@ public class MediaTagEditorActivity extends AppCompatActivity {
             });
 
             // artist
-            mArtistView = (TextView) findViewById(R.id.artist);
+            mArtistView = (AutoCompleteTextView) findViewById(R.id.artist);
             mArtistView.setText(tagUpdate.getArtist());
             mArtistView.addTextChangedListener(new ViewTextWatcher(mArtistView) {
                 @Override
@@ -188,9 +212,12 @@ public class MediaTagEditorActivity extends AppCompatActivity {
                     tagUpdate.softSetArtist(String.valueOf(view.getText()));
                 }
             });
+            ArrayAdapter<String> artistAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item,mediaStoreHelper.getArtistsAsArray());
+            mArtistView.setThreshold(2);//will start working from second character
+            mArtistView.setAdapter(artistAdapter); //setting the adapter data into the AutoCompleteTextView
 
             // album
-            mAlbumView = (TextView) findViewById(R.id.album);
+            mAlbumView = (AutoCompleteTextView) findViewById(R.id.album);
             mAlbumView.setText(tagUpdate.getAlbum());
             mAlbumView.addTextChangedListener(new ViewTextWatcher(mAlbumView) {
                 @Override
@@ -198,6 +225,9 @@ public class MediaTagEditorActivity extends AppCompatActivity {
                     tagUpdate.softSetAlbum(String.valueOf(view.getText()));
                 }
             });
+        ArrayAdapter<String> albumAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item,mediaStoreHelper.getAlbumAsArray());
+        mAlbumView.setThreshold(2);//will start working from second character
+        mAlbumView.setAdapter(albumAdapter); //setting the adapter data into the AutoCompleteTextView
 
             // album artist
             mAlbumArtistView = (TextView) findViewById(R.id.album_arist);
@@ -250,7 +280,7 @@ public class MediaTagEditorActivity extends AppCompatActivity {
             });
 
             // country
-            mCountryView = (TextView) findViewById(R.id.country);
+            mCountryView = (AutoCompleteTextView) findViewById(R.id.country);
             mCountryView.setText(tagUpdate.getCountry());
             mCountryView.addTextChangedListener(new ViewTextWatcher(mCountryView) {
                 @Override
@@ -258,6 +288,11 @@ public class MediaTagEditorActivity extends AppCompatActivity {
                     tagUpdate.softSetCountry(String.valueOf(view.getText()));
                 }
             });
+
+            String [] langs = {"eng","tha"};
+            ArrayAdapter<String> countryAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item,langs);
+            mCountryView.setThreshold(0);//will start working from first character
+            mCountryView.setAdapter(countryAdapter); //setting the adapter data into the AutoCompleteTextView
 
             // comment
             mCommentView = (TextView) findViewById(R.id.comment);
@@ -285,109 +320,6 @@ public class MediaTagEditorActivity extends AppCompatActivity {
                 image.setImageBitmap(tagUpdate.getArtwork());
             }
     }
-
-/*
-    private void showTagFromFilenamePopMenu() {
-        View anchor = findViewById(R.id.menu_tag_from_filename);
-
-        final PopupMenu popupMenu = new PopupMenu(this,anchor);
-        makePopForceShowIcon(popupMenu);
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                // load from media file
-                tagUpdate = mediaStoreHelper.getMediaTag( mediaPath,mediaDuration);
-                File file = new File(mediaPath);
-                if(!file.exists()) return true;
-
-                String title = AndroidFile.getNameWithoutExtension(file);
-                String artist = "";
-                String album = "";
-                String albumArtist = "";
-                String track = "";
-                switch (item.getItemId()) {
-                    case R.id.menu_label_default:
-                        //format artist/album/track title
-                        file = file.getParentFile();
-                        if(file!=null) {
-                            album = file.getName();
-                        }
-                        file = file.getParentFile();
-                        if(file!=null) {
-                            artist = file.getName();
-                        }
-                        break;
-                    case R.id.menu_label_default_albumartist:
-                        //format albumartist/album/track arist-title
-                        file = file.getParentFile();
-                        if(file!=null) {
-                            album = file.getName();
-                        }
-                        file = file.getParentFile();
-                        if(file!=null) {
-                            albumArtist = file.getName();
-                        }
-                        break;
-                    case R.id.menu_label_folder_artist:
-                        //replace title/album by filename, artist by folder
-                        file = file.getParentFile();
-                        if(file!=null) {
-                            album = file.getName();
-                            artist = album;
-                            albumArtist = album;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                updateTagByFilename(title, artist, album,albumArtist, track);
-                showFab();
-                return true;
-            }
-        });
-        popupMenu.inflate(R.menu.menu_tag_from_file);
-        for(int cn=0; cn< popupMenu.getMenu().size();cn++) {
-            MenuItem item = popupMenu.getMenu().getItem(cn);
-            setColorFilter(item, R.color.menu_editor_background);
-        }
-        popupMenu.show();
-    }*/
-
-    /*
-    private void showLanguagePopMenu() {
-         View anchor = findViewById(R.id.menu_language);
-
-        final PopupMenu popupMenu = new PopupMenu(this,anchor);
-        makePopForceShowIcon(popupMenu);
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                String charset=null;
-                switch (item.getItemId()) {
-                    case R.id.menu_charset_default:
-                        charset = null;
-                        break;
-                    case R.id.menu_charset_thai:
-                        charset = "TIS-620";
-                        break;
-                    case R.id.menu_charset_unicode:
-                        charset = "UTF-8";
-                        break;
-                    default:
-                        break;
-                }
-                updateViewByCharset(charset);
-                showFab();
-                return true;
-            }
-        });
-        popupMenu.inflate(R.menu.menu_charset);
-        for(int cn=0; cn< popupMenu.getMenu().size();cn++) {
-            MenuItem item = popupMenu.getMenu().getItem(cn);
-            setColorFilter(item, R.color.menu_editor_background);
-        }
-        popupMenu.show();
-    } */
 
     private void makePopForceShowIcon(PopupMenu popupMenu) {
         try {
@@ -445,7 +377,7 @@ public class MediaTagEditorActivity extends AppCompatActivity {
         alert.setPositiveButton(getString(R.string.alert_delete_confirm), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                playNextSong(tagUpdate);
                 if(mediaStoreHelper.deleteMediaFile(mediaPath,findViewById(R.id.main_view))) {
                     hideFab();
                     saveResult("DELETED", tagUpdate.getMediaPath(),null);
@@ -461,6 +393,16 @@ public class MediaTagEditorActivity extends AppCompatActivity {
             }
         });
         alert.show();
+    }
+
+    private void playNextSong(MediaTag tagUpdate) {
+        MusicService service = MusicService.getRunningService();
+        if(service!=null && trimText(service.getCurrentTitle()).equalsIgnoreCase(trimText(tagUpdate.getTitle()))) {
+       // if(trimText(listenTitle).equals(trimText(tagUpdate.getTitle()))) {
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT);
+            audioManager.dispatchMediaKeyEvent(event);
+        }
     }
 
     private void saveResult(String organized, String path, String oldPath) {
@@ -538,6 +480,16 @@ public class MediaTagEditorActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         switch (id) {
+            case R.id.menu_manage_file:
+                showFilePopMenu();
+                break;
+            case R.id.menu_get_tag:
+                showGetTagPopMenu();
+                break;
+            case R.id.menu_format_tag:
+                showFormatTagPopMenu();
+                break;
+            /*
             case R.id.menu_delete:
                 deleteMediaItem();
                 break;
@@ -546,23 +498,138 @@ public class MediaTagEditorActivity extends AppCompatActivity {
                 break;
             case R.id.menu_edit_tag:
                 showEditTagPopMenu();
-                break;
-            /*
-            case R.id.menu_tag_from_filename:
-                showTagFromFilenamePopMenu();
-                break;
-            case R.id.menu_language:
-                showLanguagePopMenu();
-                break;
-            case R.id.menu_format_tag:
-                formatTag();
-                break;
-                */
+                break;*/
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    private void showFilePopMenu() {
+        View anchor = findViewById(R.id.menu_manage_file);
+
+        final PopupMenu popupMenu = new PopupMenu(this,anchor);
+        makePopForceShowIcon(popupMenu);
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.menu_delete:
+                        deleteMediaItem();
+                        break;
+                    case R.id.menu_organize:
+                        organizeMediaItem();
+                        break;
+                    default:
+                        break;
+                }
+
+                showFab();
+                return true;
+            }
+        });
+        popupMenu.inflate(R.menu.menu_editor_file);
+        for(int cn=0; cn< popupMenu.getMenu().size();cn++) {
+            MenuItem item = popupMenu.getMenu().getItem(cn);
+            setColorFilter(item, R.color.menu_editor_background);
+        }
+        popupMenu.show();
+    }
+
+
+    private void showGetTagPopMenu() {
+        View anchor = findViewById(R.id.menu_get_tag);
+
+        final PopupMenu popupMenu = new PopupMenu(this,anchor);
+        makePopForceShowIcon(popupMenu);
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                // load from media file
+                // tagUpdate = mediaStoreHelper.getMediaTag( mediaPath,mediaDuration);
+                File file = new File(mediaPath);
+                if(!file.exists()) return true;
+
+                TagReader reader = new TagReader();
+                TagReader.Tag tag = null;
+
+                switch (item.getItemId()) {
+                    case R.id.menu_label_simple:
+                        //format artist/album/track title
+                        tag = reader.parser(mediaPath, TagReader.READ_MODE.SIMPLE);
+                        updateTagByFilename(tag);
+                        break;
+                    case R.id.menu_label_smart_reader:
+                        tag = reader.parser(mediaPath, TagReader.READ_MODE.SM1);
+                        updateTagByFilename(tag);
+                        break;
+                    case R.id.menu_label_smart_reader2:
+                        tag = reader.parser(mediaPath, TagReader.READ_MODE.SM2);
+                        updateTagByFilename(tag);
+                        break;
+                    case R.id.menu_label_hierarchy:
+                        tag = reader.parser(mediaPath, TagReader.READ_MODE.HIERARCHY);
+                        updateTagByFilename(tag);
+                        break;
+                    case R.id.menu_label_internet:
+                        // search net
+                        // popup result for selecting, albumart, and text (title, album, artist, etc)
+                        break;
+                    default:
+                        break;
+                }
+
+                //load from media file
+                tagUpdate = mediaStoreHelper.getMediaTag( mediaPath,mediaDuration);
+                showFab();
+                return true;
+            }
+        });
+        popupMenu.inflate(R.menu.menu_editor_tag);
+        for(int cn=0; cn< popupMenu.getMenu().size();cn++) {
+            MenuItem item = popupMenu.getMenu().getItem(cn);
+            setColorFilter(item, R.color.menu_editor_background);
+        }
+        popupMenu.show();
+    }
+
+    private void showFormatTagPopMenu() {
+        View anchor = findViewById(R.id.menu_format_tag);
+
+        final PopupMenu popupMenu = new PopupMenu(this,anchor);
+        makePopForceShowIcon(popupMenu);
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+
+                switch (item.getItemId()) {
+                    case R.id.menu_charset_default:
+                        updateViewByCharset(null);
+                        break;
+                    case R.id.menu_charset_thai:
+                        updateViewByCharset("TIS-620");
+                        break;
+                    case R.id.menu_charset_unicode:
+                        updateViewByCharset("UTF-8");
+                        break;
+                    case R.id.menu_format_tag:
+                        formatTag();
+                        break;
+                    default:
+                        break;
+                }
+
+                showFab();
+                return true;
+            }
+        });
+        popupMenu.inflate(R.menu.menu_editor_format);
+        for(int cn=0; cn< popupMenu.getMenu().size();cn++) {
+            MenuItem item = popupMenu.getMenu().getItem(cn);
+            setColorFilter(item, R.color.menu_editor_background);
+        }
+        popupMenu.show();
+    }
+/*
     private void showEditTagPopMenu() {
         View anchor = findViewById(R.id.menu_edit_tag);
 
@@ -572,61 +639,41 @@ public class MediaTagEditorActivity extends AppCompatActivity {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 // load from media file
-                tagUpdate = mediaStoreHelper.getMediaTag( mediaPath,mediaDuration);
+               // tagUpdate = mediaStoreHelper.getMediaTag( mediaPath,mediaDuration);
                 File file = new File(mediaPath);
                 if(!file.exists()) return true;
 
-                String title = AndroidFile.getNameWithoutExtension(file);
-                String artist = "";
-                String album = "";
-                String albumArtist = "";
-                String track = "";
-                String comment = mediaPath;
+                TagReader reader = new TagReader();
+                TagReader.Tag tag = null;
+
+              //  String title = AndroidFile.getNameWithoutExtension(file);
+              //  String artist = "";
+              //  String album = "";
+              //  String albumArtist = "";
+              //  String track = "";
+              //  String comment = mediaPath;
+
                 switch (item.getItemId()) {
-                    case R.id.menu_label_default:
+                    case R.id.menu_label_simple:
                         //format artist/album/track title
-                        album = title;
-                        artist = title;
-                        updateTagByFilename(title, artist, album,albumArtist, track, comment);
+                        tag = reader.parser(mediaPath, TagReader.READ_MODE.SIMPLE);
+                        //album = title;
+                        //artist = title;
+                        //updateTagByFilename(title, artist, album,albumArtist, track, comment);
+                        updateTagByFilename(tag);
                         break;
                     case R.id.menu_label_smart_reader:
-                    case R.id.menu_label_smart_reader2:
-                        //<tract>. <arist> (<featering>) - <tltle>
-                        String featuring = "";
-                        int trackIndx = title.indexOf(".");
-                        int titleIndx = title.indexOf("- ");
-                        if(trackIndx>0) {
-                            track = title.substring(0, trackIndx);
-                        }
-                        if(trackIndx>0 && titleIndx>0) {
-                            artist = title.substring(trackIndx+1,titleIndx);
-                            if(artist.indexOf("(") >0 && artist.indexOf(")") >0) {
-                                featuring = artist.substring(artist.indexOf("(")+1, artist.indexOf(")"));
-                                artist = artist.substring(0, artist.indexOf("("));
-                            }
-                        }
-
-                        if(titleIndx>0) {
-                            title = title.substring(titleIndx+1, title.length()) + " "+featuring;
-                        }
-                        title.trim();
-                        track.trim();
-                        artist.trim();
-                        if(item.getItemId() == R.id.menu_label_smart_reader) {
-                            updateTagByFilename(title, artist, album, albumArtist, track, comment);
-                        }else {
-                            updateTagByFilename(artist, title, album, albumArtist, track, comment);
-                        }
+                        tag = reader.parser(mediaPath, TagReader.READ_MODE.SM1);
+                        updateTagByFilename(tag);
                         break;
-                    case R.id.menu_label_folder_artist:
+                    case R.id.menu_label_smart_reader2:
+                        tag = reader.parser(mediaPath, TagReader.READ_MODE.SM2);
+                        updateTagByFilename(tag);
+                        break;
+                    case R.id.menu_label_hierarchy:
                         //replace title/album by filename, artist by folder
-                        file = file.getParentFile();
-                        if(file!=null) {
-                            album = file.getName();
-                            artist = album;
-                            albumArtist = album;
-                        }
-                        updateTagByFilename(title, artist, album,albumArtist, track, comment);
+                        tag = reader.parser(mediaPath, TagReader.READ_MODE.HIERARCHY);
+                        updateTagByFilename(tag);
                         break;
                     case R.id.menu_charset_default:
                         updateViewByCharset(null);
@@ -643,35 +690,63 @@ public class MediaTagEditorActivity extends AppCompatActivity {
                     default:
                         break;
                 }
+
+                //load from media file
+                tagUpdate = mediaStoreHelper.getMediaTag( mediaPath,mediaDuration);
                 showFab();
                 return true;
             }
         });
-        popupMenu.inflate(R.menu.menu_editor_extras);
+        popupMenu.inflate(R.menu.menu_editor_format);
         for(int cn=0; cn< popupMenu.getMenu().size();cn++) {
             MenuItem item = popupMenu.getMenu().getItem(cn);
             setColorFilter(item, R.color.menu_editor_background);
         }
         popupMenu.show();
     }
+*/
+    private void updateTagByFilename(TagReader.Tag tag) {
+        // title
+        mTitleView.setText(trimText(tag.getTitle()));
+        // artist
+        mArtistView.setText(trimText(tag.getArtist()));
+        // album
+        mAlbumView.setText(trimText(tag.getAlbum()));
+        // album artist
+        mAlbumArtistView.setText("");
+
+        // album artist
+        //mCommentView.setText(formatText(comment));
+        // album artist
+        mTrackView.setText(trimText(tag.getTrack()));
+    }
 
     private void updateTagByFilename(String title, String artist, String album,String albumArtist, String track, String comment) {
         // title
-        mTitleView.setText(formatText(title));
+        mTitleView.setText(trimText(title));
         // artist
-        mArtistView.setText(formatText(artist));
+        mArtistView.setText(trimText(artist));
         // album
-        mAlbumView.setText(formatText(album));
+        mAlbumView.setText(trimText(album));
         // album artist
         if(artist.equals(albumArtist)) {
             mAlbumArtistView.setText("");
         }else {
-            mAlbumArtistView.setText(formatText(albumArtist));
+            mAlbumArtistView.setText(trimText(albumArtist));
         }
         // album artist
         //mCommentView.setText(formatText(comment));
         // album artist
-        mTrackView.setText(formatText(track));
+        mTrackView.setText(trimText(track));
+    }
+
+    private String trimText(String text) {
+        // trim space
+        // format as word, first letter of word is capital
+        if(text==null) {
+            return "";
+        }
+        return text.trim();
     }
 
     private void formatTag() {
@@ -686,6 +761,11 @@ public class MediaTagEditorActivity extends AppCompatActivity {
         // genre
         mGenreView.setText(formatText(mGenreView.getText()));
 
+        // clean albumArtist if same value as artist
+        if(mArtistView.getText().equals(mAlbumArtistView.getText())) {
+            mAlbumArtistView.setText("");
+        }
+
         showFab();
     }
 
@@ -696,7 +776,8 @@ public class MediaTagEditorActivity extends AppCompatActivity {
             return "";
         }
         String str = text.toString().trim();
-        return StringUtils.capitalize(str, ' ');
+        char [] delimiters = {' ','.','(','['};
+        return StringUtils.capitalize(str, delimiters);
     }
 
     @Override
