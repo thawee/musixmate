@@ -568,5 +568,12 @@ public class BrowserViewPagerFragment extends Fragment {
         public String getDisplayPath(String path) {
             return mProvider.getDisplayPath(path);
         }
+
+		public void deleteMedia(int position, View view) {
+			MediaItem item = getItem(position);
+			if(mProvider.deleteMediaFile(item.getPath(), view )) {
+				removeItem(position);
+			}
+		}
     }
 }

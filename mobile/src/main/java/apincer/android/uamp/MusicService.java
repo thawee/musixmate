@@ -2,24 +2,21 @@ package apincer.android.uamp;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
-import android.app.ActivityManager;
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
-import android.media.MediaMetadata;
-import android.media.session.MediaSession;
-import android.media.session.PlaybackState;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.os.SystemClock;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.NotificationCompat;
+import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 import android.widget.RemoteViews;
 
@@ -37,14 +34,19 @@ import apincer.android.uamp.utils.StringUtils;
  */
 
 public class MusicService extends AccessibilityService {
+    private static final  int NOTIFICATION_ID = 19099;
+    public static final String UNKNOWN = "<unknown>";
     private String TAG = LogHelper.makeLogTag(MusicService.class);
-    private AudioManager mAudioManager;
-    private MediaSession mMediaSession;
     private Context context;
     private static MusicService instance;
     private String currentTitle;
     private String currentArtist;
     private String currentAlbum;
+
+    public static final String INTENT_PLAYBACK_COMPLETE = "com.android.music.playbackcomplete";
+    public static final String INTENT_META_CHANGED = "com.android.music.metachanged";
+    public static final String INTENT_PLAY_STATE_CHANGED = "com.android.music.playstatechanged";
+    public static final String INTENT_NEUTRON_NEXT_SONG = "com.neutroncode.mp.ACTION_PLAYER_NEXT";
 
     public static final String LISTENING_INTENT = "apincer.android.uamp.ListeningIntent";
 
@@ -59,36 +61,43 @@ public class MusicService extends AccessibilityService {
     private static int NEUTRON_TITLE=2131165211;
     private static int NEUTRON_ARTIST=2131165212;
     private static int NEUTRON_ALBUM=2131165213;
-/*
+
+    private static String SAMSUNG_PACKAGE="com.sec.android.app.music";
+    private static int SAMSUNG_TITLE=2131886185;
+    private static int SAMSUNG_ARTIST=2131886266;
+   // private static int SAMSUNG_ALBUM=2131886185;
+
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if(intent==null) return;
+
             String track = trimText(intent.getStringExtra("track"));
-            String source = trimText(intent.getStringExtra("original_source"));
-            if(StringUtils.isEmpty(source) && !StringUtils.isEmpty(track)) {
+            String pack = trimText(intent.getStringExtra("package"));
+            if(!MusicService.class.getPackage().equals(pack)) {
                 String artist = trimText(intent.getStringExtra("artist"));
                 String album = trimText(intent.getStringExtra("album"));
-                sendNowPlayingToActivity(track,artist,album);
+                sendNowPlayingToActivity(track, artist, album);
                 showNotification(track, artist, album);
             }
+            //LogHelper.logToFile(intent.getAction(), "extras[" + getExtras(intent.getExtras()) + "]");
         }
-    }; */
+    };
+    private String currentPlayer;
 
     @Override
     public void onCreate() {
         super.onCreate();
         context = getApplicationContext();
 
-        mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        mMediaSession = new MediaSession(this, TAG);
-        mMediaSession.setFlags(MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
         instance = this;
-/*
+
         IntentFilter iF = new IntentFilter();
         iF.addAction("com.android.music.metachanged");
         iF.addAction("com.android.music.playstatechanged");
         iF.addAction("com.android.music.playbackcomplete");
         iF.addAction("com.android.music.queuechanged");
+        /*
         iF.addAction("com.htc.music.metachanged");
         iF.addAction("fm.last.android.metachanged");
         iF.addAction("com.sec.android.app.music.metachanged");
@@ -106,19 +115,17 @@ public class MusicService extends AccessibilityService {
         iF.addAction("org.abrantix.rockon.rockonnggl.metachanged");
         iF.addAction("com.maxmpz.audioplayer.metachanged");
         iF.addAction("com.doubleTwist.androidPlayer.metachanged");
-        iF.addAction("android.intent.action.ANY_ACTION");
+        iF.addAction("android.intent.action.ANY_ACTION"); */
         registerReceiver(mReceiver, iF);
-        */
+
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        //unregisterReceiver(mReceiver);
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.cancel(1909);
-        mMediaSession.release();
+        unregisterReceiver(mReceiver);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        notificationManager.cancel(NOTIFICATION_ID);
         instance = null;
     }
 
@@ -150,13 +157,15 @@ public class MusicService extends AccessibilityService {
                     processRADSONE(notification);
                 }else if(TPLAYER_PACKAGE.equalsIgnoreCase(pack)) {
                     processTPLAYER(notification);
+                }else if(SAMSUNG_PACKAGE.equalsIgnoreCase(pack)) {
+                    processSAMSUNG(notification);
                 }else {
                     try {
                         LogHelper.logToFile(pack + " - " + AccessibilityEvent.eventTypeToString(event.getEventType()), notification.tickerText + ", extras[" + getExtras(notification.extras) + "]");
                         Map<Integer, String> text = extractTextFromContentView(notification);
                         LogHelper.logToFile(pack + " - " + AccessibilityEvent.eventTypeToString(event.getEventType()), "TextView[" + getText(text) + "]");
-                    }catch(Exception ex) {
-                        LogHelper.e(TAG,ex);
+                    } catch (Exception ex) {
+                        LogHelper.e(TAG, ex);
                     }
                 }
             }
@@ -174,6 +183,7 @@ public class MusicService extends AccessibilityService {
         sendNowPlayingToActivity(track,artist,"");
         showNotification(track, artist, "");
         sendNowPlayingToBluetooth(track, artist, "");
+        currentPlayer = RADSONE_PACKAGE;
     }
 
     private void processTPLAYER(Notification notification) {
@@ -184,6 +194,18 @@ public class MusicService extends AccessibilityService {
         sendNowPlayingToActivity(track,artist,album);
         showNotification(track, artist, album);
         sendNowPlayingToBluetooth(track, artist, album);
+        currentPlayer = TPLAYER_PACKAGE;
+    }
+
+    private void processSAMSUNG(Notification notification) {
+        Map<Integer, String> text = extractTextFromContentView(notification);
+        String track = trimText(text.get(SAMSUNG_TITLE));
+        String artist = trimText(text.get(SAMSUNG_ARTIST));
+        String album = "";
+        sendNowPlayingToActivity(track,artist,album);
+        showNotification(track, artist, album);
+        sendNowPlayingToBluetooth(track, artist, album);
+        currentPlayer = SAMSUNG_PACKAGE;
     }
 
     private void processNEUTRON(Notification notification) {
@@ -193,7 +215,8 @@ public class MusicService extends AccessibilityService {
         String album = trimText(text.get(NEUTRON_ALBUM));
         sendNowPlayingToActivity(track,artist,album);
         showNotification(track, artist, album);
-        sendNowPlayingToBluetooth(track, artist, album);
+        currentPlayer = NEUTRON_PACKAGE;
+        //sendNowPlayingToBluetooth(track, artist, album);
     }
 
     private Map<Integer,String> extractTextFromContentView(Notification notification) {
@@ -207,9 +230,9 @@ public class MusicService extends AccessibilityService {
             return text;
         }
 
-        Class secretClass = views.getClass();
-
         try {
+            Class secretClass = views.getClass();
+
             Field outerField = secretClass.getDeclaredField("mActions");
             outerField.setAccessible(true);
             ArrayList<Object> actions = (ArrayList<Object>) outerField.get(views);
@@ -257,6 +280,8 @@ public class MusicService extends AccessibilityService {
     }
 
     private String getExtras(Bundle extras) {
+        if(extras ==null) return "";
+
         StringBuilder sb= new StringBuilder();
         for(String key : extras.keySet()) {
             sb.append(key).append("=").append(extras.get(key));
@@ -276,9 +301,9 @@ public class MusicService extends AccessibilityService {
         super.onServiceConnected();
         AccessibilityServiceInfo info = new AccessibilityServiceInfo();
         info.flags = AccessibilityServiceInfo.DEFAULT;
-        info.eventTypes = AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED;
+        info.eventTypes = AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED|AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED;
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
-        info.packageNames = new String[] {NEUTRON_PACKAGE,TPLAYER_PACKAGE,RADSONE_PACKAGE};
+        info.packageNames = new String[] {NEUTRON_PACKAGE,TPLAYER_PACKAGE,RADSONE_PACKAGE,SAMSUNG_PACKAGE};
         setServiceInfo(info);
     }
 
@@ -296,101 +321,35 @@ public class MusicService extends AccessibilityService {
     }
 
     public  void sendNowPlayingToBluetooth(String title, String artist, String album) {
-        if (mAudioManager.isBluetoothA2dpOn()) {
-            PlaybackState state = new PlaybackState.Builder()
-                    .setActions(PlaybackState.ACTION_PLAY)
-                    .setState(PlaybackState.STATE_PLAYING, 1, 1.0f, SystemClock.elapsedRealtime())
-                    .build();
-            MediaMetadata metadata = new MediaMetadata.Builder()
-                    .putString(MediaMetadata.METADATA_KEY_TITLE, title)
-                    .putString(MediaMetadata.METADATA_KEY_ARTIST, artist)
-                    .putString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST, artist)
-                    .putString(MediaMetadata.METADATA_KEY_ALBUM, album)
-                    .putLong(MediaMetadata.METADATA_KEY_NUM_TRACKS, 1)
-                    .putLong(MediaMetadata.METADATA_KEY_DURATION, 10)
-                    .build();
-            mMediaSession.setActive(true);
-            mMediaSession.setMetadata(metadata);
-            mMediaSession.setPlaybackState(state);
-        }
-
-        /*
-        if (audioManager == null) {
-            audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        }
-
-        if (mMediaSession == null) {
-            mMediaSession = new MediaSessionCompat(this, "PlayerServiceMediaSession");
-            mMediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
-            mMediaSession.setActive(true);
-        }
-
-        if (audioManager.isBluetoothA2dpOn()) {
-            try {
-                String songTitle = trimText(title);
-                String artistTitle = trimText(artist);
-                // String radioImageUri = getImagesArr().get(0);
-                // String songImageUri = getImagesArr().get(1);
-                // long duration = getDuration();
-
-                final MediaMetadataCompat.Builder metadata = new MediaMetadataCompat.Builder();
-
-                metadata.putString(MediaMetadataCompat.METADATA_KEY_TITLE, songTitle);
-                metadata.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, songTitle);
-                metadata.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artistTitle);
-                metadata.putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ARTIST, artistTitle);
-                // metadata.putString(MediaMetadataCompat.METADATA_KEY_ART_URI, radioImageUri);
-                // metadata.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON_URI, radioImageUri);
-                // metadata.putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI, songImageUri);
-                // metadata.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration);
-
-                Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_launcher);
-                metadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap);
-                metadata.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, bitmap);
-                metadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bitmap);
-
-                mMediaSession.setMetadata(metadata.build());
-*/
-                /*
-                imageCounter = 0;
-
-                Glide.with(act)
-                        .load(Uri.parse(radioImageUri))
-                        .asBitmap()
-                        .into(new SimpleTarget<Bitmap>(250, 250) {
-                            @Override
-                            public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
-                                metadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap);
-                                metadata.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON, bitmap);
-
-                                imageCounter = imageCounter + 1;
-
-                                if(imageCounter == 2) {
-                                    mMediaSession.setMetadata(metadata.build());
-                                }
-                            }
-                        });
-
-                Glide.with(act)
-                        .load(Uri.parse(songImageUri))
-                        .asBitmap()
-                        .into(new SimpleTarget<Bitmap>(250, 250) {
-                            @Override
-                            public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
-                                metadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bitmap);
-
-                                imageCounter = imageCounter + 1;
-
-                                if(imageCounter == 2) {
-                                    mMediaSession.setMetadata(metadata.build());
-                                }
-                            }
-                        }); */
-                /*
-            } catch (Exception e) {
-                e.printStackTrace();
-            } */
+       // if (mAudioManager == null) {
+        //    mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
        // }
+       // if (mAudioManager.isBluetoothA2dpOn()) {
+            //sendBroadcast(new Intent(INTENT_PLAYBACK_COMPLETE));
+            broadcastToBluetooth(INTENT_META_CHANGED, true);
+            //broadcastToBluetooth(INTENT_PLAY_STATE_CHANGED, true);
+       // }
+    }
+
+    private void broadcastToBluetooth(String intentString, boolean isplaying) {
+        Intent intent = new Intent(intentString);
+        intent.putExtra("player", "MusixMate");
+        intent.putExtra("package", MusicService.class.getName());
+        intent.putExtra("id", 0);
+        intent.putExtra("artist",  StringUtils.isEmpty(currentArtist)?UNKNOWN:currentArtist);
+        intent.putExtra("album", StringUtils.isEmpty(currentAlbum)?UNKNOWN:currentAlbum);
+        intent.putExtra("track", StringUtils.isEmpty(currentTitle)?UNKNOWN:currentTitle);
+        intent.putExtra("playing", isplaying);
+        intent.putExtra("isplaying", isplaying);
+        intent.putExtra("paused", !isplaying);
+        intent.putExtra("ispaused", !isplaying);
+        intent.putExtra("songid", 0);
+        intent.putExtra("repeat", 0);
+        intent.putExtra("albumid", 0);
+        intent.putExtra("duration", 10);
+        intent.putExtra("trackLength", 10);
+        intent.putExtra("position", 10);
+        sendBroadcast(intent);
     }
 
     public void showNotification(String title, String artist, String album) {
@@ -405,21 +364,25 @@ public class MusicService extends AccessibilityService {
 
         Notification notification =
                 new NotificationCompat.Builder(this)
+                      //  .setSmallIcon(R.drawable.ic_music)
                         .setSmallIcon(R.drawable.ic_launcher)
-                        .setContentTitle(title+(StringUtils.isEmpty(artist)?"":" / "+artist))
-                        .setContentText("Tap here open by MusixMate...")
+                        .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.ic_launcher))
+                        .setContentTitle(title)
+                        //.setContentText("Open on Musix Mate...")
+                        .setContentText((StringUtils.isEmpty(artist)?"Tab to open on Musix Mate...":artist))
                         .setAutoCancel(false)
                         .setContentIntent(pendingIntent)
+                        .setShowWhen(false)
                         .build();
 
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(1909, notification);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        notificationManager.notify(NOTIFICATION_ID, notification);
     }
 
     private String trimText(String text) {
         if(text == null) return "";
         if("-".equals(text)) return "";
+        if(UNKNOWN.equalsIgnoreCase(text)) return "";
         if("-/-".equals(text)) return "";
         return text;
     }
@@ -428,23 +391,30 @@ public class MusicService extends AccessibilityService {
         return currentTitle;
     }
 
-    public void setCurrentTitle(String currentTitle) {
-        this.currentTitle = currentTitle;
-    }
-
     public String getCurrentArtist() {
         return currentArtist;
-    }
-
-    public void setCurrentArtist(String currentArtist) {
-        this.currentArtist = currentArtist;
     }
 
     public String getCurrentAlbum() {
         return currentAlbum;
     }
 
-    public void setCurrentAlbum(String currentAlbum) {
-        this.currentAlbum = currentAlbum;
+    public void nextSong(String title) {
+        if(StringUtils.trimToEmpty(getCurrentTitle()).equalsIgnoreCase(title)) {
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            if(NEUTRON_PACKAGE.equals(currentPlayer)) {
+                KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PAUSE);
+                audioManager.dispatchMediaKeyEvent(event);
+
+                event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT);
+                audioManager.dispatchMediaKeyEvent(event);
+
+                event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY);
+                audioManager.dispatchMediaKeyEvent(event);
+            }else {
+                KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT);
+                audioManager.dispatchMediaKeyEvent(event);
+            }
+        }
     }
 }

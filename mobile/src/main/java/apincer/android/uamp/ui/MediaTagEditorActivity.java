@@ -17,15 +17,12 @@ package apincer.android.uamp.ui;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,12 +39,11 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.transition.Slide;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
@@ -93,12 +89,16 @@ public class MediaTagEditorActivity extends AppCompatActivity {
     private TextView mTitleView;
     private AutoCompleteTextView mArtistView;
     private AutoCompleteTextView mAlbumView;
-    private TextView mAlbumArtistView;
+    private AutoCompleteTextView mAlbumArtistView;
     private TextView mGenreView;
+    private TextView mYearView;
     private AutoCompleteTextView mCountryView;
     private TextView mCommentView;
     private TextView mLyricsView;
     private TextView mTrackView;
+    private TextView mDiscView;
+
+    private ViewTextWatcher mTextWatcher;
 
     private TextView mMediaPathView;
     private TextView mMediaInfoView;
@@ -191,27 +191,18 @@ public class MediaTagEditorActivity extends AppCompatActivity {
         view = (TextView) findViewById(R.id.media_filesize);
         view.setText(tagUpdate.getMediaSize());
 
+        mTextWatcher =new ViewTextWatcher() ;
 
         // title
             mTitleView = (TextView) findViewById(R.id.title);
             mTitleView.setText(tagUpdate.getTitle());
             setTitle("");
-            mTitleView.addTextChangedListener(new ViewTextWatcher(mTitleView) {
-                @Override
-                public void tagUpdate(Editable editable) {
-                    tagUpdate.softSetTitle(String.valueOf(view.getText()));
-                }
-            });
+            mTitleView.addTextChangedListener(mTextWatcher);
 
             // artist
             mArtistView = (AutoCompleteTextView) findViewById(R.id.artist);
             mArtistView.setText(tagUpdate.getArtist());
-            mArtistView.addTextChangedListener(new ViewTextWatcher(mArtistView) {
-                @Override
-                public void tagUpdate(Editable editable) {
-                    tagUpdate.softSetArtist(String.valueOf(view.getText()));
-                }
-            });
+            mArtistView.addTextChangedListener(mTextWatcher);
             ArrayAdapter<String> artistAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item,mediaStoreHelper.getArtistsAsArray());
             mArtistView.setThreshold(2);//will start working from second character
             mArtistView.setAdapter(artistAdapter); //setting the adapter data into the AutoCompleteTextView
@@ -219,75 +210,43 @@ public class MediaTagEditorActivity extends AppCompatActivity {
             // album
             mAlbumView = (AutoCompleteTextView) findViewById(R.id.album);
             mAlbumView.setText(tagUpdate.getAlbum());
-            mAlbumView.addTextChangedListener(new ViewTextWatcher(mAlbumView) {
-                @Override
-                public void tagUpdate(Editable editable) {
-                    tagUpdate.softSetAlbum(String.valueOf(view.getText()));
-                }
-            });
+            mAlbumView.addTextChangedListener(mTextWatcher);
         ArrayAdapter<String> albumAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item,mediaStoreHelper.getAlbumAsArray());
         mAlbumView.setThreshold(2);//will start working from second character
         mAlbumView.setAdapter(albumAdapter); //setting the adapter data into the AutoCompleteTextView
 
             // album artist
-            mAlbumArtistView = (TextView) findViewById(R.id.album_arist);
+            mAlbumArtistView = (AutoCompleteTextView) findViewById(R.id.album_arist);
             mAlbumArtistView.setText(tagUpdate.getAlbumArtist());
-            mAlbumArtistView.addTextChangedListener(new ViewTextWatcher(mAlbumArtistView) {
-                @Override
-                public void tagUpdate(Editable editable) {
-                    tagUpdate.softSetAlbumArtist(String.valueOf(view.getText()));
-                }
-            });
+            mAlbumArtistView.addTextChangedListener(mTextWatcher);
+        ArrayAdapter<String> albumArtistAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item,mediaStoreHelper.getAlbumArtistAsArray());
+        mAlbumArtistView.setThreshold(2);//will start working from second character
+        mAlbumArtistView.setAdapter(albumArtistAdapter); //setting the adapter data into the AutoCompleteTextView
 
-            // year
-            TextView year = (TextView) findViewById(R.id.year);
-            year.setText(tagUpdate.getYear());
-            year.addTextChangedListener(new ViewTextWatcher(year) {
-                @Override
-                public void tagUpdate(Editable editable) {
-                    tagUpdate.softSetYear(String.valueOf(view.getText()));
-                }
-            });
+        // year
+        mYearView = (TextView) findViewById(R.id.year);
+        mYearView.setText(tagUpdate.getYear());
+        mYearView.addTextChangedListener(mTextWatcher);
 
             // disc no
-            TextView discno = (TextView) findViewById(R.id.diskno);
-            discno.setText(tagUpdate.getDisc());
-            discno.addTextChangedListener(new ViewTextWatcher(discno) {
-                @Override
-                public void tagUpdate(Editable editable) {
-                    tagUpdate.softSetDisc(String.valueOf(view.getText()));
-                }
-            });
+        mDiscView = (TextView) findViewById(R.id.diskno);
+        mDiscView.setText(tagUpdate.getDisc());
+        mDiscView.addTextChangedListener(mTextWatcher);
 
             // track
             mTrackView = (TextView) findViewById(R.id.track);
         mTrackView.setText(tagUpdate.getTrack());
-        mTrackView.addTextChangedListener(new ViewTextWatcher(mTrackView) {
-                @Override
-                public void tagUpdate(Editable editable) {
-                    tagUpdate.softSetTrack(String.valueOf(view.getText()));
-                }
-            });
+        mTrackView.addTextChangedListener(mTextWatcher);
 
             // genre
             mGenreView = (TextView) findViewById(R.id.genre);
             mGenreView.setText(tagUpdate.getGenre());
-            mGenreView.addTextChangedListener(new ViewTextWatcher(mGenreView) {
-                @Override
-                public void tagUpdate(Editable editable) {
-                    tagUpdate.softSetGenre(String.valueOf(view.getText()));
-                }
-            });
+            mGenreView.addTextChangedListener(mTextWatcher);
 
             // country
             mCountryView = (AutoCompleteTextView) findViewById(R.id.country);
             mCountryView.setText(tagUpdate.getCountry());
-            mCountryView.addTextChangedListener(new ViewTextWatcher(mCountryView) {
-                @Override
-                public void tagUpdate(Editable editable) {
-                    tagUpdate.softSetCountry(String.valueOf(view.getText()));
-                }
-            });
+            mCountryView.addTextChangedListener(mTextWatcher);
 
             String [] langs = {"eng","tha"};
             ArrayAdapter<String> countryAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item,langs);
@@ -297,22 +256,12 @@ public class MediaTagEditorActivity extends AppCompatActivity {
             // comment
             mCommentView = (TextView) findViewById(R.id.comment);
             mCommentView.setText(tagUpdate.getComment());
-            mCommentView.addTextChangedListener(new ViewTextWatcher(mCommentView) {
-                @Override
-                public void tagUpdate(Editable editable) {
-                    tagUpdate.softSetComment(String.valueOf(view.getText()));
-                }
-            });
+            mCommentView.addTextChangedListener(mTextWatcher);
 
             // lyrics
             mLyricsView = (TextView) findViewById(R.id.lyrics);
             mLyricsView.setText(tagUpdate.getLyrics());
-            mLyricsView.addTextChangedListener(new ViewTextWatcher(mLyricsView) {
-                @Override
-                public void tagUpdate(Editable editable) {
-                    tagUpdate.softSetLyrics(String.valueOf(view.getText()));
-                }
-            });
+            mLyricsView.addTextChangedListener(mTextWatcher);
 
             //default album art
             final ImageView image = (ImageView) findViewById(R.id.image);
@@ -333,12 +282,31 @@ public class MediaTagEditorActivity extends AppCompatActivity {
     }
 
     private void saveMediaItem() {
+        tagUpdate.setTitle(getText(mTitleView));
+        tagUpdate.setAlbum(getText(mAlbumView));
+        tagUpdate.setAlbumArtist(getText(mAlbumArtistView));
+        tagUpdate.setArtist(getText(mArtistView));
+        tagUpdate.setComment(getText(mCommentView));
+        tagUpdate.setCountry(getText(mCountryView));
+        tagUpdate.setGenre(getText(mGenreView));
+        tagUpdate.setTrack(getText(mTrackView));
+        tagUpdate.setLyrics(getText(mLyricsView));
+        tagUpdate.setYear(getText(mYearView));
+        tagUpdate.setDisc(getText(mDiscView));
         if(mediaStoreHelper.saveMediaFile(mediaPath, tagUpdate,findViewById(R.id.main_view))) {
             hideFab();
-            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+            //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+            InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if(inputManager !=null) {
+                inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),InputMethodManager.HIDE_NOT_ALWAYS);
+            }
             saveResult("SAVED", tagUpdate.getMediaPath(),null);
             ///onBackPressed();
         }
+    }
+
+    private String getText(TextView textView) {
+        return StringUtils.trimToEmpty(String.valueOf(textView.getText()));
     }
 
     private void organizeMediaItem() {
@@ -397,11 +365,8 @@ public class MediaTagEditorActivity extends AppCompatActivity {
 
     private void playNextSong(MediaTag tagUpdate) {
         MusicService service = MusicService.getRunningService();
-        if(service!=null && trimText(service.getCurrentTitle()).equalsIgnoreCase(trimText(tagUpdate.getTitle()))) {
-       // if(trimText(listenTitle).equals(trimText(tagUpdate.getTitle()))) {
-            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT);
-            audioManager.dispatchMediaKeyEvent(event);
+        if(service!=null) {
+            service.nextSong(trimText(tagUpdate.getTitle()));
         }
     }
 
@@ -707,37 +672,24 @@ public class MediaTagEditorActivity extends AppCompatActivity {
 */
     private void updateTagByFilename(TagReader.Tag tag) {
         // title
+        //tagUpdate.setTitle(trimText(tag.getTitle()));
         mTitleView.setText(trimText(tag.getTitle()));
         // artist
+        //tagUpdate.setArtist(trimText(tag.getArtist()));
         mArtistView.setText(trimText(tag.getArtist()));
         // album
+        //tagUpdate.setAlbum(trimText(tag.getAlbum()));
         mAlbumView.setText(trimText(tag.getAlbum()));
         // album artist
+        //tagUpdate.setAlbumArtist("");
         mAlbumArtistView.setText("");
 
         // album artist
         //mCommentView.setText(formatText(comment));
         // album artist
+        //tagUpdate.setTrack(trimText(tag.getTrack()));
         mTrackView.setText(trimText(tag.getTrack()));
-    }
 
-    private void updateTagByFilename(String title, String artist, String album,String albumArtist, String track, String comment) {
-        // title
-        mTitleView.setText(trimText(title));
-        // artist
-        mArtistView.setText(trimText(artist));
-        // album
-        mAlbumView.setText(trimText(album));
-        // album artist
-        if(artist.equals(albumArtist)) {
-            mAlbumArtistView.setText("");
-        }else {
-            mAlbumArtistView.setText(trimText(albumArtist));
-        }
-        // album artist
-        //mCommentView.setText(formatText(comment));
-        // album artist
-        mTrackView.setText(trimText(track));
     }
 
     private String trimText(String text) {
@@ -861,18 +813,13 @@ public class MediaTagEditorActivity extends AppCompatActivity {
             fab.setBackgroundTintList(ColorStateList.valueOf(vibrantColor));
         }
 
-        public abstract class ViewTextWatcher implements TextWatcher {
-            TextView view;
-            public ViewTextWatcher(TextView view) {
-                this.view = view;
+        public  class ViewTextWatcher implements TextWatcher {
+            public ViewTextWatcher() {
             }
             public void afterTextChanged(Editable editable) {
-                tagUpdate(editable);
+                tagUpdate.setChanged(true);
                 showFab();
             }
-
-            protected abstract void tagUpdate(Editable editable);
-
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 

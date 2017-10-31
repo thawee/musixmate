@@ -338,10 +338,12 @@ public class MediaItem extends AbstractItem<MediaItem.MediaItemViewHolder>
         @Override
         public void onClick(View view) {
             super.onClick(view);
-            if(mAdapter.getMode()== SelectableAdapter.Mode.SINGLE) {
-                int position = getAdapterPosition();
-                if (!MediaTagEditorActivity.navigate(((BrowserViewPagerFragment.BrowserFlexibleAdapter)mAdapter).getActivity(), ((MediaItem) this.mAdapter.getItem(position)),position)) {
-                    mAdapter.removeItem(position);
+            if(mAdapter!=null) {
+                if (mAdapter.getMode() == SelectableAdapter.Mode.SINGLE) {
+                    int position = getAdapterPosition();
+                    if (!MediaTagEditorActivity.navigate(((BrowserViewPagerFragment.BrowserFlexibleAdapter) mAdapter).getActivity(), ((MediaItem) this.mAdapter.getItem(position)), position)) {
+                        mAdapter.removeItem(position);
+                    }
                 }
             }
         }

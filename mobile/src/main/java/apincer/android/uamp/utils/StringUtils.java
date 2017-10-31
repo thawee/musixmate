@@ -1,6 +1,7 @@
 package apincer.android.uamp.utils;
 
 import java.text.BreakIterator;
+import java.util.List;
 import java.util.Locale;
 
 public class StringUtils {
@@ -175,5 +176,16 @@ public class StringUtils {
     public static String trimToEmpty(String substring) {
         if(substring==null) return "";
         return substring.trim();
+    }
+
+    public static String merge(List<String> list, String s) {
+        StringBuilder builder = new StringBuilder();
+        for(String str:list) {
+            if(builder.length()>0) {
+                builder.append(s);
+            }
+            builder.append(str);
+        }
+        return builder.toString();
     }
 }

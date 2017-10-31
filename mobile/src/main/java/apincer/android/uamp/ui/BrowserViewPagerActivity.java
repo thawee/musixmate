@@ -41,6 +41,7 @@ import java.util.List;
 
 import apincer.android.uamp.MusicService;
 import apincer.android.uamp.R;
+import apincer.android.uamp.file.AndroidFile;
 import apincer.android.uamp.item.MediaItem;
 import apincer.android.uamp.provider.MediaProvider;
 import apincer.android.uamp.provider.MediaTag;
@@ -375,6 +376,11 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
             return true;
         }
 */
+
+     if (mAdapter==null) {
+         return false;
+     }
+
         // Action on elements are allowed if Mode is IDLE, otherwise selection has priority
         if (mAdapter.getMode() != SelectableAdapter.Mode.IDLE && mActionModeHelper != null) {
             boolean activate = mActionModeHelper.onClick(position);
@@ -602,9 +608,11 @@ public class BrowserViewPagerActivity extends AppCompatActivity implements Actio
 
                 List<Integer> positions = mAdapter.getSelectedPositions();
                 for (int position:positions) {
-                    //MusicTagHelper.
-                    //AndroidFile.deleteFile(, this);
-                    mAdapter.removeItem(position);
+                    //
+                    //MediaItem mitem = mAdapter.getItem(position);
+                    //mitem.get
+                    mAdapter.deleteMedia(position, mViewPager);
+                    //mAdapter.removeItem(position);
                 }
                 // Enable Refreshing
 

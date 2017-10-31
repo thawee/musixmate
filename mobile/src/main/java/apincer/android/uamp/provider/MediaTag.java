@@ -13,6 +13,10 @@ public class MediaTag {
         return displayPlath;
     }
 
+    public void setChanged(boolean changed) {
+        this.changed = changed;
+    }
+
     public enum MediaTypes {SONGS,SIMILARITY,FILES}
     protected String mediaPath;
     protected String displayPlath;
@@ -26,19 +30,19 @@ public class MediaTag {
     protected String mediaBitrate;
     protected String mediaSize;
     protected String mediaDuration;
-    protected String title;
-    protected String album;
-    protected String artist;
-    protected String albumArtist;
-    protected String genre;
-    protected String year;
-    protected String track;
-    protected String trackTotal;
-    protected String disc;
-    protected String discTotal;
-    protected String lyrics;
-    protected String comment;
-    protected String country;
+    private String title;
+    private String album;
+    private String artist;
+    private String albumArtist;
+    private String genre;
+    private String year;
+    private String track;
+    private String trackTotal;
+    private String disc;
+    private String discTotal;
+    private String lyrics;
+    private String comment;
+    private String country;
     protected Bitmap artwork;
     protected boolean titleHasChanged;
     protected boolean albumHasChanged;
@@ -53,7 +57,8 @@ public class MediaTag {
     protected boolean lyricsHasChanged;
     protected boolean commentHasChanged;
     protected boolean countryHasChanged;
-    protected boolean isArtworkChanged;
+    protected boolean artworkChanged;
+    protected boolean changed;
 
     public MediaTag(String path) {
         mediaPath = path;
@@ -127,9 +132,9 @@ public class MediaTag {
         return artwork;
     }
 
-    public void softSetTitle(String title) {
+    public void setTitle(String title) {
         if (title == null) {
-            return;
+            title ="";
         }
         if (this.title == null || !this.title.equals(title)) {
             this.title = title;
@@ -137,9 +142,9 @@ public class MediaTag {
         }
     }
 
-    public void softSetAlbum(String album) {
+    public void setAlbum(String album) {
         if (album == null) {
-            return;
+            album = "";
         }
         if (this.album == null || !this.album.equals(album)) {
             this.album = album;
@@ -147,9 +152,9 @@ public class MediaTag {
         }
     }
 
-    public void softSetArtist(String artist) {
+    public void setArtist(String artist) {
         if (artist == null) {
-            return;
+            artist="";
         }
         if (this.artist == null || !this.artist.equals(artist)) {
             this.artist = artist;
@@ -157,9 +162,9 @@ public class MediaTag {
         }
     }
 
-    public void softSetAlbumArtist(String albumArtist) {
+    public void setAlbumArtist(String albumArtist) {
         if (albumArtist == null) {
-            return;
+            albumArtist="";
         }
         if (this.albumArtist == null || !this.albumArtist.equals(albumArtist)) {
             this.albumArtist = albumArtist;
@@ -167,9 +172,9 @@ public class MediaTag {
         }
     }
 
-    public void softSetGenre(String genre) {
+    public void setGenre(String genre) {
         if (genre == null) {
-            return;
+            genre ="";
         }
         if (this.genre == null || !this.genre.equals(genre)) {
             this.genre = genre;
@@ -177,9 +182,9 @@ public class MediaTag {
         }
     }
 
-    public void softSetYear(String year) {
+    public void setYear(String year) {
         if (year == null) {
-            return;
+            year ="";
         }
         if (this.year == null || !this.year.equals(year)) {
             this.year = year;
@@ -187,9 +192,9 @@ public class MediaTag {
         }
     }
 
-    public void softSetTrack(String track) {
+    public void setTrack(String track) {
         if (track == null) {
-            return;
+            track="";
         }
         if (this.track == null || !this.track.equals(track)) {
             this.track = track;
@@ -197,9 +202,9 @@ public class MediaTag {
         }
     }
 
-    public void softSetTrackTotal(String trackTotal) {
+    public void setTrackTotal(String trackTotal) {
         if (trackTotal == null) {
-            return;
+            trackTotal="";
         }
         if (this.trackTotal == null || !this.trackTotal.equals(trackTotal)) {
             this.trackTotal = trackTotal;
@@ -207,9 +212,9 @@ public class MediaTag {
         }
     }
 
-    public void softSetDisc(String disc) {
+    public void setDisc(String disc) {
         if (disc == null) {
-            return;
+            disc="";
         }
         if (this.disc == null || !this.disc.equals(disc)) {
             this.disc = disc;
@@ -217,9 +222,9 @@ public class MediaTag {
         }
     }
 
-    public void softSetDiscTotal(String discTotal) {
+    public void setDiscTotal(String discTotal) {
         if (discTotal == null) {
-            return;
+            discTotal="";
         }
         if (this.discTotal == null || !this.discTotal.equals(discTotal)) {
             this.discTotal = discTotal;
@@ -227,9 +232,9 @@ public class MediaTag {
         }
     }
 
-    public void softSetLyrics(String lyrics) {
+    public void setLyrics(String lyrics) {
         if (lyrics == null) {
-            return;
+            lyrics="";
         }
         if (this.lyrics == null || !this.lyrics.equals(lyrics)) {
             this.lyrics = lyrics;
@@ -237,7 +242,7 @@ public class MediaTag {
         }
     }
 
-    public void softSetComment(String comment) {
+    public void setComment(String comment) {
         if (comment == null) {
             return;
         }
@@ -247,7 +252,7 @@ public class MediaTag {
         }
     }
 
-    public void softSetCountry(String country) {
+    public void setCountry(String country) {
         if (country == null) {
             return;
         }

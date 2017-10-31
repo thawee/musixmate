@@ -626,6 +626,8 @@ public class AndroidFile {
 
         if(copyFile(file, newFile)) {
             success = deleteFile(file);
+        }else {
+            deleteFile(newFile);
         }
         return success;
     }
@@ -808,11 +810,21 @@ public class AndroidFile {
     }
 
     public Uri createFile(Uri self,String displayName) {
-        return DocumentsContract.createDocument(mContext.getContentResolver(), self, "image",displayName);
+        try {
+            return DocumentsContract.createDocument(mContext.getContentResolver(), self, "image",displayName);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Uri createDirectory(Uri self, String displayName) {
-        return DocumentsContract.createDocument(mContext.getContentResolver(), self, DocumentsContract.Document.MIME_TYPE_DIR,displayName);
+        try {
+            return DocumentsContract.createDocument(mContext.getContentResolver(), self, DocumentsContract.Document.MIME_TYPE_DIR,displayName);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 

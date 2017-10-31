@@ -1,7 +1,6 @@
 package apincer.android.uamp.glide;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.DataSource;
@@ -17,7 +16,6 @@ import java.io.InputStream;
 
 import apincer.android.uamp.item.MediaItem;
 import apincer.android.uamp.provider.MediaProvider;
-import apincer.android.uamp.utils.LogHelper;
 
 /**
  * Created by Administrator on 7/25/17.
@@ -25,6 +23,7 @@ import apincer.android.uamp.utils.LogHelper;
 
 public class CoverArtModelLoader implements ModelLoader<MediaItem,InputStream> {
     public final Context context;
+    private MediaProvider mediaprovider;
 
     public static class Factory implements ModelLoaderFactory<MediaItem, InputStream> {
         private final Context context;
@@ -45,12 +44,16 @@ public class CoverArtModelLoader implements ModelLoader<MediaItem,InputStream> {
 
     public CoverArtModelLoader(Context context) {
         super();
-        this.context = context.getApplicationContext();
+        this.context=context;
+        this.mediaprovider = new MediaProvider(context);
+       // this.context = context.getApplicationContext();
     }
 
     @Override
     public LoadData<InputStream> buildLoadData(MediaItem model, int width, int height,Options options) {
-        return new LoadData<>(new ObjectKey(model.getPath()), new CoverArtFetcher(context, model));
+        //CoverArtFetcher fetcher = new CoverArtFetcher(context, model);
+
+        return new LoadData<>(new ObjectKey(model.getPath()), new CoverArtFetcher(model));
     }
 
     @Override
@@ -60,11 +63,12 @@ public class CoverArtModelLoader implements ModelLoader<MediaItem,InputStream> {
 
     private class CoverArtFetcher  implements DataFetcher<InputStream> {
         private InputStream inputStream;
-        private MediaProvider mediaprovider;
+       // private MediaProvider mediaprovider;
         private MediaItem model;
 
-        public CoverArtFetcher(Context context, MediaItem model) {
-            mediaprovider = new MediaProvider(context);
+        public CoverArtFetcher(MediaItem model) {
+            //mediaprovider = new MediaProvider(context);
+           // this.mediaprovider = mediaprovider;
             this.model = model;
         }
 

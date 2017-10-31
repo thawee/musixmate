@@ -21,12 +21,14 @@ import apincer.android.uamp.item.MediaItem;
 public class CoverArtGlideModule extends AppGlideModule {
     @Override
     public void applyOptions(Context context, GlideBuilder builder) {
-        builder.setMemoryCache(new LruResourceCache(10 * 1024 * 1024));
-        // set size & external vs. internal
         int cacheSize100MegaBytes = 104857600;
+        int cacheSize500MegaBytes = 504857600;
+        //builder.setMemoryCache(new LruResourceCache(10 * 1024 * 1024));
+        builder.setMemoryCache(new LruResourceCache(cacheSize100MegaBytes));
+        // set size & external vs. internal
 
         builder.setDiskCache(
-                new InternalCacheDiskCacheFactory(context, cacheSize100MegaBytes)
+                new InternalCacheDiskCacheFactory(context, cacheSize500MegaBytes)
         );
     }
 
