@@ -5,91 +5,221 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.design.widget.Snackbar;
-import android.view.View;
-
-import com.bumptech.glide.RequestManager;
 
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.exceptions.CannotReadException;
 import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.audio.mp3.MP3File;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.TagException;
-import org.jaudiotagger.tag.TagOptionSingleton;
+import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
+import org.jaudiotagger.tag.id3.ID3v1Tag;
+import org.jaudiotagger.tag.id3.ID3v23Frames;
+import org.jaudiotagger.tag.id3.ID3v23Tag;
 import org.jaudiotagger.tag.images.Artwork;
-import org.jaudiotagger.tag.reference.ID3V2Version;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import apincer.android.uamp.R;
-import apincer.android.uamp.file.AndroidFile;
-import apincer.android.uamp.glide.GlideApp;
-import apincer.android.uamp.item.HeaderItem;
-import apincer.android.uamp.item.MediaItem;
+import apincer.android.uamp.flexibleadapter.HeaderItem;
+import apincer.android.uamp.flexibleadapter.MediaItem;
+import apincer.android.uamp.utils.BitmapHelper;
 import apincer.android.uamp.utils.LogHelper;
 import apincer.android.uamp.utils.StringUtils;
+import apincer.android.uamp.utils.Util;
 import eu.davidea.flexibleadapter.items.IHeader;
 
 /**
  * Wrapper class for accessing media information via media store and jaudiotagger
  * Created by e1022387 on 5/10/2017.
  */
-public class MediaProvider {
+public class MediaProvider {{}
+    private static MediaProvider instance;
+    public static int QUALITY_BIT_HIGH = 16;
+    public static int QUALITY_SAMPLING_RATE_HIGH = 44100;
+    public static int QUALITY_COMPRESS_BITRATE_GOOD = 320;
+    public static int QUALITY_COMPRESS_BITRATE_LOW = 128;
+    public static Map supportedFormat = new HashMap();
+
+    public static void initialize(Context context) {
+        if(instance==null) {
+            instance = new MediaProvider(context);
+        }
+    }
+
+    public static MediaProvider getInstance() {
+        return instance;
+    }
+
+    public MediaItem getMediaItemById(int mediaId) {
+        return queryMediaItem(mediaId);
+    }
+
+    public MediaItem queryMediaItem(String currentTitle, String currentArtist, String currentAlbum) {
+        ContentResolver mContentResolver = context.getContentResolver();
+        Uri uri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        // Perform a query on the content resolver. The URI we're passing specifies that we
+        // want to query for all audio media on external storage (e.g. SD card)
+        String query = MediaStore.Audio.Media.TITLE +"="+ DatabaseUtils.sqlEscapeString(currentTitle);
+        Cursor cur = mContentResolver.query(uri, null, query, null, "LOWER ("+MediaStore.Audio.Media.TITLE+") ASC");
+        if (cur == null) {
+            // Query failed...
+            return null;
+        }
+        if (!cur.moveToFirst()) {
+            // Nothing to query. There is no music on the device. How boring.
+            cur.close();
+            return null;
+        }
+        // retrieve the indices of the columns where the ID, title, etc. of the song are
+        int idColumn = cur.getColumnIndex(MediaStore.Audio.Media._ID);
+        int artistColumn = cur.getColumnIndex(MediaStore.Audio.Media.ARTIST);
+        int titleColumn = cur.getColumnIndex(MediaStore.Audio.Media.TITLE);
+        int albumColumn = cur.getColumnIndex(MediaStore.Audio.Media.ALBUM);
+        int durationColumn = cur.getColumnIndex(MediaStore.Audio.Media.DURATION);
+        int dataColumn = cur.getColumnIndex(MediaStore.Audio.Media.DATA);
+
+        // add each song to mItems
+        String mediaPath=cur.getString(dataColumn);
+        String mediaTitle=cur.getString(titleColumn);
+        String mediaAlbum=cur.getString(albumColumn);
+        String mediaArtist=cur.getString(artistColumn);
+        long mediaDuration=cur.getLong(durationColumn);
+        int id = cur.getInt(idColumn);
+        do {
+            String newTitle = cur.getString(titleColumn);
+            String newAlbum = cur.getString(albumColumn);
+            String newArtist = cur.getString(artistColumn);
+            if(StringUtils.compare(newTitle, currentTitle) && StringUtils.compare(newArtist, currentArtist) && StringUtils.compare(newAlbum, currentAlbum)) {
+                mediaTitle=newTitle;
+                mediaAlbum=newAlbum;
+                mediaArtist=newArtist;
+                mediaPath = cur.getString(dataColumn);
+                mediaDuration = cur.getLong(durationColumn);
+                id = cur.getInt(idColumn);
+                break;
+            }
+        } while (cur.moveToNext());
+
+        cur.close();
+
+        return newMediaItem(id,mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration);
+
+    }
+
+
+    public MediaItem queryMediaItem(int id) {
+        ContentResolver mContentResolver = context.getContentResolver();
+        Uri uri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        // Perform a query on the content resolver. The URI we're passing specifies that we
+        // want to query for all audio media on external storage (e.g. SD card)
+        String query = MediaStore.Audio.Media._ID+"="+ id;
+        Cursor cur = mContentResolver.query(uri, null, query, null, null);
+        if (cur == null) {
+            // Query failed...
+            return null;
+        }
+        if (!cur.moveToFirst()) {
+            // Nothing to query. There is no music on the device. How boring.
+            cur.close();
+            return null;
+        }
+        // retrieve the indices of the columns where the ID, title, etc. of the song are
+      //  int idColumn = cur.getColumnIndex(MediaStore.Audio.Media._ID);
+        int artistColumn = cur.getColumnIndex(MediaStore.Audio.Media.ARTIST);
+        int titleColumn = cur.getColumnIndex(MediaStore.Audio.Media.TITLE);
+        int albumColumn = cur.getColumnIndex(MediaStore.Audio.Media.ALBUM);
+        int durationColumn = cur.getColumnIndex(MediaStore.Audio.Media.DURATION);
+        int dataColumn = cur.getColumnIndex(MediaStore.Audio.Media.DATA);
+
+        // add each song to mItems
+        String mediaPath=cur.getString(dataColumn);
+        String mediaTitle=cur.getString(titleColumn);
+        String mediaAlbum=cur.getString(albumColumn);
+        String mediaArtist=cur.getString(artistColumn);
+        long mediaDuration=cur.getLong(durationColumn);
+        cur.close();
+
+        return newMediaItem(id,mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration);
+    }
+
+    public enum MediaTypes {SONGS,SIMILARITY,FILES}
+    public enum MediaQuality {HIRES,HIGH,GOOD,NORMAL,LOW}
     private static final String TAG = LogHelper.makeLogTag(MediaProvider.class);
     private Context context;
     private AndroidFile androidFile;
-    private List<MediaItem> mMediaItems;
-    private List<String> mMediaArtists;
-    private List<String> mMediaAlbums;
-    private List<String> mMediaAlbumArtists;
-    private RequestManager glide;
+    private ExecutorService executor;
+    private static final List<MediaItem> mMediaItems = Collections.synchronizedList(new ArrayList<MediaItem>());;
+    private static List<String> mMediaArtists= new ArrayList<>();
+    private static List<String> mMediaAlbums= new ArrayList<>();
+    private static List<String> mMediaAlbumArtists= new ArrayList<>();
 
-    public MediaProvider(Context context) {
+    private MediaProvider(Context context) {
         this.context = context;
         this.androidFile = new AndroidFile(context);
-        mMediaItems = new ArrayList<>();
-        mMediaArtists = new ArrayList<>();
-        mMediaAlbums = new ArrayList<>();
-        mMediaAlbumArtists = new ArrayList<>();
-        glide = GlideApp.with(context);
-
-        //TagOptionSingleton.getInstance().setAndroid(true);
-        TagOptionSingleton.getInstance().setID3V2Version(ID3V2Version.ID3_V23);
-        TagOptionSingleton.getInstance().setWriteMp3GenresAsText(true);
-        TagOptionSingleton.getInstance().setWriteMp4GenresAsText(true);
-        TagOptionSingleton.getInstance().setResetTextEncodingForExistingFrames(true);
-        TagOptionSingleton.getInstance().setId3v1Save(true);
-        TagOptionSingleton.getInstance().setLyrics3Save(true);
-        TagOptionSingleton.getInstance().setWriteChunkSize(2097152);
-        TagOptionSingleton.getInstance().setPersistedUri(androidFile.getPersistedUri());
+        supportedFormat.put("MP3","MP3");
+        supportedFormat.put("M4A","M4A");
+        supportedFormat.put("ACC","ACC");
+        //supportedFormat.put("OGG", "OGG");
+        supportedFormat.put("ALAC", "ALAC");
+        supportedFormat.put("FLAC", "FLAC");
+        //supportedFormat.put("AIF", "AIF");
     }
 
-    public Collection getAllSongList(boolean forceReload) {
+    public static AudioFile getAudioFile(String path) {
+            try {
+                if(isValidForTag(path)) {
+                    AudioFile audioFile = AudioFileIO.read(new File(path));
+                    //audioFiles.put(path, audioFile);
+                    return audioFile;
+                }
+            } catch (CannotReadException | IOException | TagException |ReadOnlyFileException |InvalidAudioFrameException e) {
+               // e.printStackTrace();
+            }
+        //}
+        return null;
+    }
+
+    private static boolean isValidForTag(String path) {
+        String ext = AndroidFile.getFileExtention(path);
+        if(StringUtils.isEmpty(ext)) {
+            return false;
+        }
+        return supportedFormat.containsKey(ext.toUpperCase());
+    }
+
+    public List<MediaItem> getAllSongList(boolean forceReload) {
         if (forceReload || mMediaItems.isEmpty()) {
-            loadMediaItems();
+            queryAllMediaItems();
         }
         return mMediaItems;
     }
 
-    private boolean loadMediaItems() {
+    private boolean queryAllMediaItems() {
         mMediaItems.clear();
+        mMediaAlbumArtists.clear();
+
+        if(executor!=null) {
+            executor.shutdownNow();
+        }
+        executor = Executors.newFixedThreadPool(10);
+
         HeaderItem header = newHeader("MEDIAITEMS");
         header.setTitle("Music");
         ContentResolver mContentResolver = context.getContentResolver();
@@ -107,20 +237,28 @@ public class MediaProvider {
             return false;
         }
         // retrieve the indices of the columns where the ID, title, etc. of the song are
+        int idColumn = cur.getColumnIndex(MediaStore.Audio.Media._ID);
         int artistColumn = cur.getColumnIndex(MediaStore.Audio.Media.ARTIST);
         int titleColumn = cur.getColumnIndex(MediaStore.Audio.Media.TITLE);
         int albumColumn = cur.getColumnIndex(MediaStore.Audio.Media.ALBUM);
+        int albumArtistColumn = cur.getColumnIndex(MediaStore.Audio.Albums.ARTIST);
         int durationColumn = cur.getColumnIndex(MediaStore.Audio.Media.DURATION);
         int dataColumn = cur.getColumnIndex(MediaStore.Audio.Media.DATA);
 
         // add each song to mItems
+        int index = 0;
         do {
+            int id = cur.getInt(idColumn);
             String mediaPath =  cur.getString(dataColumn);
             String mediaTitle = cur.getString(titleColumn);
             String mediaAlbum = cur.getString(albumColumn);
             String mediaArtist = cur.getString(artistColumn);
             long mediaDuration = cur.getLong(durationColumn);
-            mMediaItems.add(newMediaItem(header, mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration));
+            String albumArtist = cur.getString(albumArtistColumn);
+            if(!mMediaAlbumArtists.contains(albumArtist)) {
+                mMediaAlbumArtists.add(albumArtist);
+            }
+            mMediaItems.add(newMediaItem(id,header, mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration,index++));
         } while (cur.moveToNext());
 
         cur.close();
@@ -128,53 +266,7 @@ public class MediaProvider {
         return true;
     }
 
-    public  Collection getSongForFolder(Context context) {
-        List<MediaItem> mItems = new ArrayList<>();
-        Map<String, HeaderItem> headers = new HashMap<>();
-        //HeaderItem header = newHeader("All Songs", 0);
-        ContentResolver mContentResolver = context.getContentResolver();
-        Uri uri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        // Perform a query on the content resolver. The URI we're passing specifies that we
-        // want to query for all audio media on external storage (e.g. SD card)
-        Cursor cur = mContentResolver.query(uri, null, MediaStore.Audio.Media.IS_MUSIC + " = 1", null, "LOWER (" + MediaStore.Audio.Media.DATA + ") ASC, LOWER (" + MediaStore.Audio.Media.TITLE + ") ASC");
-        if (cur == null) {
-            // Query failed...
-            return new ArrayList();
-        }
-        if (!cur.moveToFirst()) {
-            // Nothing to query. There is no music on the device. How boring.
-            return new ArrayList();
-        }
-        // retrieve the indices of the columns where the ID, title, etc. of the song are
-        int artistColumn = cur.getColumnIndex(MediaStore.Audio.Media.ARTIST);
-        int titleColumn = cur.getColumnIndex(MediaStore.Audio.Media.TITLE);
-        int albumColumn = cur.getColumnIndex(MediaStore.Audio.Media.ALBUM);
-        int durationColumn = cur.getColumnIndex(MediaStore.Audio.Media.DURATION);
-        int dataColumn = cur.getColumnIndex(MediaStore.Audio.Media.DATA);
-
-        // add each song to mItems
-        do {
-            String mediaPath = cur.getString(dataColumn);
-            String mediaTitle = cur.getString(titleColumn);
-            String mediaAlbum = cur.getString(albumColumn);
-            String mediaArtist = cur.getString(artistColumn);
-            long mediaDuration = cur.getLong(durationColumn);
-            File file = new File(mediaPath);
-            String displayPath = androidFile.getDisplayPath(file.getParentFile().getName());
-            HeaderItem header = headers.get(displayPath);
-            if(header==null) {
-                header = newHeader(displayPath);
-                header.setTitle(displayPath);
-                headers.put(displayPath, header);
-            }
-            mItems.add(newMediaItem(header, mediaTitle, mediaArtist, mediaAlbum, mediaPath, mediaDuration));
-        } while (cur.moveToNext());
-
-        return mItems;
-    }
-
-
-    public  Collection getSimilarTitles(boolean forceReload) {
+    public  List<MediaItem> getSimilarTitles(boolean forceReload) {
         List<MediaItem> similarTitles = new ArrayList<>();
         getAllSongList(forceReload);
 
@@ -183,7 +275,7 @@ public class MediaProvider {
         boolean preAdded = false;
         for (MediaItem item:mMediaItems) {
             //similarity
-            if (StringUtils.similarity(item.getTitle(), preTitle)>0.9) {
+            if (StringUtils.similarity(item.getTitle(), preTitle)>0.92) {
                 if(!preAdded && preItem != null) {
                     similarTitles.add(preItem);
                 }
@@ -197,24 +289,6 @@ public class MediaProvider {
         }
 
         return similarTitles;
-    }
-
-    public Bitmap getArtworkFromFile(String path) {
-        try {
-            AudioFile read = AudioFileIO.read(new File(path));
-            return getArtwork(read.getTagOrCreateDefault());
-        } catch (CannotReadException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TagException e) {
-            e.printStackTrace();
-        } catch (ReadOnlyFileException e) {
-            e.printStackTrace();
-        } catch (InvalidAudioFrameException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public void deleteFromMediaStore(String pathToDelete) {
@@ -249,14 +323,14 @@ public class MediaProvider {
         return String.format(Locale.getDefault(), "%02d:%02d:%02d", h, m, s);
     }
 
-    public static String formatSampleRate(long rate) {
+    public static String formatAudioSampleRate(long rate) {
         double s = rate / 1000.00;
         String str = String.format(Locale.getDefault(),"%.1f", s);
         str = str.replace(".0", "");
         return str;
     }
 
-    public void updateTag(MediaTag mediaTag, Tag tag) {
+    private void updateTag(MediaTag mediaTag, Tag tag) {
         if (tag == null || mediaTag==null) {
             return;
         }
@@ -296,8 +370,11 @@ public class MediaProvider {
         if (mediaTag.commentHasChanged) {
             setTagField(tag,FieldKey.COMMENT, mediaTag.getComment());
         }
-        if (mediaTag.countryHasChanged) {
-            setTagField(tag,FieldKey.MUSICBRAINZ_RELEASE_COUNTRY, mediaTag.getCountry());
+        if (mediaTag.groupingHasChanged) {
+            setTagField(tag,FieldKey.GROUPING, mediaTag.getGrouping());
+        }
+        if (mediaTag.composerHasChanged) {
+            setTagField(tag,FieldKey.COMPOSER, mediaTag.getComposer());
         }
     }
 
@@ -312,72 +389,69 @@ public class MediaProvider {
         }
     }
 
-    public boolean saveMediaFile(String mediaPath, MediaTag tagUpdate, View view) {
+
+    public boolean saveMediaFile(String mediaPath,MediaTag tagUpdate) throws Exception{
         if (mediaPath == null) {
             return false;
         }
 
-        try {
             boolean isCacheMode = false;
             File file = new File(mediaPath);
             if(!androidFile.isWritable(file)) {
                 isCacheMode = true;
-                Snackbar.make(view, context.getString(R.string.progress_move_from_sd), Snackbar.LENGTH_SHORT).show();
-                //LogHelper.d(TAG, "saf document:"+file.getAbsolutePath());
                 file = androidFile.safToCache(file);
-                //LogHelper.d(TAG, "cached saf document:"+file.getAbsolutePath());
             }
 
-            Snackbar.make(view, context.getString(R.string.progress_write_tags), Snackbar.LENGTH_SHORT).show();
-            AudioFile audioFile = AudioFileIO.read(file);
-            Tag newTag = audioFile.getTagOrCreateAndSetDefault();
-            updateTag(tagUpdate, newTag);
+            AudioFile audioFile = getAudioFile(file.getAbsolutePath());
+            String ext = AndroidFile.getFileExtention(file.getAbsolutePath());
+            if("mp3".equalsIgnoreCase(ext)) {
+                MP3File mp3 = (MP3File) audioFile;
+                if (mp3.hasID3v1Tag()) {
+                    ID3v1Tag oldTag = mp3.getID3v1Tag();
+                    mp3.delete(oldTag);
+                }
+                AbstractID3v2Tag newTag = null;
+                if (mp3.hasID3v2Tag()) {
+                    newTag = mp3.getID3v2Tag();
+                }else {
+                    newTag = new ID3v23Tag();
+                    mp3.setID3v2Tag(newTag);
+                }
+                updateTag(tagUpdate, newTag);
+            } else {
+                updateTag(tagUpdate, audioFile.getTagOrCreateDefault());
+            }
             audioFile.commit();
 
             if(isCacheMode) {
-                Snackbar.make(view, context.getString(R.string.progress_move_to_sd), Snackbar.LENGTH_SHORT).show();
-                //LogHelper.i(TAG, "saf path:"+mediaPath);
                 androidFile.safFromCache(file, mediaPath);
             }
-            Snackbar.make(view, context.getString(R.string.progress_update_media_store), Snackbar.LENGTH_SHORT).show();
             updateOnMediaStore(mediaPath, tagUpdate);
-        } catch (Exception e) {
-            Snackbar.make(view, context.getString(R.string.alert_write_tag_fail), Snackbar.LENGTH_SHORT).show();
-            LogHelper.e(TAG, e);
-            return false;
-        }
+
         return true;
     }
 
-    public boolean deleteMediaFile(String mediaPath, View view) {
-       try {
-           Snackbar.make(view, context.getString(R.string.progress_delete_file), Snackbar.LENGTH_SHORT).show();
-           if (androidFile.deleteFile(new File(mediaPath))) {
-               Snackbar.make(view, context.getString(R.string.progress_update_media_store), Snackbar.LENGTH_SHORT).show();
-               deleteFromMediaStore(mediaPath);
-               return true;
-           }
-       }catch(Exception e) {
-           Snackbar.make(view, context.getString(R.string.alert_delete_fail), Snackbar.LENGTH_SHORT).show();
-           LogHelper.e(TAG, e);
-       }
-       return false;
-    }
-
-    public boolean moveMediaFile(String path, String organizedPath, View view) {
-        try {
-            Snackbar.make(view, context.getString(R.string.progress_organize_file), Snackbar.LENGTH_SHORT).show();
-            if(androidFile.moveFile(path, organizedPath) ) {
-                Snackbar.make(view, context.getString(R.string.progress_update_media_store), Snackbar.LENGTH_SHORT).show();
-                updatePathOnMediaStore(path, organizedPath);
+    public boolean deleteMediaFile(String mediaPath)  throws Exception {
+        File file = new File(mediaPath);
+        File directory = file.getParentFile();
+        if (androidFile.deleteFile(file)) {
+                androidFile.cleanEmptyDirectory(directory);
+                deleteFromMediaStore(mediaPath);
                 return true;
-            }
-        }catch(Exception e) {
-            Snackbar.make(view, context.getString(R.string.alert_organize_fail), Snackbar.LENGTH_SHORT).show();
-            LogHelper.e(TAG, e);
         }
         return false;
     }
+
+    public boolean moveMediaFile(String path, String organizedPath)  throws Exception{
+        if(androidFile.moveFile(path, organizedPath) ) {
+                updatePathOnMediaStore(path, organizedPath);
+                File file = new File(path);
+                androidFile.cleanEmptyDirectory(file.getParentFile());
+                return true;
+        }
+        return false;
+    }
+
 
     private boolean updateOnMediaStore(String path, MediaTag tag) {
             ContentValues values = new ContentValues();
@@ -420,74 +494,117 @@ public class MediaProvider {
         return true;
     }
 
-    public  MediaItem loadMediaItemFromMediaStore(Context context, String path) {
-            ContentResolver mContentResolver = context.getContentResolver();
-            Uri uri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-            // Perform a query on the content resolver. The URI we're passing specifies that we
-            // want to query for all audio media on external storage (e.g. SD card)
-            Cursor cur = mContentResolver.query(uri, null, MediaStore.Audio.Media.DATA+ " = ?",new String[]{path}, null);
-            if (cur == null) {
-                // Query failed...
-                return null;
-            }
-            if (!cur.moveToFirst()) {
-                // Nothing to query. There is no music on the device. How boring.
-                return null;
-            }
-            // retrieve the indices of the columns where the ID, title, etc. of the song are
-            int artistColumn = cur.getColumnIndex(MediaStore.Audio.Media.ARTIST);
-            int titleColumn = cur.getColumnIndex(MediaStore.Audio.Media.TITLE);
-            int albumColumn = cur.getColumnIndex(MediaStore.Audio.Media.ALBUM);
-            int durationColumn = cur.getColumnIndex(MediaStore.Audio.Media.DURATION);
-            int dataColumn = cur.getColumnIndex(MediaStore.Audio.Media.DATA);
-
-            // add each song to mItems
-            String mediaPath =  cur.getString(dataColumn);
-            String mediaTitle = cur.getString(titleColumn);
-            String mediaAlbum = cur.getString(albumColumn);
-            String mediaArtist = cur.getString(artistColumn);
-            long mediaDuration = cur.getLong(durationColumn);
-            MediaItem item = newMediaItem(null, mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration);
-            cur.close();
-            return item;
-
-    }
-
-    public MediaTag getMediaTag(String path, long mediaDuration) {
+    public void loadMediaTag(MediaItem mediaItem, String path) {
         try {
-            File file = new File(path);
-            AudioFile read = AudioFileIO.read(file);
-            return readMediaTag(read, path, null, mediaDuration);
-        } catch (CannotReadException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TagException e) {
-            e.printStackTrace();
-        } catch (ReadOnlyFileException e) {
-            e.printStackTrace();
-        } catch (InvalidAudioFrameException e) {
-            e.printStackTrace();
-        }catch (Exception e) {
-            e.printStackTrace();
+            if(mediaItem.isLoadedEncoding()) return;
+            MediaTag mediaTag = mediaItem.getTag();
+            if (mediaTag == null) {
+                mediaTag = new MediaTag(mediaItem.getPath());
+            }
+
+            if(path == null) {
+                path = mediaItem.getPath();
+            }else {
+                mediaItem.setPath(path);
+            }
+            mediaTag.setDisplayPath(androidFile.getDisplayPath(path));
+
+            AudioFile audioFile = getAudioFile(path);
+
+            if(audioFile==null) return;
+
+            loadAudioCodingFormat(audioFile,mediaItem); //MP3-xxx &&128/256/320kbps
+            loadAudioCoding(audioFile,mediaTag); //16/24/32 bit and 44.1/48/96/192 kHz
+            mediaTag.mediaSize = getMediaSize(audioFile);
+            mediaTag.setTitle(AndroidFile.getNameWithoutExtension(audioFile.getFile()));
+
+            Tag tag = null;
+            String ext = AndroidFile.getFileExtention(path);
+            if("mp3".equalsIgnoreCase(ext)) {
+                MP3File mp3 = (MP3File)audioFile;
+                if(mp3.hasID3v2Tag()) {
+                    loadMP3V2Tag(mp3, mediaTag);
+                }else {
+                    // mp3 v1 tag
+                    loadTag(audioFile, mediaTag);
+                }
+            }else {
+               loadTag(audioFile, mediaTag);
+            }
+            mediaItem.setLoadedEncoding(true);
+        } catch (Exception |OutOfMemoryError oom) {
+            LogHelper.e(TAG, oom);
+            System.gc();
         }
-        return null;
     }
 
-    public MediaTag readMediaTag(AudioFile audioFile, String path, MediaItem media, long mediaDuration) {
-        MediaTag mediaTag = new MediaTag(path);
-        Tag tag =audioFile.getTagOrCreateDefault();
-        mediaTag.mediaFormat = getFormat(audioFile);
-        mediaTag.mediaBitsPerSample = getBitsPerSample(audioFile);
-        mediaTag.mediaBitrate = getBitrate(audioFile,true);
-        mediaTag.mediaSampleRate = getSampleRate(audioFile);
-        mediaTag.mediaPath = audioFile.getFile().getAbsolutePath();
-        mediaTag.displayPlath = androidFile.getDisplayPath(audioFile.getFile().getAbsolutePath());
-        mediaTag.mediaSize = getMediaSize(audioFile);
-        mediaTag.mediaDuration = getMediaDuration(audioFile, media,mediaDuration);
-        mediaTag.setTitle(AndroidFile.getNameWithoutExtension(audioFile.getFile()));
+    private void loadMP3V2Tag(MP3File mp3, MediaTag mediaTag) {
+        AbstractID3v2Tag tag = mp3.getID3v2Tag();
+        if (tag != null && !tag.isEmpty()) {
+            try {
+                mediaTag.setTitle(tag.getFirst(ID3v23Frames.FRAME_ID_V3_TITLE));
+            } catch (UnsupportedOperationException ignored) {
+                //default to file name
+                mediaTag.setTitle(AndroidFile.getNameWithoutExtension(mp3.getFile()));
+            }
+            try {
+                mediaTag.setAlbum(tag.getFirst(ID3v23Frames.FRAME_ID_V3_ALBUM));
+            } catch (UnsupportedOperationException ignored) {
+            }
+            try {
+                //List<String> artists = tag.getFields(FieldKey.ARTIST);
+                //mediaTag.setArtist(StringUtils.merge(artists, ";"));
+                mediaTag.setArtist(tag.getFirst(ID3v23Frames.FRAME_ID_V3_ARTIST));
+            } catch (UnsupportedOperationException ignored) {
+            }
+            try {
+                mediaTag.setAlbumArtist(tag.getFirst(ID3v23Frames.FRAME_ID_V3_ACCOMPANIMENT));  //TPE2
+            } catch (UnsupportedOperationException ignored) {
+            }
+            try {
+                mediaTag.setGenre(tag.getFirst(ID3v23Frames.FRAME_ID_V3_GENRE));
+            } catch (UnsupportedOperationException ignored) {
+            }
+            try {
+                mediaTag.setYear(tag.getFirst(ID3v23Frames.FRAME_ID_V3_TYER));
+            } catch (UnsupportedOperationException ignored) {
+            }
+            try {
+                mediaTag.setTrack(tag.getFirst(ID3v23Frames.FRAME_ID_V3_TRACK));
+            } catch (UnsupportedOperationException ignored) {
+            }
+            try {
+                mediaTag.setComposer(tag.getFirst(ID3v23Frames.FRAME_ID_V3_COMPOSER));
+            } catch (UnsupportedOperationException ignored) {
+            }
 
-        if(!tag.isEmpty()) {
+            try {
+                mediaTag.setDisc(tag.getFirst(ID3v23Frames.FRAME_ID_V3_SET)); //TPOS
+            } catch (UnsupportedOperationException ignored) {
+           }
+//            try {
+//                mediaTag.setDiscTotal(tag.getFirst(ID3v23Frames.FRAME_ID_V3_SET));  //TPOS
+//            } catch (UnsupportedOperationException ignored) {
+//            }
+            try {
+                mediaTag.setLyrics(tag.getFirst(ID3v23Frames.FRAME_ID_V3_LYRICIST));
+            } catch (UnsupportedOperationException ignored) {
+            }
+            try {
+                mediaTag.setComment(tag.getFirst(ID3v23Frames.FRAME_ID_V3_COMMENT));
+            } catch (UnsupportedOperationException ignored) {
+            }
+            try {
+                mediaTag.setCountry(tag.getFirst(ID3v23Frames.FRAME_ID_V3_CONTENT_GROUP_DESC));
+            } catch (UnsupportedOperationException ignored) {
+            }
+        }
+    }
+
+    private void loadTag(AudioFile audioFile, MediaTag mediaTag) {
+
+        Tag tag = audioFile.getTagOrCreateDefault();
+        if (tag != null && !tag.isEmpty()) {
             try {
                 mediaTag.setTitle(tag.getFirst(FieldKey.TITLE));
             } catch (UnsupportedOperationException ignored) {
@@ -499,8 +616,9 @@ public class MediaProvider {
             } catch (UnsupportedOperationException ignored) {
             }
             try {
-                List<String> artists = tag.getAll(FieldKey.ARTIST);
-                mediaTag.setArtist(StringUtils.merge(artists, ";"));
+                //List<String> artists = tag.getFields(FieldKey.ARTIST);
+                //mediaTag.setArtist(StringUtils.merge(artists, ";"));
+                mediaTag.setArtist(tag.getFirst(FieldKey.ARTIST));
             } catch (UnsupportedOperationException ignored) {
             }
             try {
@@ -520,7 +638,7 @@ public class MediaProvider {
             } catch (UnsupportedOperationException ignored) {
             }
             try {
-                mediaTag.setTrackTotal(tag.getFirst(FieldKey.TRACK_TOTAL));
+                mediaTag.setComposer(tag.getFirst(FieldKey.COMPOSER));
             } catch (UnsupportedOperationException ignored) {
             }
             try {
@@ -540,39 +658,64 @@ public class MediaProvider {
             } catch (UnsupportedOperationException ignored) {
             }
             try {
-                mediaTag.setCountry(tag.getFirst(FieldKey.MUSICBRAINZ_RELEASE_COUNTRY));
+                mediaTag.setCountry(tag.getFirst(FieldKey.GROUPING));
             } catch (UnsupportedOperationException ignored) {
             }
-            mediaTag.artwork = getArtwork(tag);
-        }else {
-            // read tag form file
-            //<album>/<track number> <artist> - <title>
-            //mediaTag.album = audioFile.getFile().getParentFile().getName();
-            TagReader reader = new TagReader();
-            TagReader.Tag mTag = reader.parser(path, TagReader.READ_MODE.HIERARCHY);
-            mediaTag.setAlbum(mTag.album);
-            mediaTag.setTrack(mTag.track);
-            mediaTag.setArtist(mTag.artist);
-            mediaTag.setTitle(mTag.title);
+        }
+    }
+
+    private void loadAudioCodingFormat(AudioFile audioFile, MediaItem mediaItem) {
+        try {
+            MediaTag tag = mediaItem.getTag();
+            long bitrate = audioFile.getAudioHeader().getBitRateAsNumber();
+            tag.audioCompressBitrate = String.format(Locale.getDefault(),"%dkbps",new Object[]{bitrate});
+
+            if(audioFile.getAudioHeader().isLossless()) {
+                mediaItem.getTag().audioCodingFormat = mediaItem.getMediaType();
+             }else {
+               // mediaItem.getTag().audioCodingFormat = mediaItem.getMediaType()+" "+bitrate;
+                mediaItem.getTag().audioCodingFormat = String.format(Locale.getDefault(), "%s %s", new Object[]{mediaItem.getMediaType(), String.valueOf(bitrate)});
+            }
+        }catch (Exception ex) {}
+    }
+
+    public Bitmap getArtwork(MediaItem mediaItem) {
+            AudioFile audioFile = getAudioFile(mediaItem.getPath());
+
+            if(audioFile==null) {
+                return null;
+            }
+
+            return getArtwork(audioFile.getTagOrCreateDefault(),false);
+    }
+
+    public Bitmap getSmallArtwork(MediaItem mediaItem) {
+        AudioFile audioFile = getAudioFile(mediaItem.getPath());
+
+        if(audioFile==null) {
+            return null;
         }
 
-        return mediaTag;
+        return getArtwork(audioFile.getTagOrCreateDefault(),true);
     }
 
-    private String getFormat(AudioFile audioFile) {
-        String fullFormat = audioFile.getAudioHeader().getFormat();
-        String bit = getBitsPerSample(audioFile);
-        return fullFormat.replace(bit, "").trim();
-    }
-
-    public Bitmap getArtwork(Tag tag) {
+    private Bitmap getArtwork(Tag tag, boolean smallImage) {
         Bitmap bitmap = null;
         Artwork artwork = tag.getFirstArtwork();
         if (null != artwork) {
             byte[] artworkData = artwork.getBinaryData();
-            bitmap = BitmapFactory.decodeByteArray(artworkData, 0, artworkData.length);
+            if(smallImage) {
+                bitmap = BitmapHelper.decodeBitmap(artworkData, 240,240);
+                if(bitmap!=null) {
+                //    bitmap = transformCircle(bitmap, 240, 4);
+                    bitmap = BitmapHelper.getRoundedBitmap(bitmap,40);
+                }
+            }else {
+                bitmap = BitmapHelper.decodeBitmap(artworkData, 800,800);
+            }
+            return bitmap;
         }
-        return bitmap;
+        return null;
     }
 
     private String getMediaSize(AudioFile audioFile) {
@@ -586,104 +729,92 @@ public class MediaProvider {
         }
     }
 
-    private String getMediaDuration(AudioFile audioFile, MediaItem media, long mediaDuration) {
+    private void loadAudioCoding(AudioFile read, MediaTag tag) {
         try {
-            long length = mediaDuration;
-            if(length==0) {
-                if (media != null) {
-                    length = media.getDuration();
-                } else {
-                    // read form jaudiotagger if mediaItem is null, may get in-corrected duration
-                    length = audioFile.getAudioHeader().getTrackLength();
+            long sampling = read.getAudioHeader().getSampleRateAsNumber(); //44100/48000 Hz
+            long rate = read.getAudioHeader().getBitsPerSample(); //16/24/32
+            long bitrate = read.getAudioHeader().getBitRateAsNumber(); //128/256/320
+
+            tag.setQuality(MediaQuality.NORMAL);
+            if(sampling<QUALITY_SAMPLING_RATE_HIGH || rate < QUALITY_BIT_HIGH) {
+                tag.setQuality(MediaQuality.LOW);
+            }else if(read.getAudioHeader().isLossless()) {
+                if(sampling > QUALITY_SAMPLING_RATE_HIGH || rate > QUALITY_BIT_HIGH) {
+                    tag.setQuality(MediaQuality.HIRES);
+                }else {
+                    tag.setQuality(MediaQuality.HIGH);
+                }
+            }else {
+                if(bitrate>=QUALITY_COMPRESS_BITRATE_GOOD) {
+                    tag.setQuality(MediaQuality.GOOD);
+                }else if(bitrate<QUALITY_COMPRESS_BITRATE_LOW) {
+                    tag.setQuality(MediaQuality.LOW);
                 }
             }
-            return MediaProvider.formatDuration(length);
-        }catch (Exception ex) {
-            return "00:00";
-        }
+            tag.audioBitsPerSample= rate+"bit";
+            tag.audioSampleRate= formatAudioSampleRate(sampling)+"kHz";
+        }catch (Exception ex) {}
     }
 
-    private String getBitrate(AudioFile read, boolean withUnit) {
-        try {
-            if(withUnit) {
-                return read.getAudioHeader().getBitRate() + " kbps";
-            } else {
-                return read.getAudioHeader().getBitRate();
-            }
-        }catch (Exception ex) {
-            return "";
-        }
-    }
-
-    private String getSampleRate(AudioFile read) {
-        try {
-            long rate = read.getAudioHeader().getSampleRateAsNumber();
-            return formatSampleRate(rate)+" kHz";
-        }catch (Exception ex) {
-            return "";
-        }
-    }
-
-    private String getBitsPerSample(AudioFile read) {
-        try {
-            long rate = read.getAudioHeader().getBitsPerSample();
-            return rate+" bits";
-        }catch (Exception ex) {
-            return "";
-        }
-    }
-
-    public String getOrganizedPath(String path) {
+    public String getOrganizedPath(MediaItem item) {
         // /format/<album|albumartist|artist>/<track no> <artist>-<title>
-        final String ReservedChars = "|\\*<\":>[]~#%^@.";
+        final String ReservedChars = "?|\\*<\":>[]~#%^@.";
         try {
             String musicPath ="/Music/";
-            String storeagePath = androidFile.getStoragePath(context, path);
+            String storeagePath = androidFile.getStoragePath(context, item.getPath());
             if(storeagePath.endsWith(File.separator)) {
                 storeagePath = storeagePath.substring(0,storeagePath.length()-1);
             }
             storeagePath = storeagePath+musicPath;
 
-            AudioFile read = AudioFileIO.read(new File(path));
-            MediaTag tag = readMediaTag(read, path, null, 0);
+            //AudioFile read = getAudioFile(path);
+            //populateMediaTag(read,item);
+            //MediaTag tag = readMediaTag(read, item);
+            MediaTag tag = item.getTag();
 
-            String ext = AndroidFile.getFileExtention(path);
+            String ext = AndroidFile.getFileExtention(item.getPath());
             StringBuffer filename = new StringBuffer();
 
             // country or format
-            filename.append(getFormatAndCounty(path,ext,tag)).append(File.separator);
+            filename.append(StringUtils.trimToEmpty(getFormatAndCounty(item.getPath(),ext,tag))).append(File.separator);
 
             // albumArtist or artist
             boolean useAlbumArtist = false;
             if(!StringUtils.isEmpty(tag.getAlbumArtist())) {
-                filename.append(tag.getAlbumArtist()).append(File.separator);
+                filename.append(formatTitle(tag.getAlbumArtist())).append(File.separator);
                 useAlbumArtist = true;
             }else if(!StringUtils.isEmpty(tag.getArtist())) {
-                filename.append(tag.getArtist()).append(File.separator);
+                filename.append(formatTitle(tag.getArtist())).append(File.separator);
             }
 
             // album
             if(!StringUtils.isEmpty(tag.getAlbum())) {
                 // album!=albumarist, add album as parent folder
                 if(!tag.getAlbum().equalsIgnoreCase(tag.getAlbumArtist())) {
-                    filename.append(tag.getAlbum()).append(File.separator);
+                    filename.append(formatTitle(tag.getAlbum())).append(File.separator);
                 }
             }
 
             // track
             boolean hasTrackOrArtist = false;
-            if(!StringUtils.isEmpty(tag.getTrack())) {
-                filename.append(tag.getTrack());
+            String track = StringUtils.trimToEmpty(tag.getTrack());
+            if(!StringUtils.isEmpty(track)) {
+                int indx = track.indexOf("/");
+                if(indx >0) {
+                    filename.append(StringUtils.trimToEmpty(track.substring(0,indx)));
+                }else {
+                    filename.append(StringUtils.trimToEmpty(track));
+                }
                 hasTrackOrArtist = true;
             }
 
-            // artist
-            if((!StringUtils.isEmpty(tag.getArtist())) && useAlbumArtist) {
+            // artist, if albumartist and arttist != albumartist
+            if((!StringUtils.isEmpty(tag.getArtist())) && useAlbumArtist && !tag.getArtist().equalsIgnoreCase(tag.getAlbumArtist())) {
                 // add artist to file name only have albumArtist
                 if(hasTrackOrArtist) {
                     filename.append(" ");
                 }
-                filename.append(tag.getArtist());
+                filename.append(formatTitle(tag.getArtist()));
                 hasTrackOrArtist = true;
             }
 
@@ -694,9 +825,9 @@ public class MediaProvider {
 
             // title
             if(!StringUtils.isEmpty(tag.getTitle())) {
-                filename.append(tag.getTitle());
+                filename.append(formatTitle(tag.getTitle()));
             }else {
-                filename.append(AndroidFile.getNameWithoutExtension(read.getFile()));
+                filename.append(formatTitle(AndroidFile.getNameWithoutExtension(item.getPath())));
             }
 
             String newPath =  storeagePath+filename.toString();
@@ -707,25 +838,17 @@ public class MediaProvider {
             newPath = newPath+"."+ext;
 
             return newPath;
-        } catch (CannotReadException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TagException e) {
-            e.printStackTrace();
-        } catch (ReadOnlyFileException e) {
-            e.printStackTrace();
-        } catch (InvalidAudioFrameException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return path;
+        return item.getPath();
     }
 
     private String getFormatAndCounty(String path, String ext, MediaTag tag) {
         ext = ext.toUpperCase();
         String tagString = "";
-         if(!StringUtils.isEmpty(tag.getCountry())) {
-            tagString = ext+"_"+tag.getCountry().trim();
+         if(!StringUtils.isEmpty(tag.getGrouping())) {
+            tagString = ext+"_"+tag.getGrouping().trim();
           }else {
             tagString = ext;
          }
@@ -743,30 +866,6 @@ public class MediaProvider {
         return file.exists();
     }
 
-    public  MediaItem getMediaItemByPath(Context context, String path) {
-        try {
-            AudioFile read = AudioFileIO.read(new File(path));
-            // add each song to mItems
-            String mediaPath =  path;
-            String mediaTitle = read.getTag().getFirst(FieldKey.KEY.TITLE);
-            String mediaAlbum = read.getTag().getFirst(FieldKey.KEY.ALBUM);
-            String mediaArtist = read.getTag().getFirst(FieldKey.KEY.ARTIST);
-            long mediaDuration = read.getAudioHeader().getTrackLength();
-            return newMediaItem(null, mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration);
-        } catch (CannotReadException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (TagException e) {
-            e.printStackTrace();
-        } catch (ReadOnlyFileException e) {
-            e.printStackTrace();
-        } catch (InvalidAudioFrameException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     /*
      * Creates a Header item.
     */
@@ -780,68 +879,39 @@ public class MediaProvider {
     /*
      * Creates a normal item with a Header linked.
     */
-    protected MediaItem newMediaItem(IHeader header, String mediaTitle, String mediaArtist, String mediaAlbum, String mediaPath, long mediaDuration) {
-        final MediaItem item = new MediaItem(mediaPath, (HeaderItem) header);
-        item.setTitle(mediaTitle);
-        item.setAlbum(mediaAlbum);
-        item.setArtist(mediaArtist);
+    protected MediaItem newMediaItem(int id, IHeader header, String mediaTitle, String mediaArtist, String mediaAlbum, String mediaPath, long mediaDuration, int index) {
+        final MediaItem item = new MediaItem(id, (HeaderItem) header);
+        item.setIndex(index);
         item.setPath(mediaPath);
-        item.setDuration(mediaDuration);
-        item.setDisplayPath(androidFile.getDisplayPath(item.getPath()));
         item.setMediaType(androidFile.getFileExtention(item.getPath()));
-/*
-        try {
-            MediaMetadataRetriever metaRetriver = new MediaMetadataRetriever();
-            metaRetriver.setDataSource(mediaPath);
-            String bitRate = metaRetriver.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE);
-            String sampleRate = metaRetriver.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CAPTURE_FRAMERATE);
-            item.setMediaBitRate(bitRate+" bits");
-            item.setMediaSampleRate(sampleRate);
-        }catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }*/
-/*
-        try {
-            MediaExtractor mex = new MediaExtractor();
-            mex.setDataSource(mediaPath);// the adresss location of the sound on sdcard.
-            MediaFormat mf = mex.getTrackFormat(0);
-            int bitRate = mf.getInteger(MediaFormat.KEY_BIT_RATE);
-            int sampleRate = mf.getInteger(MediaFormat.KEY_SAMPLE_RATE);
-            item.setMediaBitRate(bitRate+" bits");
-            item.setMediaSampleRate(formatSampleRate(sampleRate)+" kHz");
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-*/
-        item.setGlide(glide);
+        MediaTag tag = new MediaTag(mediaPath);
+        item.setTag(tag);
+        tag.setTitle(mediaTitle);
+        tag.setAudioDuration(mediaDuration);
+        tag.setAlbum(mediaAlbum);
+        tag.setArtist(mediaArtist);
+        tag.setDisplayPath(androidFile.getDisplayPath(item.getPath()));
+        tag.setMediaPath(item.getPath());
 
-/*
-        new AsyncTask<MediaItem,Void,Boolean>() {
-            @Override
-            protected Boolean doInBackground(MediaItem[] objects) {
-                try {
-                    MediaItem item = objects[0];
-                    MediaTag tag = getMediaTag(item.getPath(), item.getDuration());
-                    item.setTitle(tag.getTitle());
-                    item.setAlbum(tag.getAlbum());
-                    item.setArtist(tag.getArtist());
-                    item.setMediaFormat(tag.getMediaFormat());
-                    item.setMediaBitRate(tag.getMediaBitrate());
-                    item.setMediaSampleRate(tag.getMediaSampleRate());
-                    item.setMediaFileSize(tag.getMediaSize());
-                    item.setMediaDuration(tag.getMediaDuration());
-                }catch (Exception ex) {}
-                return true;
-            }
-        }.execute(item);
-*/
         return item;
     }
 
-    public String getDisplayPath(String path) {
-        return androidFile.getDisplayPath(path);
+    protected MediaItem newMediaItem(int id,String mediaTitle, String mediaArtist, String mediaAlbum, String mediaPath, long mediaDuration) {
+        final MediaItem item = new MediaItem(id, null);
+        item.setIndex(0);
+        item.setPath(mediaPath);
+        item.setMediaType(androidFile.getFileExtention(item.getPath()));
+        MediaTag tag = new MediaTag(mediaPath);
+        item.setTag(tag);
+        tag.setTitle(mediaTitle);
+        tag.setAudioDuration(mediaDuration);
+        tag.setAlbum(mediaAlbum);
+        tag.setArtist(mediaArtist);
+        tag.setDisplayPath(androidFile.getDisplayPath(item.getPath()));
+        tag.setMediaPath(item.getPath());
+        loadMediaTag(item, null);
+
+        return item;
     }
 
     public Collection getFoldersForSongs(Context context, String parentFolder) {
@@ -854,38 +924,12 @@ public class MediaProvider {
         return mItems;
     }
 
-    public InputStream openCoverArtInputStream(MediaItem model) throws Exception {
-        Bitmap bitmap = null;
-        try {
-            AudioFile read = AudioFileIO.read(new File(model.getPath()));
-            Tag tag = read.getTag();
-            if (tag == null) {
-                return null;
-            }
-            Artwork artwork = tag.getFirstArtwork();
-             if (null != artwork) {
-                    byte[] artworkData = artwork.getBinaryData();
-                    bitmap = BitmapFactory.decodeByteArray(artworkData, 0, artworkData.length);
-             }
-        }
-        catch (Exception ex) {}
-
-        if (bitmap == null) {
-            bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_notification);
-        }
-
-         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-         return new ByteArrayInputStream(stream.toByteArray());
-    }
-
     private final Cursor makeArtistCursor() {
         return  context.getContentResolver().query(MediaStore.Audio.Artists.EXTERNAL_CONTENT_URI,
                 new String[] {MediaStore.Audio.ArtistColumns.ARTIST}, null, null, MediaStore.Audio.Artists.DEFAULT_SORT_ORDER);
     }
 
     public String[] getArtistsAsArray() {
-        //ArrayList<String> mArtistsList = new ArrayList<String>();
         if(mMediaArtists.isEmpty()) {
             Cursor mCursor = makeArtistCursor();
             if (mCursor != null && mCursor.moveToFirst()) {
@@ -895,11 +939,11 @@ public class MediaProvider {
                 } while (mCursor.moveToNext());
             }
             if (mCursor != null) {
-                mCursor.close();
+                Util.closeSilently(mCursor);
                 mCursor = null;
             }
         }
-        return (String[])mMediaArtists.toArray(new String[0]);
+        return mMediaArtists.toArray(new String[0]);
     }
 
     public String[] getAlbumAsArray() {
@@ -912,11 +956,11 @@ public class MediaProvider {
                 } while (mCursor.moveToNext());
             }
             if (mCursor != null) {
-                mCursor.close();
+                Util.closeSilently(mCursor);
                 mCursor = null;
             }
         }
-        return (String[])mMediaAlbums.toArray(new String[0]);
+        return mMediaAlbums.toArray(new String[0]);
     }
 
     private Cursor makeAlbumCursor() {
@@ -925,24 +969,17 @@ public class MediaProvider {
     }
 
     public String[]  getAlbumArtistAsArray() {
-        if(mMediaAlbumArtists.isEmpty()) {
-            Cursor mCursor = makeAlbumArtistCursor();
-            if (mCursor != null && mCursor.moveToFirst()) {
-                do {
-                    final String artistName = mCursor.getString(0);
-                    mMediaAlbumArtists.add(artistName);
-                } while (mCursor.moveToNext());
-            }
-            if (mCursor != null) {
-                mCursor.close();
-                mCursor = null;
-            }
-        }
-        return (String[])mMediaAlbumArtists.toArray(new String[0]);
+        return mMediaAlbumArtists.toArray(new String[0]);
     }
 
-    private Cursor makeAlbumArtistCursor() {
-        return  context.getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-                new String[] {MediaStore.Audio.AlbumColumns.ALBUM_ART}, null, null, MediaStore.Audio.Albums.DEFAULT_SORT_ORDER);
+    public String formatTitle(CharSequence text) {
+        // trim space
+        // format as word, first letter of word is capital
+        if(text==null) {
+            return "";
+        }
+        String str = text.toString().trim();
+        char [] delimiters = {' ','.','(','['};
+        return StringUtils.capitalize(str, delimiters);
     }
 }

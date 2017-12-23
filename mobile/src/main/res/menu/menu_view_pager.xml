@@ -7,13 +7,17 @@
 	<!-- Search, should appear as action button -->
 	<item android:id="@+id/action_search"
 		android:title="@string/action_search"
-		android:icon="@drawable/ic_action_search"
+		android:icon="@drawable/ic_search_white_24dp"
 		app:showAsAction="collapseActionView|always"
 		android:animateLayoutChanges="true"
 		app:actionViewClass="android.support.v7.widget.SearchView"/>
 
 	<item android:id="@+id/action_settings"
 		android:title="@string/action_settings"
+		android:icon="@drawable/ic_settings_applications_black_24dp"
+		app:showAsAction="never"/>
+	<item android:id="@+id/action_newui"
+		android:title="@string/action_newui"
 		android:icon="@drawable/ic_settings_applications_black_24dp"
 		app:showAsAction="never"/>
 

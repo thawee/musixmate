@@ -24,28 +24,29 @@ ext {
     developerEmail = "thaweemail@gmail.com"
 
     //Library
-    applicationCode = 6
-    applicationVersion = "1.0.0-rc3"
+    applicationCode = 7
+    applicationVersion = "1.0.0-rc4"
     applicationDate = " built on " + getDate()
-    applicationDescription = "Add/Update music tag, find similar titles, and organize music files :-)"
-    applicationName = "Musix Mate"
+    applicationDescription = "Managing music collections on Android Phone :-)"
+    applicationName = "Music Mate"
 
     //Support and Build tools version
-    minSdk = 23
+    minSdk = 25
     targetSdk = 26
-    //buildTools = "25.0.3"
-    buildTools = "26.0.2"
-    supportLib = "26.1.0"
+    buildTools = "27.0.1"
+    supportLibVersion = "27.0.2"
+    constraintVersion = "1.1.0-beta2"
 
     //Support Libraries dependencies
     supportDependencies = [
-            design       : "com.android.support:design:${supportLib}",
-            recyclerview : "com.android.support:recyclerview-v7:${supportLib}",
-            cardview     : "com.android.support:cardview-v7:${supportLib}",
-            appcompat    : "com.android.support:appcompat-v7:${supportLib}",
-            customtabs   : "com.android.support:customtabs:${supportLib}",
-            support      : "com.android.support:support-v13:${supportLib}",
-            annotations  : "com.android.support:support-annotations:${supportLib}"
+            design       : "com.android.support:design:${supportLibVersion}",
+            recyclerview : "com.android.support:recyclerview-v7:${supportLibVersion}",
+            cardview     : "com.android.support:cardview-v7:${supportLibVersion}",
+            appcompat    : "com.android.support:appcompat-v7:${supportLibVersion}",
+            customtabs   : "com.android.support:customtabs:${supportLibVersion}",
+            support      : "com.android.support:support-v13:${supportLibVersion}",
+            annotations  : "com.android.support:support-annotations:${supportLibVersion}",
+            constraintLayout: "com.android.support.constraint:constraint-layout:${constraintVersion}"
     ]
 
     licenseName = "The Apache Software License, Version 2.0"
@@ -64,20 +65,25 @@ if (JavaVersion.current().isJava8Compatible()) {
     allprojects {
         tasks.withType(Javadoc) {
             options.addStringOption('Xdoclint:none', '-quiet')
+            options.addStringOption('encoding', 'UTF-8')
         }
     }
 }
 
 buildscript {
     repositories {
+        google()
         jcenter()
+        maven { url "http://dl.bintray.com/davideas/maven" }
         maven {url = "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.1'
+        //classpath 'com.android.tools.build:gradle:2.3.1'
+        classpath 'com.android.tools.build:gradle:3.0.0'
         classpath "com.github.dcendents:android-maven-gradle-plugin:1.5"
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7"
         classpath "org.jfrog.buildinfo:build-info-extractor-gradle:3.1.1"
+        classpath "eu.davidea:grabver:0.7.0"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -86,13 +92,10 @@ buildscript {
 
 allprojects {
     repositories {
+        google()
         jcenter()
-        maven {
-            url "https://maven.google.com"
-        }
+        maven {url "https://maven.google.com" }
         maven {url = "https://oss.sonatype.org/content/repositories/snapshots/" } //For Snapshots
-        maven {
-            url  'http://dl.bintray.com/gigamole/maven/'
-        }
+        maven {url  'http://dl.bintray.com/gigamole/maven/' }
     }
 }

@@ -5,8 +5,23 @@ import java.util.List;
 import java.util.Locale;
 
 public class StringUtils {
+    public static final String UNKNOWN = "<unknown>";
+    public static final String UNKNOWN_CAP = "<Unknown>";
+    public static final String UNKNOWN_ALL_CAP = "<UNKNOWN>";
 
-    public static String MUSIC_SEP = "/"; //+(char)166+"";
+
+    public static String trimTitle(String text) {
+        if(text == null) return "";
+        if("-".equals(text)) return "";
+        //if(UNKNOWN.equalsIgnoreCase(text)) return "";
+        text = StringUtils.remove(text, UNKNOWN);
+        text = StringUtils.remove(text, UNKNOWN_ALL_CAP);
+        text = StringUtils.remove(text, UNKNOWN_CAP);
+        if("-/-".equals(text)) return "";
+        return StringUtils.trimToEmpty(text);
+    }
+
+
 
     public static boolean isEmpty(String input) {
         if(input == null) {
@@ -22,6 +37,9 @@ public class StringUtils {
         if (StringUtils.isEmpty(str) || delimLen == 0) {
             return str;
         }
+        if(str.equals("VA")) return str;
+        if(str.startsWith("VA ")) return str;
+
         final char[] buffer = str.toCharArray();
         boolean capitalizeNext = true;
         for (int i = 0; i < buffer.length; i++) {
@@ -96,7 +114,7 @@ public class StringUtils {
     }
 
     public static boolean contains(String s1, String s2) {
-	if(s1==null || s2==null) {
+	if(StringUtils.isEmpty(s1) || StringUtils.isEmpty(s2)) {
 		return false;
 	}
 	s1 = s1.trim().toLowerCase();
@@ -187,5 +205,24 @@ public class StringUtils {
             builder.append(str);
         }
         return builder.toString();
+    }
+
+    public static String remove(String txt, String toRemove) {
+        if(isEmpty(txt)) return "";
+        if(isEmpty(toRemove)) return txt;
+        while(txt.indexOf(toRemove)>=0) {
+            txt = txt.replace(toRemove, "");
+        }
+        return txt;
+    }
+
+    public static String getChars(String text, int num) {
+        if(StringUtils.isEmpty(text)) {
+            return "*";
+         }
+         if(text.length()<=num) {
+            return StringUtils.trimToEmpty(text);
+         }
+         return  StringUtils.trimToEmpty(text.substring(0, num));
     }
 }

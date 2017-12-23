@@ -2,90 +2,45 @@ package apincer.android.uamp.provider;
 
 import java.io.File;
 
-import apincer.android.uamp.file.AndroidFile;
-import apincer.android.uamp.item.MediaItem;
 import apincer.android.uamp.utils.StringUtils;
-
-/**
- * Created by Administrator on 8/28/17.
- */
 
 public class TagReader {
      public enum READ_MODE {SIMPLE,HIERARCHY,SM1,SM2};
      String trackSep="";
      String titleSep=" - ";
 
-    public class Tag {
-        public String getTitle() {
-            return title;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
-        }
-
-        public String getArtist() {
-            return artist;
-        }
-
-        public void setArtist(String artist) {
-            this.artist = artist;
-        }
-
-        public String getAlbum() {
-            return album;
-        }
-
-        public void setAlbum(String album) {
-            this.album = album;
-        }
-
-        public String getTrack() {
-            return track;
-        }
-
-        public void setTrack(String track) {
-            this.track = track;
-        }
-
-        String title = "";
-        String artist = "";
-        String album = "";
-        String track = "";
-    }
-
-    public Tag parser(String mediaPath, READ_MODE mode) {
+    public MediaTag parser(String mediaPath, READ_MODE mode) {
         File file = new File(mediaPath);
         if(!file.exists()) {
             return null;
         }
 
-        Tag tag = new Tag();
+        MediaTag tag = new MediaTag(mediaPath);
         String text = AndroidFile.getNameWithoutExtension(file);
         if(mode==READ_MODE.SIMPLE) {
             // filename
-            tag.title = text;
-            tag.album = text;
-            tag.artist = text;
+            tag.setTitle(text);
+            tag.setAlbum(text);
+            tag.setArtist(text);
         }else if(mode==READ_MODE.HIERARCHY) {
             //artist/album/track artist - title
             //tag.album;
             if(file!=null) {
-                tag.track = parseTrackNumber(text);
-                tag.title = removeTrackNumber(text);
-                if(tag.title.indexOf(titleSep)>0) {
+                tag.setTrack(parseTrackNumber(text));
+                tag.setTitle(removeTrackNumber(text));
+                if(tag.getTitle().indexOf(titleSep)>0) {
                     // get artist from title
-                    String txt = tag.title;
-                    tag.artist = parseArtist(txt);
-                    tag.title = parseTitle(txt);
+                    String txt = tag.getTitle();
+                    tag.setArtist(parseArtist(txt));
+                    tag.setTitle(parseTitle(txt));
                 }
                 file = file.getParentFile();
                 if(file !=null) {
-                    tag.album = file.getName();
-                    if(StringUtils.isEmpty(tag.artist)) {
+                    tag.setAlbum(file.getName());
+                    if(StringUtils.isEmpty(tag.getArtist())) {
                         file = file.getParentFile();
                         if (file != null) {
-                            tag.artist = file.getName();
+                            tag.setArtist(file.getName());
                         }
                     }
                 }
@@ -95,21 +50,21 @@ public class TagReader {
             // track sep can be .,-, <space>
             // title sep is -
 
-            tag.track = parseTrackNumber(text);
-            if(!StringUtils.isEmpty(tag.track)) {
+            tag.setTrack(parseTrackNumber(text));
+            if(!StringUtils.isEmpty(tag.getTrack())) {
                 text = removeTrackNumber(text);
             }
-            tag.artist = parseArtist(text);
-            tag.title = parseTitle(text);
-            String featuring = parseFeaturing(tag.artist);
+            tag.setArtist(parseArtist(text));
+            tag.setTitle(parseTitle(text));
+            String featuring = parseFeaturing(tag.getArtist());
             if(!StringUtils.isEmpty(featuring)) {
-                tag.artist = removeFeaturing(tag.artist);
-                tag.title = tag.title + " " + featuring;
+                tag.setArtist(removeFeaturing(tag.getArtist()));
+                tag.setTitle(tag.getTitle()+ " " + featuring);
             }
             if(mode==READ_MODE.SM2) {
-                String newArtist = tag.title;
-                tag.title = tag.artist;
-                tag.artist = newArtist;
+                String newArtist = tag.getTitle();
+                tag.setTitle(tag.getArtist());
+                tag.setArtist(newArtist);
             }
         }
 

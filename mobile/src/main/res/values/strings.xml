@@ -16,7 +16,8 @@
   -->
 <resources>
 
-    <string name="app_name">Musix Mate</string>
+    <string name="app_name">Music Mate</string>
+    <string name="app_description">Managing music collections</string>
     <string name="error_no_metadata">Unable to retrieve metadata.</string>
     <string name="browse_title">Songs</string>
     <string name="error_loading_media">Error Loading Media</string>
@@ -44,29 +45,43 @@
     <string name="tab_similarity_title">Similarity</string>
 
     <!-- alert -->
-    <string name="alert_delete_selected_message">Delete selected media files from Android.</string>
-    <string name="alert_delete_message">Delete media file from Android…</string>
-    <string name="alert_delete_fail">Cannot delete media file</string>
-    <string name="alert_write_tag_fail">Cannot update tags on media file</string>
-    <string name="alert_delete_confirm">DELETE</string>
-    <string name="alert_delete_cancel">CANCEL</string>
-    <string name="alert_organize_title">Move media file to Music Library</string>
-    <string name="alert_organize_already">Media file already organized in Music Library</string>
-    <string name="alert_organize_confirm">MOVE</string>
-    <string name="alert_organize_cancel">CANCEL</string>
-    <string name="alert_organize_fail">Cannot move media file to music library</string>
-    <string name="alert_back_to_exit">Press BACK again to exit</string>
-    <string name="alert_invalid_media_file">Media file for \'%1$s\' is not valid, could not open with editor!</string>
-    <string name="alert_listening_not_found">Now playing \'%1$s\', is not found</string>
-    <string name="alert_listening_title">Now playing \'%1$s\ - %2$s\'</string>
-    <string name="alert_file_not_exists">This file is no longer available</string>
+    <string name="alert_delete_title">Delete song from Android</string>
+    <string name="alert_delete_confirm">Confirm to remove \"%1$s\", \"%2$s\"</string>
+    <string name="alert_delete_success">\"%1$s\" is successfully deleted from Android</string>
+    <string name="alert_delete_inprogress">Deleting  \"%1$s\", \"%2$s\"</string>
+    <string name="alert_delete_fail">Cannot delete \"%1$s\", \"%2$s\"</string>
+    <string name="alert_delete_confirm_btn">DELETE</string>
+    <string name="alert_delete_cancel_btn">CANCEL</string>
 
-    <string name="progress_organize_file">Moving file to Music Library</string>
-    <string name="progress_move_from_sd">Moving file from SD Card</string>
-    <string name="progress_move_to_sd">Moving file back to SD Card</string>
-    <string name="progress_write_tags">Writing media tags</string>
+    <string name="alert_write_tag_title">Update song information</string>
+    <string name="alert_write_tag_inprogress">Writing tags to \"%1$s\", \"%2$s\"</string>
+    <string name="alert_write_tag_success">\"%1$s\" is successfully updated with updated tags information</string>
+    <string name="alert_write_tag_fail">Cannot update tags on \"%1$s\", \"%2$s\"</string>
+
+    <string name="alert_organize_title">Move song to Music Directory</string>
+    <string name="alert_organize_already">\"%1$s\" already in Music Directory, Cannot move file.</string>
+    <string name="alert_organize_success">\"%1$s\" successfully move to Music Directory</string>
+    <string name="alert_organize_inprogress">Moving \"%1$s\" to Music Directory, \"%2$s\"</string>
+    <string name="alert_organize_fail">Cannot move \"%1$s\" to Music Directory, \"%2$s\"</string>
+    <string name="alert_organize_confirm">Confirm to move \"%1$s\" to \"%2$s\"</string>
+    <string name="alert_organize_confirm_btn">MOVE</string>
+    <string name="alert_organize_cancel_btn">CANCEL</string>
+
+    <string name="alert_back_to_exit">Press BACK again to exit</string>
+    <string name="alert_invalid_media_file">Media file for \"%1$s\" is not valid, could not open with editor!</string>
+    <string name="alert_listening_not_found">Now playing \"%1$s\", is not found</string>
+    <string name="alert_listening_title">Now playing \"%1$s\" - \"%2$s\"</string>
+    <string name="alert_file_not_exists">This file is no longer available</string>
+    <string name="alert_media_file_not_save">Tag edited are not save, reverted to original tag.</string>
+
+    <string name="alert_find_music_title">Find song information</string>
+    <string name="alert_find_music_information">Finding song information for \"%1$s\" by \"%2$s\"</string>
+
+    <string name="alert_error_title">Problem</string>
+    <string name="alert_warning_title">Warning</string>
+
+    <string name="progress_load_media_store">Loading Music Library...</string>
     <string name="progress_update_media_store">Updating Android Media Store</string>
-    <string name="progress_delete_file">Deleting file</string>
     <string name="progress_download_artwork">Downloading artwork</string>
 
     <string name="preference_cache">Clean cache</string>
@@ -87,12 +102,13 @@
     <!-- Action -->
     <string name="action_search">Search...</string>
     <string name="action_settings">Settings</string>
+    <string name="action_newui">New Browser UI</string>
 
     <!-- Action Mode -->
     <string name="action_delete">Delete</string>
     <string name="action_select_all">Select All</string>
-    <string name="action_selected_one">%1$s selected</string>
-    <string name="action_selected_many">%1$s selected</string>
+    <string name="action_selected_one">%1$s song selected</string>
+    <string name="action_selected_many">%1$s songs selected</string>
     <string name="action_deleted">Deleted</string>
 
     <!-- Scrollable Headers/Footer/ProgressItem -->
@@ -100,6 +116,10 @@
     <string name="endless_disabled">No more items to load (max reached).</string>
     <string name="endless_cancel">Cancelled by the user.</string>
     <string name="endless_error">An error occurred while loading more items.</string>
+
+    <string name="cover_image">Matches cover images</string>
+    <string name="cover_image_select">Click to pick image from Gallery</string>
+    <string name="matched_media_tag">Matches titles</string>
 
     <!-- Extras -->
     <string name="no_items">No items</string>

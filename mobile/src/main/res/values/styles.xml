@@ -28,7 +28,7 @@
         <item name="android:background">@android:color/background_light</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_margin">@dimen/spacing_large</item>
-        <item name="android:src">@drawable/ic_tag_done</item>
+        <item name="android:src">@drawable/ic_beenhere_black_24dp</item>
         <item name="borderWidth">0dp</item>
         <item name="elevation">6dp</item>
         <item name="pressedTranslationZ">12dp</item>
@@ -111,5 +111,19 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
         <item name="android:gravity">start|center_vertical</item>
+    </style>
+    <style name="PopupMenuStyle" parent="@android:style/Widget.PopupMenu">
+        <item name="android:popupBackground">@color/black_alpha_90</item>
+    </style>
+
+    <style name="NotificationBackgroundImage">
+        <item name="android:alpha">0.5</item>
+        <item name="android:scaleType">fitXY</item>
+        <item name="android:src">@drawable/bg</item>
+    </style>
+
+    <style name="ProgressTheme" parent="Base.Theme.AppCompat.Light.Dialog.Alert">
+        <item name="windowFixedWidthMajor">90%</item>
+        <item name="windowFixedWidthMinor">90%</item>
     </style>
 </resources>

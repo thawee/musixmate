@@ -1,35 +1,38 @@
 package apincer.android.uamp.provider;
 
-import android.graphics.Bitmap;
+import apincer.android.uamp.utils.StringUtils;
 
-public class MediaTag {
-    public String getMediaBitsPerSample() {
-        return mediaBitsPerSample;
+public class MediaTag  implements   Cloneable {
+
+    public void setAudioDuration(long audioDuration) {
+        this.audioDuration = audioDuration;
     }
 
-    public String mediaBitsPerSample;
+    public void setMediaPath(String mediaPath) {
+        this.mediaPath = mediaPath;
+    }
+
+    public void setMediaSize(String mediaSize) {
+        this.mediaSize = mediaSize;
+    }
 
     public String getDisplayPath() {
-        return displayPlath;
+        return displayPath;
     }
 
-    public void setChanged(boolean changed) {
-        this.changed = changed;
+    public void setDisplayPath(String displayPath) {
+        this.displayPath = displayPath;
     }
 
-    public enum MediaTypes {SONGS,SIMILARITY,FILES}
     protected String mediaPath;
-    protected String displayPlath;
-
-    public String getMediaFormat() {
-        return mediaFormat;
-    }
-
-    protected String mediaFormat;
-    protected String mediaSampleRate;
-    protected String mediaBitrate;
     protected String mediaSize;
-    protected String mediaDuration;
+    protected String displayPath;
+    protected transient String audioBitsPerSample;
+    protected transient String audioSampleRate;
+    protected String audioCompressBitrate;
+    protected transient String audioCodingFormat;
+    private MediaProvider.MediaQuality quality = MediaProvider.MediaQuality.NORMAL;
+    private long audioDuration;
     private String title;
     private String album;
     private String artist;
@@ -42,8 +45,8 @@ public class MediaTag {
     private String discTotal;
     private String lyrics;
     private String comment;
-    private String country;
-    protected Bitmap artwork;
+    private String composer;
+    private String grouping;
     protected boolean titleHasChanged;
     protected boolean albumHasChanged;
     protected boolean artistHasChanged;
@@ -56,9 +59,17 @@ public class MediaTag {
     protected boolean discTotalHasChanged;
     protected boolean lyricsHasChanged;
     protected boolean commentHasChanged;
-    protected boolean countryHasChanged;
-    protected boolean artworkChanged;
-    protected boolean changed;
+    protected boolean groupingHasChanged;
+    protected boolean composerHasChanged;
+
+    public String getAudioCompressBitrate() {
+        return audioCompressBitrate;
+    }
+
+
+    public String getAudioCodingFormat() {
+        return audioCodingFormat;
+    }
 
     public MediaTag(String path) {
         mediaPath = path;
@@ -68,12 +79,12 @@ public class MediaTag {
         return mediaPath;
     }
 
-    public String getMediaSampleRate() {
-        return mediaSampleRate;
-    }
-
-    public String getMediaBitrate() {
-        return mediaBitrate;
+    public String getAudioCoding() {
+        if(!StringUtils.isEmpty(audioBitsPerSample)) {
+            return audioBitsPerSample+"/"+audioSampleRate;
+        }else {
+            return audioSampleRate;
+        }
     }
 
     public String getTitle() {
@@ -124,12 +135,21 @@ public class MediaTag {
         return comment;
     }
 
-    public String getCountry() {
-        return country;
+    public String getGrouping() {
+        return grouping;
     }
 
-    public Bitmap getArtwork() {
-        return artwork;
+    public String getComposer() {
+        return composer;
+    }
+    public void setComposer(String composer) {
+        if (composer == null) {
+            composer ="";
+        }
+        if (this.composer == null || !this.composer.equals(composer)) {
+            this.composer = composer;
+            composerHasChanged = true;
+        }
     }
 
     public void setTitle(String title) {
@@ -252,13 +272,13 @@ public class MediaTag {
         }
     }
 
-    public void setCountry(String country) {
-        if (country == null) {
+    public void setCountry(String grouping) {
+        if (grouping == null) {
             return;
         }
-        if (this.country == null || !this.country.equals(country)) {
-            this.country = country;
-            countryHasChanged = true;
+        if (this.grouping == null || !this.grouping.equals(grouping)) {
+            this.grouping = grouping;
+            groupingHasChanged = true;
         }
     }
 
@@ -266,7 +286,47 @@ public class MediaTag {
         return mediaSize;
     }
 
-    public String getMediaDuration() {
-        return mediaDuration;
+    public String getAudioDurationAsString() {
+            return MediaProvider.formatDuration(audioDuration);
+    }
+
+    public long getAudioDuration() {
+        return audioDuration;
+    }
+
+    public MediaProvider.MediaQuality getQuality() {
+        return quality;
+    }
+
+    public void setQuality(MediaProvider.MediaQuality quality) {
+        this.quality = quality;
+    }
+
+    @Override
+    public MediaTag clone() {
+        MediaTag tag = new MediaTag(mediaPath);
+        tag.mediaSize = mediaSize;
+        tag.displayPath = displayPath;
+        tag.audioBitsPerSample = audioBitsPerSample;
+        tag.audioSampleRate = audioSampleRate;
+        tag.audioCompressBitrate = audioCompressBitrate;
+        tag.audioCodingFormat = audioCodingFormat;
+        tag.quality = quality;
+        tag.audioDuration=audioDuration;
+        tag.title=title;
+        tag.album=album;
+        tag.artist=artist;
+        tag.albumArtist=albumArtist;
+        tag.genre=genre;
+        tag.year=year;
+        tag.track=track;
+        tag.trackTotal=trackTotal;
+        tag.disc=disc;
+        tag.discTotal=discTotal;
+        tag.lyrics=lyrics;
+        tag.comment=comment;
+        tag.grouping=grouping;
+        tag.composer =composer;
+        return tag;
     }
 }

@@ -141,7 +141,9 @@ public class LogHelper {
             writer.write(String.format("%1s [%2s]:%3s\r\n",
                     getDateTimeStamp(), logMessageTag, logMessage));
             writer.close();
-        } catch (IOException e) {
+        } catch(RuntimeException ex) {
+            System.out.println(logMessageTag +" "+ logMessage);
+        }catch (IOException e) {
             Log.e("LogHelper", "Unable to log exception to file.");
         }
     }

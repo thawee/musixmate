@@ -68,8 +68,20 @@
     <!-- Transparent colors-->
     <color name="black_alpha_12">#1F000000</color>
     <color name="black_alpha_30">#4D000000</color>
+    <color name="black_alpha_90">#9D000000</color>
     <color name="colorPrimary_alpha_12">#1F380396</color>
     <color name="colorPrimary_alpha_30">#4D380396</color>
+    <color name="colorPrimary_alpha_xxx">#AD380396</color>
+    <color name="colorPrimaryDark_light_30">#2d5b15d8</color>
+    <color name="colorPrimaryDark_light_90">#9d5b15d8</color>
+    <color name="now_playing_alpha_30">#4DFF8000</color>
+
+    <!-- -->
+    <color name="quality_hires">#FFFF00</color>
+    <color name="quality_high">#D2DD07</color>
+    <color name="quality_good">#A2AA07</color>
+    <color name="quality_normal">#888888</color>
+    <color name="quality_low">#CD5C5C</color>
 
     <!-- Common colors -->
     <color name="list_choice_normal_bg_light">#fffafafa</color>
@@ -78,5 +90,8 @@
     <color name="devider">#757575</color>
     <color name="text_info_roundect_value">#000000</color>
     <color name="text_info_roundect_value_invert">#ffffff</color>
+
+    <color name="fastScrollHandleColor">#FFF</color>
+    <color name="fastScrollBarColor">#ffcecece</color>
 
 </resources>

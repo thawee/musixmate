@@ -80,4 +80,9 @@
     <dimen name="popup_max_height">290dp</dimen>
     <dimen name="bottom_sheet_peek">312dp</dimen>
 
+    <dimen name="padding_normal">30dp</dimen>
+
+    <dimen name="notification_artist">10dp</dimen>
+    <dimen name="doorhanger_rounded_corner_radius">4dp</dimen>
+
 </resources>

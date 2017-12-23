@@ -5,6 +5,7 @@
     android:id="@+id/main_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorPrimary_light"
     android:fitsSystemWindows="true">
 
     <android.support.design.widget.AppBarLayout
@@ -24,7 +25,7 @@
             app:expandedTitleMarginEnd="64dp"
             android:fitsSystemWindows="true">
 
-            <apincer.android.uamp.ui.views.SquareImageView
+            <apincer.android.uamp.ui.view.SquareImageView
                 android:id="@+id/image"
                 android:src="@drawable/ic_music"
                 android:layout_width="match_parent"
@@ -40,7 +41,7 @@
                     android:layout_gravity="bottom"
                     android:orientation="vertical">
 
-                    <me.grantland.widget.AutofitTextView
+                    <apincer.android.uamp.ui.view.AutoResizeTextView
                         android:id="@+id/media_path"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -52,9 +53,7 @@
                         android:layout_marginLeft="2dp"
                         android:layout_marginBottom="2dp"
                         android:textColor="@color/text_info_roundect_value_invert"
-                        app:minTextSize="8sp"
                         android:text="File Location"/>
-
                 <RelativeLayout
                     android:id="@+id/media_panel"
                     android:layout_width="match_parent"
@@ -76,7 +75,7 @@
                                     android:minHeight="14dp"
                                     android:textColor="@color/text_info_roundect_value"
                                     android:textSize="11sp"
-                                    android:background="@drawable/shape_round_format"
+                                    android:background="@drawable/shape_round_format_normal"
                                     android:text="FLAC"/>
                             <TextView
                                 android:id="@+id/media_samplerate"
@@ -91,7 +90,7 @@
                                 android:minHeight="14dp"
                                 android:textColor="@color/text_info_roundect_value"
                                 android:textSize="11sp"
-                                android:background="@drawable/shape_round_format"
+                                android:background="@drawable/shape_round_format_normal"
                                 android:layout_toRightOf="@+id/media_format"
                                 android:text="16 bits/44.1 kHz"/>
                             <TextView
@@ -107,7 +106,7 @@
                                 android:minHeight="14dp"
                                 android:textColor="@color/text_info_roundect_value"
                                 android:textSize="11sp"
-                                android:background="@drawable/shape_round_format"
+                                android:background="@drawable/shape_round_format_normal"
                                 android:layout_toRightOf="@+id/media_samplerate"
                                 android:text="312 kbps"/>
                             <TextView
@@ -123,7 +122,7 @@
                                 android:minHeight="14dp"
                                 android:textColor="@color/text_info_roundect_value"
                                 android:textSize="11sp"
-                                android:background="@drawable/shape_round_format"
+                                android:background="@drawable/shape_round_format_normal"
                                 android:layout_toRightOf="@+id/media_bitrate"
                                 android:text="10 MB"/>
                             <TextView
@@ -139,65 +138,11 @@
                                 android:minHeight="14dp"
                                 android:textColor="@color/text_info_roundect_value"
                                 android:textSize="11sp"
-                                android:background="@drawable/shape_round_format"
+                                android:background="@drawable/shape_round_format_normal"
                                 android:layout_toRightOf="@+id/media_filesize"
                                 android:text="5:20"/>
                 </RelativeLayout>
-                    <!--
-                    <TextView
-                        android:id="@+id/media_path"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:maxLines="1"
-                        android:paddingLeft="4dp"
-                        android:paddingRight="4dp"
-                        android:layout_marginRight="2dp"
-                        android:layout_marginLeft="2dp"
-                        android:layout_marginBottom="2dp"
-                        android:textColor="@color/text_info_roundect_value_invert"
-                        android:textSize="9sp"
-                        android:ellipsize="marquee"
-                        android:marqueeRepeatLimit="marquee_forever"
-                        android:scrollHorizontally="true"
-                        android:text="File Location"/>
-                        -->
                 </LinearLayout>
-<!--
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginLeft="@dimen/end_text_margin"
-                    android:layout_marginRight="@dimen/end_text_margin"
-                    android:layout_gravity="bottom"
-                    android:background="@drawable/rounded_image_caption">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:baselineAligned="false">
-                        <TextView
-                            android:id="@+id/media_info"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:maxLines="1"
-                            android:textAppearance="?android:attr/textAppearanceSmall"
-                            android:layout_centerInParent= "true"
-                            android:gravity="center"
-                            android:textColor="@color/white"
-                            android:textSize="10sp"/>
-                        <TextView
-                            android:id="@+id/media_path"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:maxLines="2"
-                            android:ellipsize="end"
-                            android:textAppearance="?android:attr/textAppearanceSmall"
-                            android:textSize="8sp"
-                            android:textColor="@color/colorPrimary_light"/>
-                    </LinearLayout>
-                </FrameLayout>
--->
             <android.support.v7.widget.Toolbar
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
@@ -219,34 +164,57 @@
 
         <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:id="@+id/tagContainer">
+
                 <android.support.v7.widget.CardView
-                    android:id="@+id/cardview"
+                    android:id="@+id/editorCardview"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="16dp"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="@dimen/spacing_medium"
                     app:cardUseCompatPadding="true">
                     <include layout="@layout/include_media_editor" />
                 </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/autoCardview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="@dimen/spacing_medium"
+                app:cardUseCompatPadding="true"
+                android:visibility="gone">
+                <include layout="@layout/include_media_auto_tag" />
+            </android.support.v7.widget.CardView>
+
         </FrameLayout>
     </android.support.v4.widget.NestedScrollView>
-    <!--
-    <include layout="@layout/include_fab_media_editor" />
-    -->
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_save_media"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_save_black_24dp"
+        android:src="@drawable/ic_beenhere_black_24dp"
         android:layout_gravity="bottom|end"
         android:tint="@android:color/white"
-        app:layout_anchor="@id/cardview"
+        app:layout_anchor="@id/editorCardview"
         app:layout_anchorGravity="top|end"
         app:backgroundTint="@color/fab_save_background"
         app:fabSize="normal"/>
-
+        <!--
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fabAction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="16dp"
+        app:backgroundTint="?attr/colorPrimary"
+        app:fabSize="normal"
+        app:srcCompat="@drawable/ic_menu" /> -->
 </android.support.design.widget.CoordinatorLayout>
