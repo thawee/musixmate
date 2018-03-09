@@ -10,9 +10,6 @@ import com.github.moduth.blockcanary.BlockCanaryContext;
 import com.github.moduth.blockcanary.internal.BlockInfo;
 import com.squareup.leakcanary.LeakCanary;
 
-import org.jaudiotagger.tag.TagOptionSingleton;
-import org.jaudiotagger.tag.reference.ID3V2Version;
-
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
@@ -196,21 +193,21 @@ public class MusixMateApp extends Application {
         // TURN OFF log for J audio tagger
         jAudioTaggerLogger1.setLevel(Level.OFF);
         jAudioTaggerLogger2.setLevel(Level.OFF);
-
+/*
         TagOptionSingleton.getInstance().setPadNumbers(true);
-        //TagOptionSingleton.getInstance().setAndroid(true);
+
         TagOptionSingleton.getInstance().setLyrics3Save(true);
 
         TagOptionSingleton.getInstance().setID3V2Version(ID3V2Version.ID3_V23);
         TagOptionSingleton.getInstance().setWriteMp3GenresAsText(true);
         TagOptionSingleton.getInstance().setWriteMp4GenresAsText(true);
-        TagOptionSingleton.getInstance().setResetTextEncodingForExistingFrames(true);
-        TagOptionSingleton.getInstance().setId3v1Save(false);
+//        TagOptionSingleton.getInstance().setResetTextEncodingForExistingFrames(true);
+        TagOptionSingleton.getInstance().setId3v1Save(true);
         TagOptionSingleton.getInstance().setLyrics3Save(true);
         TagOptionSingleton.getInstance().setWriteChunkSize(2097152);
-        TagOptionSingleton.getInstance().setRemoveTrailingTerminatorOnWrite(true);
-       // TagOptionSingleton.getInstance().setPersistedUri(androidFile.getPersistedUri());
-
+        //TagOptionSingleton.getInstance().setRemoveTrailingTerminatorOnWrite(true);
+        TagOptionSingleton.getInstance().setId3v2PaddingWillShorten(true);
+*/
         if (BuildConfig.DEBUG) {
             Timber.plant(new DebugTree());
         } else {

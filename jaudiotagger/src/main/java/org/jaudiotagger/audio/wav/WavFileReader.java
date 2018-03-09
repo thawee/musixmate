@@ -35,7 +35,10 @@ public class WavFileReader extends AudioFileReader
 
     protected GenericAudioHeader getEncodingInfo(RandomAccessFile raf) throws CannotReadException, IOException
     {
-        return ir.read(raf);
+        GenericAudioHeader header = ir.read(raf);
+        header.setLossless(true);
+        //return ir.read(raf);
+        return header;
     }
 
     protected Tag getTag(RandomAccessFile raf) throws CannotReadException

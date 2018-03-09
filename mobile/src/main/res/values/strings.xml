@@ -17,6 +17,11 @@
 <resources>
 
     <string name="app_name">Music Mate</string>
+    <string name="app_descriptions">Music Mate - Managing Music Collections</string>
+    <string name="app_version">1.0.0rc4</string>
+    <string name="app_developer">Thawee Prakaipetch</string>
+    <string name="label_developer">Developer</string>
+
     <string name="app_description">Managing music collections</string>
     <string name="error_no_metadata">Unable to retrieve metadata.</string>
     <string name="browse_title">Songs</string>
@@ -44,41 +49,95 @@
     <string name="tab_album_title">Albums</string>
     <string name="tab_similarity_title">Similarity</string>
 
+    <!-- -->
+    <string name="editor_song_info">Song Information</string>
+    <string name="editor_album_info">Album Information</string>
+    <string name="editor_misc_info">Misc Information</string>
+    <string name="editor_song_list">Song List (%1$s songs)</string>
+    <string name="editor_musicbrainz">MusicBrainz</string>
+
+    <string name="editor_label_title">Title</string>
+    <string name="editor_label_artist">Artist</string>
+    <string name="editor_label_genre">Genre</string>
+    <string name="editor_label_group">Group</string>
+    <string name="editor_label_composer">Composer</string>
+    <string name="editor_label_album">Album</string>
+    <string name="editor_label_album_artist">Album Artist</string>
+    <string name="editor_label_track">Track</string>
+    <string name="editor_label_disc">Disc</string>
+    <string name="editor_label_year">Year</string>
+
+    <string name="editor_hint_title">&lt;title&gt;</string>
+    <string name="editor_hint_artist">&lt;artist&gt;</string>
+    <string name="editor_hint_genre">&lt;genre&gt;</string>
+    <string name="editor_hint_group">&lt;group&gt;</string>
+    <string name="editor_hint_composer">&lt;composer&gt;</string>
+    <string name="editor_hint_album">&lt;album&gt;</string>
+    <string name="editor_hint_album_artist">&lt;album artist&gt;</string>
+    <string name="editor_hint_track">&lt;track&gt;</string>
+    <string name="editor_hint_disc">&lt;disc&gt;</string>
+    <string name="editor_hint_year">&lt;year&gt;</string>
+
     <!-- alert -->
+    <string name="alert_many">%1$s/%2$s - %3$s</string>
     <string name="alert_delete_title">Delete song from Android</string>
-    <string name="alert_delete_confirm">Confirm to remove \"%1$s\", \"%2$s\"</string>
-    <string name="alert_delete_success">\"%1$s\" is successfully deleted from Android</string>
-    <string name="alert_delete_inprogress">Deleting  \"%1$s\", \"%2$s\"</string>
-    <string name="alert_delete_fail">Cannot delete \"%1$s\", \"%2$s\"</string>
-    <string name="alert_delete_confirm_btn">DELETE</string>
-    <string name="alert_delete_cancel_btn">CANCEL</string>
+    <string name="alert_delete_confirm">Confirm to delete \"%1$s\";\n\"%2$s\"</string>
+    <string name="alert_delete_success">\"%1$s\" is deleted</string>
+    <string name="alert_delete_inprogress">Deleting "%1$s\"</string>
+    <string name="alert_delete_start">Deleting "%1$s\"</string>
+    <string name="alert_delete_fail">Cannot delete \"%1$s\"</string>
 
-    <string name="alert_write_tag_title">Update song information</string>
-    <string name="alert_write_tag_inprogress">Writing tags to \"%1$s\", \"%2$s\"</string>
-    <string name="alert_write_tag_success">\"%1$s\" is successfully updated with updated tags information</string>
-    <string name="alert_write_tag_fail">Cannot update tags on \"%1$s\", \"%2$s\"</string>
+    <string name="alert_delete_title_many">Delete songs from Android</string>
+    <string name="alert_delete_confirm_many">Delete %1$s selected songs"</string>
+    <string name="alert_delete_success_many">%1$s songs are successfully deleted from Android</string>
+    <string name="alert_delete_inprogress_many">Deleting %1$s songs from Android</string>
 
-    <string name="alert_organize_title">Move song to Music Directory</string>
-    <string name="alert_organize_already">\"%1$s\" already in Music Directory, Cannot move file.</string>
-    <string name="alert_organize_success">\"%1$s\" successfully move to Music Directory</string>
-    <string name="alert_organize_inprogress">Moving \"%1$s\" to Music Directory, \"%2$s\"</string>
-    <string name="alert_organize_fail">Cannot move \"%1$s\" to Music Directory, \"%2$s\"</string>
+    <string name="alert_write_tag_title">Save tags</string>
+    <string name="alert_write_tag_inprogress">Saving tags on "%1$s\"</string>
+    <string name="alert_write_tag_start">Saving \"%1$s\"</string>
+    <string name="alert_write_tag_success">\"%1$s\" is updated</string>
+    <string name="alert_write_tag_fail">Cannot save \"%1$s\"</string>
+
+    <string name="alert_write_tag_title_many">Save tags</string>
+    <string name="alert_write_tag_inprogress_many">Writing tags to %1$s songs."</string>
+    <string name="alert_write_tag_success_many">%1$s songs are successfully updated.</string>
+    <string name="alert_write_tag_fail_many">Cannot update tags for %1$s songs"</string>
+
+    <string name="alert_organize_title">Move to Music Directory</string>
+    <string name="alert_organize_already">\"%1$s\" already in Music Directory, skipped.</string>
+    <string name="alert_organize_success">\"%1$s\" is organized</string>
+    <string name="alert_organize_inprogress">Moving \"%1$s\" to Music Directory;</string>
+    <string name="alert_organize_start">Moving \"%1$s\"</string>
+    <string name="alert_organize_fail">Cannot move \"%1$s\"</string>
     <string name="alert_organize_confirm">Confirm to move \"%1$s\" to \"%2$s\"</string>
-    <string name="alert_organize_confirm_btn">MOVE</string>
-    <string name="alert_organize_cancel_btn">CANCEL</string>
+
+
+    <string name="alert_organize_title_many">Move to Music Directory</string>
+    <string name="alert_organize_confirm_many">Organize %1$s selected songs</string>
+    <string name="alert_organize_success_many">%1$s songs are successfully move to Music Directory</string>
+    <string name="alert_organize_inprogress_many">Moving %1$s songs to Music Directory</string>
+    <string name="alert_organize_fail_many">Cannot move %1$s songs to Music Directory</string>
 
     <string name="alert_back_to_exit">Press BACK again to exit</string>
     <string name="alert_invalid_media_file">Media file for \"%1$s\" is not valid, could not open with editor!</string>
-    <string name="alert_listening_not_found">Now playing \"%1$s\", is not found</string>
+    <string name="alert_listening_not_found">Now playing \"%1$s\" is not found</string>
     <string name="alert_listening_title">Now playing \"%1$s\" - \"%2$s\"</string>
     <string name="alert_file_not_exists">This file is no longer available</string>
-    <string name="alert_media_file_not_save">Tag edited are not save, reverted to original tag.</string>
+    <string name="alert_media_file_not_save">Tags are not saved, discard tag changed?</string>
 
     <string name="alert_find_music_title">Find song information</string>
-    <string name="alert_find_music_information">Finding song information for \"%1$s\" by \"%2$s\"</string>
+    <string name="alert_find_music_information">Enquiry song information for\n  \"%1$s\" by \"%2$s\"</string>
 
     <string name="alert_error_title">Problem</string>
     <string name="alert_warning_title">Warning</string>
+
+    <string name="alert_btn_delete">DELETE</string>
+    <string name="alert_btn_cancel">CANCEL</string>
+    <string name="alert_btn_move">MOVE</string>
+    <string name="alert_btn_set">SET</string>
+    <string name="alert_btn_ok">OK</string>
+
+    <string name="alert_select_tags">Tags and coverart</string>
 
     <string name="progress_load_media_store">Loading Music Library...</string>
     <string name="progress_update_media_store">Updating Android Media Store</string>
@@ -93,22 +152,21 @@
     <string name="preference_rename">File renaming</string>
     <string name="preference_rename_sub">Choose how to rename files depending on their tags</string>
     <string name="preferences_rename_choose">File renaming</string>
-    <string name="preference_target_charset">Tag Encoding</string>
     <string name="preference_target_charset_sub">Choose preferred charset for music tags</string>
-    <string name="preferences_target_charset_choose">Target Encoding</string>
     <string name="preferences_sub_advanced">Advanced</string>
     <string name="preferences_sub_tags">Tags</string>
+    <string name="preference_charset">Tag Encoding</string>
+    <string name="preference_charsets_encoding">Tags Charset Encoding Options</string>
 
     <!-- Action -->
     <string name="action_search">Search...</string>
     <string name="action_settings">Settings</string>
-    <string name="action_newui">New Browser UI</string>
 
     <!-- Action Mode -->
     <string name="action_delete">Delete</string>
     <string name="action_select_all">Select All</string>
-    <string name="action_selected_one">%1$s song selected</string>
-    <string name="action_selected_many">%1$s songs selected</string>
+    <string name="action_selected_one">%1$s song</string>
+    <string name="action_selected_many">%1$s songs</string>
     <string name="action_deleted">Deleted</string>
 
     <!-- Scrollable Headers/Footer/ProgressItem -->
@@ -117,12 +175,17 @@
     <string name="endless_cancel">Cancelled by the user.</string>
     <string name="endless_error">An error occurred while loading more items.</string>
 
-    <string name="cover_image">Matches cover images</string>
+    <string name="cover_image">Matches coverart images</string>
     <string name="cover_image_select">Click to pick image from Gallery</string>
-    <string name="matched_media_tag">Matches titles</string>
+    <string name="matched_media_tag">Matches on MusicBrainz</string>
+    <string name="editor_musicbrainz_matched">Matches on MusicBrainz</string>
+    <string name="editor_music_spectrum">Music Spectrum</string>
 
     <!-- Extras -->
     <string name="no_items">No items</string>
-    <string name="err_no_edit">Nothing to modify</string> 
+    <string name="err_no_edit">Nothing to modify</string>
+
+    <!-- internal defaults -->
+    <string name="max_DB_range" translatable="false">-150</string>
 
 </resources>

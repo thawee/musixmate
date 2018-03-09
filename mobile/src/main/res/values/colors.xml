@@ -28,11 +28,20 @@
     <color name="fullscreen_secondary_line_color">#E5CCCCCC</color>
     <color name="fullscreen_line_color">#E5FFFFFF</color>
     <color name="tv_search_button">#ff0097A7</color>
+    <!--
     <color name="background_gradient_start">#000000</color>
-    <color name="background_gradient_end">#DDDDDD</color>
+     <color name="background_gradient_end">#DDDDDD</color>
+    -->
+    <!--
+    <color name="background_gradient_start">#696969</color>
+    <color name="background_gradient_end">#DCDCDC</color>
+    -->
+    <color name="background_gradient_start">#808080</color>
+    <color name="background_gradient_end">#A9A9A9</color>
+
     <color name="default_background">#0096a6</color>
 
-    <!-- Menu Brackground -->
+    <!-- Menu Background -->
     <color name="menu_editor_background">#FF00FF</color>
     <color name="menu_delete_background">#ffff1600</color>
     <color name="menu_save_background">#0096a6</color>
@@ -71,10 +80,12 @@
     <color name="black_alpha_90">#9D000000</color>
     <color name="colorPrimary_alpha_12">#1F380396</color>
     <color name="colorPrimary_alpha_30">#4D380396</color>
+    <color name="colorPrimary_alpha_200">#f6380396</color>
     <color name="colorPrimary_alpha_xxx">#AD380396</color>
     <color name="colorPrimaryDark_light_30">#2d5b15d8</color>
     <color name="colorPrimaryDark_light_90">#9d5b15d8</color>
     <color name="now_playing_alpha_30">#4DFF8000</color>
+    <color name="now_playing">#FF8000</color>
 
     <!-- -->
     <color name="quality_hires">#FFFF00</color>
@@ -93,5 +104,12 @@
 
     <color name="fastScrollHandleColor">#FFF</color>
     <color name="fastScrollBarColor">#ffcecece</color>
+    <color name="float_transparent">#00000000</color>
+    <color name="float_transparent_60">#60000000</color>
+    <color name="float_transparent_80">#80000000</color>
+    <color name="dimension_transparent_20">#20D2DD07</color>
+
+    <color name="editor_hint_color">@color/material_color_orange_200</color>
+    <color name="editor_label_color">@color/material_color_orange_900</color>
 
 </resources>

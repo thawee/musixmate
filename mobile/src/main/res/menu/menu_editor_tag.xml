@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2014 The Android Open Source Project
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto" >
+    <group android:id="@+id/grpTags"
+        android:menuCategory="container"
+        android:orderInCategory="100">
+        <item
+            android:icon="@drawable/ic_translate_black_24dp"
+            android:id="@+id/menu_change_charset"
+            android:title="Change Charset"
+            app:showAsAction="never" />
+        <item
+            android:icon="@drawable/ic_format_size_black_24dp"
+            android:id="@+id/menu_format_tag"
+            android:title="Format Tags"
+            app:showAsAction="never"/>
+        <item
+            android:icon="@drawable/ic_swap_horiz_black_24dp"
+            android:id="@+id/menu_label_swap_artist"
+            android:title="Title ~ Artist"
+            app:showAsAction="never" />
+    </group>
+    <group
+        android:id="@+id/grpRead"
+        android:menuCategory="container"
+        android:orderInCategory="100">
+        <item
+            android:id="@+id/menu_label_hierarchy"
+            android:icon="@drawable/ic_file_tree_black_24dp"
+            android:title="Tags from File Hierarchy"
+            app:showAsAction="never|collapseActionView" />
+        <item
+            android:id="@+id/menu_label_smart_reader"
+            android:icon="@drawable/ic_tag_outline_black_24dp"
+            android:title="Tags from SmartReader"
+            app:showAsAction="never" />
+    </group>
+</menu>

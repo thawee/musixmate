@@ -21,6 +21,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <application
         android:name=".MusixMateApp"
         android:allowBackup="true"
@@ -29,11 +31,22 @@
         android:largeHeap="true"
         android:theme="@style/AppTheme">
 
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
+
         <!-- Main activity for music browsing on phone -->
 
         <activity
             android:name=".ui.MediaBrowserActivity"
             android:screenOrientation="portrait"
+            android:launchMode="singleTask"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -41,17 +54,31 @@
             </intent-filter>
         </activity>
 
-        <!-- Music Tag Editor activity -->
+        <!-- Music Tag Editor activity
+        android:windowSoftInputMode="adjustPan|stateHidden"
+        -->
         <activity
             android:name=".ui.MediaTagEditorActivity"
-            android:launchMode="singleTop"
             android:parentActivityName=".ui.MediaBrowserActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustPan|stateHidden"
+            android:windowSoftInputMode="adjustPan"
             android:label="@string/app_name">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.MediaBrowserActivity"/>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.APP_MUSIC"/>
+                <data android:scheme="file" android:host="*"/>
+                <data android:mimeType="audio/*"/>
+                <data android:pathPattern=".*\.mp3"/>
+                <data android:pathPattern=".*\.flac"/>
+                <data android:pathPattern=".*\.wav"/>
+                <data android:pathPattern=".*\.m4a"/>
+                <data android:pathPattern=".*\.alac"/>
+                <data android:pathPattern=".*\.acc"/>
+            </intent-filter>
         </activity>
 
         <activity
@@ -59,6 +86,10 @@
             android:screenOrientation="portrait"
             android:label="@string/app_name">
         </activity>
+
+        <activity
+            android:name=".ui.AboutActivity"
+            android:screenOrientation="portrait"/>
 
         <!-- Main music service, provides media browsing and media playback services to
          consumers through MediaBrowserService and MediaSession. Consumers connect to it through
@@ -74,10 +105,7 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibilityservice"/>
         </service>
-        <service
-            android:name=".MediaItemService"
-            android:exported="false"/>
-
+        <service android:name=".FileManagerService" android:exported="false"/>
+        <service android:name=".MediaItemService" android:exported="false"/>
     </application>
-
 </manifest>

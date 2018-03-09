@@ -36,9 +36,9 @@ public class AndroidReceiver extends BroadcastReceiver {
     }
 
     private boolean isStopPlaying(Intent intent) {
-        if(intent.getAction().contains("playstatechanged")) {
-            return !intent.getBooleanExtra("playing", true);
-        }
+        //if(intent.getAction().contains("playstatechanged")) {
+        //    return "true".equalsIgnoreCase(intent.getStringExtra("playing", "false"));
+        //}
         return false;
     }
 

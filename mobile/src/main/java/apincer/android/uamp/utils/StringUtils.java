@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Locale;
 
 public class StringUtils {
+    public static final String ARTIST_SEP = " -/- ";
     public static final String UNKNOWN = "<unknown>";
     public static final String UNKNOWN_CAP = "<Unknown>";
     public static final String UNKNOWN_ALL_CAP = "<UNKNOWN>";
-
+    public static final String UNTITLED_CAP = "<Untitled>";
+    public static final String MULTI_VALUES = "<Multi-Values>";
 
     public static String trimTitle(String text) {
         if(text == null) return "";
@@ -17,11 +19,10 @@ public class StringUtils {
         text = StringUtils.remove(text, UNKNOWN);
         text = StringUtils.remove(text, UNKNOWN_ALL_CAP);
         text = StringUtils.remove(text, UNKNOWN_CAP);
+        text = StringUtils.remove(text, UNTITLED_CAP);
         if("-/-".equals(text)) return "";
         return StringUtils.trimToEmpty(text);
     }
-
-
 
     public static boolean isEmpty(String input) {
         if(input == null) {
@@ -107,8 +108,8 @@ public class StringUtils {
     public static boolean compare(String s1, String s2) {
         if(isEmpty(s1) && !isEmpty(s2)) return false; // first is null
         if(isEmpty(s2)) return true; // do not compare
-        s1 = s1.trim();
-        s2 = s2.trim();
+        s1 = trimToEmpty(s1);
+        s2 = trimToEmpty(s2);
 
         return s1.equalsIgnoreCase(s2);
     }

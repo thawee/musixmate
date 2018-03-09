@@ -10,9 +10,9 @@
 	android:layout_alignBottom="@+id/swipeRefreshLayout"
 	android:layout_alignParentEnd="true"
 	android:layout_alignParentRight="true"
-	app:fastScrollerAutoHideEnabled="true"
+    app:fastScrollerAutoHideEnabled="true"
 	app:fastScrollerAutoHideDelayInMillis="1000"
 	app:fastScrollerBubblePosition="adjacent"
 	app:fastScrollerBubbleEnabled="true"
-	app:fastScrollerIgnoreTouchesOutsideHandle="false"
-	tools:visibility="visible"/>
+	app:layout_scrollFlags="scroll"
+    tools:visibility="visible"/>

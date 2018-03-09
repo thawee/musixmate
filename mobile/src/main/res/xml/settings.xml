@@ -5,6 +5,11 @@
             android:title="@string/preference_folder_pick"
             android:key="preference_folder"
             android:summary="@string/preference_pick_sub" />
+        <EditTextPreference
+            android:title="@string/preference_charset"
+            android:key="preference_tags_charsets_encoding"
+            android:summary="@string/preference_charsets_encoding"
+            android:defaultValue="ISO8859_1,MS874,TIS-620"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/preferences_sub_advanced">
         <CheckBoxPreference

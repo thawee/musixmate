@@ -1,31 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/editorPanel"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:paddingTop="0dp"
+    android:paddingLeft="6dp"
+    android:paddingRight="6dp"
+    android:paddingBottom="4dp"
     android:focusableInTouchMode="true"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
-
+    <TextView
+        android:id="@+id/media_song_information"
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:maxLines="1"
+        android:gravity="center_vertical"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:textColor="@color/colorPrimary_light"
+        android:text="@string/editor_song_info"/>
     <com.rengwuxian.materialedittext.MaterialAutoCompleteTextView
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:imeOptions="actionNext"
         android:nextFocusDown="@+id/artist"
-        android:maxLines="2"
+        android:maxLines="1"
         android:inputType="text"
         android:textSize="14sp"
+        android:layout_marginTop="@dimen/spacing_xsmall"
+        android:layout_marginLeft="@dimen/spacing_large"
         app:met_floatingLabel="normal"
         app:met_clearButton="true"
-        app:met_iconLeft="@drawable/icon_inmenu_songs"
         app:met_hideUnderline="true"
-        android:hint="Title"/>
+        app:met_baseColor="@color/colorPrimaryDark_light"
+        app:met_textColorHint="@color/editor_hint_color"
+        app:met_textColor="@color/colorPrimaryDark_light"
+        app:met_floatingLabelTextColor="@color/editor_label_color"
+        app:met_floatingLabelAlwaysShown="true"
+        app:met_floatingLabelText="@string/editor_label_title"
+        android:hint="@string/editor_hint_title"/>
 
     <com.rengwuxian.materialedittext.MaterialAutoCompleteTextView
         android:id="@+id/artist"
-        android:layout_marginTop="12dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:imeOptions="actionNext"
@@ -33,73 +51,43 @@
         android:maxLines="1"
         android:inputType="text"
         android:textSize="14sp"
+        android:layout_marginLeft="@dimen/spacing_large"
         app:met_floatingLabel="normal"
         app:met_clearButton="true"
-        app:met_iconLeft="@drawable/icon_inmenu_artist"
         app:met_hideUnderline="true"
-        android:hint="Artist"/>
-
-    <com.rengwuxian.materialedittext.MaterialAutoCompleteTextView
-        android:id="@+id/album"
-        android:layout_marginTop="12dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:imeOptions="actionNext"
-        android:nextFocusDown="@+id/album_arist"
-        android:maxLines="1"
-        android:inputType="text"
-        android:textSize="14sp"
-        app:met_floatingLabel="normal"
-        app:met_clearButton="true"
-        app:met_iconLeft="@drawable/icon_inmenu_album"
-        app:met_hideUnderline="true"
-        android:hint="Album"/>
-
-    <com.rengwuxian.materialedittext.MaterialAutoCompleteTextView
-        android:id="@+id/album_arist"
-        android:layout_marginTop="12dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:imeOptions="actionNext"
-        android:maxLines="1"
-        android:inputType="text"
-        android:textSize="14sp"
-        app:met_clearButton="true"
-        app:met_floatingLabel="normal"
-        app:met_hideUnderline="true"
-        android:hint="Album Artist"/>
+        app:met_baseColor="@color/colorPrimaryDark_light"
+        app:met_textColorHint="@color/editor_hint_color"
+        app:met_textColor="@color/colorPrimaryDark_light"
+        app:met_floatingLabelTextColor="@color/editor_label_color"
+        app:met_floatingLabelAlwaysShown="true"
+        app:met_floatingLabelText="@string/editor_label_artist"
+        android:hint="@string/editor_hint_artist"/>
     <com.rengwuxian.materialedittext.MaterialAutoCompleteTextView
         android:id="@+id/composer"
-        android:layout_marginTop="12dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:imeOptions="actionNext"
         android:maxLines="1"
         android:inputType="text"
         android:textSize="14sp"
+        android:layout_marginLeft="@dimen/spacing_large"
         app:met_clearButton="true"
         app:met_floatingLabel="normal"
         app:met_hideUnderline="true"
-        android:hint="Composer"/>
+        app:met_baseColor="@color/colorPrimaryDark_light"
+        app:met_textColorHint="@color/editor_hint_color"
+        app:met_textColor="@color/colorPrimaryDark_light"
+        app:met_floatingLabelTextColor="@color/editor_label_color"
+        app:met_floatingLabelAlwaysShown="true"
+        app:met_floatingLabelText="@string/editor_label_composer"
+        android:hint="@string/editor_hint_composer"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginLeft="@dimen/spacing_large"
         android:orientation="horizontal"
         android:baselineAligned="false">
-        <com.rengwuxian.materialedittext.MaterialAutoCompleteTextView
-            android:id="@+id/group"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:imeOptions="actionNext"
-            android:maxLines="1"
-            android:inputType="text"
-            app:met_clearButton="true"
-            app:met_floatingLabel="normal"
-            app:met_hideUnderline="true"
-            app:met_floatingLabelAlwaysShown="true"
-            android:hint="Group"/>
 
         <com.rengwuxian.materialedittext.MaterialAutoCompleteTextView
             android:id="@+id/genre"
@@ -113,17 +101,88 @@
             app:met_floatingLabel="normal"
             app:met_hideUnderline="true"
             app:met_floatingLabelAlwaysShown="true"
-            android:hint="Genre"/>
+            app:met_baseColor="@color/colorPrimaryDark_light"
+            app:met_textColorHint="@color/editor_hint_color"
+            app:met_textColor="@color/colorPrimaryDark_light"
+            app:met_floatingLabelTextColor="@color/editor_label_color"
+            app:met_floatingLabelText="@string/editor_label_genre"
+            android:hint="@string/editor_hint_genre"/>
 
+        <com.rengwuxian.materialedittext.MaterialAutoCompleteTextView
+            android:id="@+id/group"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:imeOptions="actionNext"
+            android:maxLines="1"
+            android:inputType="text"
+            app:met_clearButton="true"
+            app:met_floatingLabel="normal"
+            app:met_hideUnderline="true"
+            app:met_floatingLabelAlwaysShown="true"
+            app:met_baseColor="@color/colorPrimaryDark_light"
+            app:met_textColorHint="@color/editor_hint_color"
+            app:met_textColor="@color/colorPrimaryDark_light"
+            app:met_floatingLabelTextColor="@color/editor_label_color"
+            app:met_floatingLabelText="@string/editor_label_group"
+            android:hint="@string/editor_hint_group"/>
     </LinearLayout>
+    <TextView
+        android:id="@+id/media_album_information"
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:gravity="center_vertical"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:maxLines="1"
+        android:textColor="@color/colorPrimary_light"
+        android:text="@string/editor_album_info" />
+    <com.rengwuxian.materialedittext.MaterialAutoCompleteTextView
+        android:id="@+id/album"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:imeOptions="actionNext"
+        android:nextFocusDown="@+id/album_arist"
+        android:maxLines="1"
+        android:inputType="text"
+        android:textSize="14sp"
+        android:layout_marginLeft="@dimen/spacing_large"
+        app:met_floatingLabel="highlight"
+        app:met_clearButton="true"
+        app:met_hideUnderline="true"
+        app:met_floatingLabelAlwaysShown="true"
+        app:met_baseColor="@color/colorPrimaryDark_light"
+        app:met_textColorHint="@color/editor_hint_color"
+        app:met_textColor="@color/colorPrimaryDark_light"
+        app:met_floatingLabelTextColor="@color/editor_label_color"
+        app:met_floatingLabelText="@string/editor_label_album"
+        android:hint="@string/editor_hint_album"/>
+
+    <com.rengwuxian.materialedittext.MaterialAutoCompleteTextView
+        android:id="@+id/album_arist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:imeOptions="actionNext"
+        android:maxLines="1"
+        android:inputType="text"
+        android:textSize="14sp"
+        android:layout_marginLeft="@dimen/spacing_large"
+        app:met_clearButton="true"
+        app:met_floatingLabel="highlight"
+        app:met_hideUnderline="true"
+        app:met_floatingLabelAlwaysShown="true"
+        app:met_baseColor="@color/colorPrimaryDark_light"
+        app:met_textColorHint="@color/editor_hint_color"
+        app:met_textColor="@color/colorPrimaryDark_light"
+        app:met_floatingLabelTextColor="@color/editor_label_color"
+        app:met_floatingLabelText="@string/editor_label_artist"
+        android:hint="@string/editor_hint_album_artist"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginLeft="@dimen/spacing_large"
         android:orientation="horizontal"
         android:baselineAligned="false">
-
         <com.rengwuxian.materialedittext.MaterialEditText
             android:id="@+id/track"
             android:layout_width="0dp"
@@ -136,7 +195,12 @@
             app:met_floatingLabel="normal"
             app:met_hideUnderline="true"
             app:met_floatingLabelAlwaysShown="true"
-            android:hint="Track No."/>
+            app:met_baseColor="@color/colorPrimaryDark_light"
+            app:met_textColorHint="@color/editor_hint_color"
+            app:met_textColor="@color/colorPrimaryDark_light"
+            app:met_floatingLabelTextColor="@color/editor_label_color"
+            app:met_floatingLabelText="@string/editor_label_track"
+            android:hint="@string/editor_hint_track"/>
 
         <com.rengwuxian.materialedittext.MaterialEditText
             android:id="@+id/diskno"
@@ -150,7 +214,12 @@
             app:met_floatingLabel="normal"
             app:met_hideUnderline="true"
             app:met_floatingLabelAlwaysShown="true"
-            android:hint="Disc No."/>
+            app:met_baseColor="@color/colorPrimaryDark_light"
+            app:met_textColorHint="@color/editor_hint_color"
+            app:met_textColor="@color/colorPrimaryDark_light"
+            app:met_floatingLabelTextColor="@color/editor_label_color"
+            app:met_floatingLabelText="@string/editor_label_disc"
+            android:hint="@string/editor_hint_disc"/>
 
         <com.rengwuxian.materialedittext.MaterialEditText
             android:id="@+id/year"
@@ -164,33 +233,81 @@
             app:met_floatingLabel="normal"
             app:met_hideUnderline="true"
             app:met_floatingLabelAlwaysShown="true"
-            android:hint="Year"/>
+            app:met_baseColor="@color/colorPrimaryDark_light"
+            app:met_textColorHint="@color/editor_hint_color"
+            app:met_textColor="@color/colorPrimaryDark_light"
+            app:met_floatingLabelTextColor="@color/editor_label_color"
+            app:met_floatingLabelText="@string/editor_label_year"
+            android:hint="@string/editor_hint_year"/>
     </LinearLayout>
-
+    <TextView
+        android:id="@+id/media_others_information"
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:gravity="center_vertical"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:maxLines="1"
+        android:textColor="@color/colorPrimary_light"
+        android:text="@string/editor_misc_info" />
     <com.rengwuxian.materialedittext.MaterialEditText
         android:id="@+id/comment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginLeft="@dimen/spacing_large"
         android:inputType="textMultiLine"
         android:imeOptions="actionDone"
         android:textSize="14sp"
         app:met_clearButton="true"
         app:met_floatingLabel="normal"
         app:met_hideUnderline="true"
+        app:met_baseColor="@color/colorPrimaryDark_light"
+        app:met_textColorHint="@color/editor_hint_color"
+        app:met_textColor="@color/colorPrimaryDark_light"
+        app:met_floatingLabelTextColor="@color/editor_label_color"
         android:hint="Comment"/>
 
     <com.rengwuxian.materialedittext.MaterialEditText
         android:id="@+id/lyrics"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginLeft="@dimen/spacing_large"
         android:inputType="textMultiLine"
         android:imeOptions="actionDone"
         android:textSize="14sp"
         app:met_clearButton="true"
         app:met_floatingLabel="normal"
         app:met_hideUnderline="true"
+        app:met_baseColor="@color/colorPrimaryDark_light"
+        app:met_textColorHint="@color/editor_hint_color"
+        app:met_textColor="@color/colorPrimaryDark_light"
+        app:met_floatingLabelTextColor="@color/editor_label_color"
         android:hint="Music Lyrics"/>
 
+    <TextView
+        android:id="@+id/media_song_list"
+        android:drawableLeft="@drawable/ic_select_all_grey600_24dp"
+        android:drawableRight="@drawable/ic_arrow_drop_down_black_24dp"
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:gravity="center_vertical"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:maxLines="1"
+        android:textColor="@color/colorPrimary_light"
+        android:text="Song List" />
+    <LinearLayout
+        android:id="@+id/media_items_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/spacing_large"
+        android:layout_gravity="right|end"
+        android:orientation="vertical">
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/media_items_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/float_transparent"
+            tools:listitem="@layout/view_list_item_editor"
+            />
+    </LinearLayout>
 </LinearLayout>

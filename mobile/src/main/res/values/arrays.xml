@@ -10,19 +10,4 @@
         <item>Thai</item>
         <item>Unicode</item>
     </array>
-    <array name="tabTitles">
-        <item>Songs</item>
-        <item>Artist</item>
-        <!--
-        <item>Album</item>
-        -->
-        <item>Similarity</item>
-    </array>
-    <array name="menuOptions">
-        <item>Music Library</item>
-        <item>Similar Songs</item>
-        <item>Recently Played</item>
-        <item>Settings</item>
-        <item>About</item>
-    </array>
 </resources>

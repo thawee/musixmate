@@ -1,5 +1,7 @@
 package apincer.android.uamp.utils;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -8,6 +10,7 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -17,13 +20,21 @@ import android.graphics.drawable.GradientDrawable;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.view.menu.MenuPopupHelper;
+import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewOutlineProvider;
 import android.widget.TextView;
 
+import java.lang.reflect.Field;
 import java.util.Locale;
 
 /**
@@ -33,6 +44,53 @@ import java.util.Locale;
 public class UIUtils  {
     public static final int INVALID_COLOR = -1;
     public static int colorAccent = INVALID_COLOR;
+
+
+    /**
+     * Convert a dp float value to pixels
+     *
+     * @param dp      float value in dps to convert
+     * @return DP value converted to pixels
+     */
+    public static int dp2px(Context context, float dp) {
+        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
+        return Math.round(px);
+    }
+
+    public static void setHeight(View view, int itemHeight, int itemCount, int maxHeight) {
+        if((itemHeight*itemCount) > maxHeight) {
+            view.getLayoutParams().height = maxHeight;
+        }else {
+            view.getLayoutParams().height = itemHeight*itemCount;
+        }
+    }
+
+    @SuppressLint("RestrictedApi")
+    public static void makePopForceShowIcon(PopupMenu popupMenu) {
+        try {
+            Field mFieldPopup=popupMenu.getClass().getDeclaredField("mPopup");
+            mFieldPopup.setAccessible(true);
+            MenuPopupHelper mPopup = (MenuPopupHelper) mFieldPopup.get(popupMenu);
+            mPopup.setForceShowIcon(true);
+        } catch (Exception e) {
+
+        }
+    }
+
+    public static boolean colorizeToolbarOverflowButton(@NonNull Toolbar toolbar, @ColorInt int toolbarIconsColor) {
+        final Drawable overflowIcon = toolbar.getOverflowIcon();
+        if (overflowIcon == null)
+            return false;
+        toolbar.setOverflowIcon(getTintedDrawable(toolbar.getContext(), overflowIcon, toolbarIconsColor));
+        return true;
+    }
+
+    public static Drawable getTintedDrawable(@NonNull Context context, @NonNull Drawable inputDrawable, @ColorInt int color) {
+        Drawable wrapDrawable = DrawableCompat.wrap(inputDrawable);
+        DrawableCompat.setTint(wrapDrawable, color);
+        DrawableCompat.setTintMode(wrapDrawable, PorterDuff.Mode.SRC_IN);
+        return wrapDrawable;
+    }
 
     /**
      * Get a color value from a theme attribute.
@@ -66,6 +124,42 @@ public class UIUtils  {
         Canvas canvas = new Canvas(bitmapResult);
         canvas.drawBitmap(bitmap, 0, 0, paint);
         return bitmapResult;
+    }
+
+    /**
+     * Returns the complimentary (opposite) color.
+     * @param color int RGB color to return the compliment of
+     * @return int RGB of compliment color
+     */
+    public static int getComplimentColor(int color) {
+        // get existing colors
+        int alpha = Color.alpha(color);
+        int red = Color.red(color);
+        int blue = Color.blue(color);
+        int green = Color.green(color);
+
+        // find compliments
+        red = (~red) & 0xff;
+        blue = (~blue) & 0xff;
+        green = (~green) & 0xff;
+
+        return Color.argb(alpha, red, green, blue);
+    }
+
+
+    public static int getInvertedColor(int ColorToInvert)     {
+        int RGBMAX = 255;
+
+        float[] hsv = new float[3];
+        float H;
+
+        Color.RGBToHSV( Color.red( ColorToInvert),  RGBMAX - Color.green( ColorToInvert), Color.blue(ColorToInvert), hsv);
+
+        H = (float) (hsv[0] + 0.5);
+
+        if (H > 1) H -= 1;
+
+        return Color.HSVToColor(hsv );
     }
 
     public static void setColorFilter(MenuItem item, int color) {
@@ -251,5 +345,25 @@ public class UIUtils  {
 
     private static int lightenColor(int color, double fraction) {
         return (int) Math.min(color + (color * fraction), 255);
+    }
+
+    /**
+     * A helper class for providing a shadow on sheets
+     */
+    @TargetApi(21)
+    public static class ShadowOutline extends ViewOutlineProvider {
+
+        int width;
+        int height;
+
+        public ShadowOutline(int width, int height) {
+            this.width = width;
+            this.height = height;
+        }
+
+        @Override
+        public void getOutline(View view, Outline outline) {
+            outline.setRect(0, 0, width, height);
+        }
     }
 }

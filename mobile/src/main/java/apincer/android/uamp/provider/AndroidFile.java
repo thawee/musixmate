@@ -1,6 +1,7 @@
 package apincer.android.uamp.provider;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.ParcelFileDescriptor;
@@ -11,12 +12,14 @@ import android.support.annotation.Nullable;
 import android.support.v4.provider.DocumentFile;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -723,7 +726,59 @@ public class AndroidFile {
             File[] files = directory.listFiles();
             if(files==null || files.length==0){
                 deleteFile(directory);
+                // clean parent folder if empty
+                if(directory!=null) {
+                    cleanEmptyDirectory(directory.getParentFile());
+                }
             }
+        }
+    }
+
+    // Copy an InputStream to a File.
+    public static void copy(InputStream in, File file) {
+        OutputStream out = null;
+
+        try {
+            out = new FileOutputStream(file);
+            byte[] buf = new byte[1024];
+            int len;
+            while((len=in.read(buf))>0){
+                out.write(buf,0,len);
+            }
+        }
+        catch (Exception e) {
+            LogHelper.e(TAG, e);
+        }
+        finally {
+            // Ensure that the InputStreams are closed even if there's an exception.
+            try {
+                if ( out != null ) {
+                    out.close();
+                }
+
+                // If you want to close the "in" InputStream yourself then remove this
+                // from here but ensure that you close it yourself eventually.
+                in.close();
+            }
+            catch ( IOException e ) {
+            }
+        }
+    }
+
+    public static void saveImage(Bitmap resource, File coverartFile) {
+        try {
+            //Convert bitmap to byte array
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            resource.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+            byte[] bitmapdata = bos.toByteArray();
+
+//write the bytes in file
+            FileOutputStream fos = new FileOutputStream(coverartFile);
+            fos.write(bitmapdata);
+            fos.flush();
+            fos.close();
+        }
+         catch ( IOException e ) {
         }
     }
 }

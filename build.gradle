@@ -24,8 +24,8 @@ ext {
     developerEmail = "thaweemail@gmail.com"
 
     //Library
-    applicationCode = 7
-    applicationVersion = "1.0.0-rc4"
+    applicationCode = 8
+    applicationVersion = "1.0.0-rc5"
     applicationDate = " built on " + getDate()
     applicationDescription = "Managing music collections on Android Phone :-)"
     applicationName = "Music Mate"
@@ -80,10 +80,12 @@ buildscript {
     dependencies {
         //classpath 'com.android.tools.build:gradle:2.3.1'
         classpath 'com.android.tools.build:gradle:3.0.0'
+        classpath 'com.google.gms:google-services:3.0.0'
         classpath "com.github.dcendents:android-maven-gradle-plugin:1.5"
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7"
         classpath "org.jfrog.buildinfo:build-info-extractor-gradle:3.1.1"
-        classpath "eu.davidea:grabver:0.7.0"
+
+        //classpath "eu.davidea:grabver:0.7.0"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files

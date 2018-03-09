@@ -2,6 +2,8 @@ package apincer.android.uamp.provider;
 
 import java.io.File;
 
+import apincer.android.uamp.model.MediaItem;
+import apincer.android.uamp.model.MediaTag;
 import apincer.android.uamp.utils.StringUtils;
 
 public class TagReader {
@@ -9,13 +11,13 @@ public class TagReader {
      String trackSep="";
      String titleSep=" - ";
 
-    public MediaTag parser(String mediaPath, READ_MODE mode) {
-        File file = new File(mediaPath);
+    public MediaTag parser(MediaItem item, READ_MODE mode) {
+        File file = new File(item.getPath());
         if(!file.exists()) {
             return null;
         }
 
-        MediaTag tag = new MediaTag(mediaPath);
+        MediaTag tag = item.getTag().clone();
         String text = AndroidFile.getNameWithoutExtension(file);
         if(mode==READ_MODE.SIMPLE) {
             // filename
@@ -88,7 +90,10 @@ public class TagReader {
     private String parseTitle(String text) {
         int titleIndx = text.indexOf(titleSep);
             if(titleIndx>0) {
-                return StringUtils.trimToEmpty(text.substring(titleIndx+titleSep.length(), text.length()));
+                text = StringUtils.trimToEmpty(text.substring(titleIndx+titleSep.length(), text.length()));
+            }
+            if(text.indexOf("_")>=0) {
+                text = text.substring(0, text.indexOf("_"));
             }
             return text;
     }
@@ -102,7 +107,18 @@ public class TagReader {
     }
 
     private String removeTrackNumber(String text) {
-        return text.substring(text.indexOf(trackSep)+1, text.length());
+        if(text.indexOf(trackSep)>=0) {
+            //return text.substring(text.indexOf(trackSep) + 1, text.length());
+            text = StringUtils.trimToEmpty(text.substring(text.indexOf(trackSep), text.length()));
+            if(text.startsWith(".")) {
+                text = text.substring(1, text.length());
+            }
+            if(text.indexOf("_")>=0) {
+                text = text.substring(0, text.indexOf("_"));
+            }
+            return text;
+        }
+        return StringUtils.trimToEmpty(text);
     }
 
     private String parseTrackNumber(String text) {

@@ -2,6 +2,18 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_margin="2dp"
+        android:layout_gravity="center">
+    <ImageView
+        android:id="@+id/notification_bgcolor"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:src="@drawable/rounded" />
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
@@ -9,12 +21,12 @@
         android:gravity="center_horizontal|center_vertical">
     <ImageView
         android:id="@+id/notification_coverart"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:layout_marginLeft="6dp"
         android:layout_marginTop="6dp"
         android:layout_marginBottom="6dp"
-        android:src="@drawable/ic_launcher"
+        android:src="@drawable/ic_broken_image_black_24dp"
         android:scaleType="fitCenter"
         android:layout_gravity="center_horizontal|center_vertical"
         android:adjustViewBounds="true"
@@ -25,9 +37,11 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_margin="10dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
             android:layout_gravity="center">
         <ImageView
-            android:id="@+id/notification_bgcolor"
+            android:id="@+id/notification_text_bgcolor"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="fitXY"
@@ -35,9 +49,10 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp"
+        android:layout_marginRight="4dp"
+        android:layout_toRightOf="@id/notification_coverart"
         android:layout_centerVertical="true">
         <TextView
             android:textSize="20sp"
@@ -52,39 +67,135 @@
             android:id="@+id/notification_bitsample_layout"
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:textSize="12sp"
-                android:textColor="@color/black"
-                android:gravity="center"
-                android:id="@+id/notification_extension"
-                android:background="@drawable/shape_round_format_normal"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
+            android:layout_height="wrap_content"
+            >
+            <RelativeLayout
+                android:id="@+id/notification_extension_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="4dp"
-                android:minWidth="30dp"
-                android:minHeight="14dp"
-                android:text="FLAC" />
-
+                android:background="@color/black">
+            <ImageView
+                android:id="@+id/notification_format_bgcolor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:layout_alignTop="@+id/notification_extension"
+                android:layout_alignBottom="@+id/notification_extension"
+                android:layout_alignLeft="@+id/notification_extension"
+                android:layout_alignRight="@+id/notification_extension"
+                android:src="@drawable/shape_round_format" />
+                <TextView
+                    android:id="@+id/notification_extension"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_margin="1dp"
+                    android:paddingLeft="4dp"
+                    android:paddingRight="4dp"
+                    android:gravity="center"
+                    android:minWidth="20dp"
+                    android:text="FLAC"
+                    android:textAlignment="center"
+                    android:textColor="@color/black"
+                    android:textSize="10dp" />
+            </RelativeLayout>
+            <RelativeLayout
+                    android:id="@+id/notification_bitsample_container"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/spacing_xsmall"
+                    android:background="@color/black">
+            <ImageView
+                android:id="@+id/notification_bitsample_bgcolor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:layout_alignTop="@+id/notification_bitsample"
+                android:layout_alignBottom="@+id/notification_bitsample"
+                android:layout_alignLeft="@+id/notification_bitsample"
+                android:layout_alignRight="@+id/notification_bitsample"
+                android:src="@drawable/shape_round_format"/>
             <TextView
-                android:textSize="12sp"
+                android:textSize="10dp"
                 android:textColor="@color/black"
                 android:ellipsize="end"
                 android:gravity="center"
                 android:id="@+id/notification_bitsample"
-                android:background="@drawable/shape_round_format_normal"
                 android:paddingLeft="4dp"
                 android:paddingRight="4dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="6dp"
+                android:layout_margin="1dp"
                 android:minWidth="60dp"
-                android:minHeight="14dp"
+                android:textAlignment="center"
                 android:text="24bit/192kHz"
                 android:maxLines="1" />
+                </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/notification_filesize_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/spacing_xsmall"
+                android:background="@color/black">
+                <ImageView
+                    android:id="@+id/notification_filesize_bgcolor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:layout_alignTop="@+id/notification_filesize"
+                    android:layout_alignBottom="@+id/notification_filesize"
+                    android:layout_alignLeft="@+id/notification_filesize"
+                    android:layout_alignRight="@+id/notification_filesize"
+                    android:src="@drawable/shape_round_format" />
+                <TextView
+                    android:id="@+id/notification_filesize"
+                    android:textSize="10dp"
+                    android:textColor="@color/black"
+                    android:gravity="center"
+                    android:paddingLeft="4dp"
+                    android:paddingRight="4dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="1dp"
+                    android:minWidth="30dp"
+                    android:textAlignment="center"
+                    android:text="00:00 MB" />
+            </RelativeLayout>
+                <RelativeLayout
+                    android:id="@+id/notification_duration_container"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/spacing_xsmall"
+                    android:background="@color/black">
+                <ImageView
+                    android:id="@+id/notification_duration_bgcolor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:layout_alignTop="@+id/notification_duration"
+                    android:layout_alignBottom="@+id/notification_duration"
+                    android:layout_alignLeft="@+id/notification_duration"
+                    android:layout_alignRight="@+id/notification_duration"
+                    android:src="@drawable/shape_round_format" />
+                <TextView
+                    android:id="@+id/notification_duration"
+                    android:textSize="10dp"
+                    android:textColor="@color/black"
+                    android:gravity="center"
+                    android:paddingLeft="4dp"
+                    android:paddingRight="4dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="1dp"
+                    android:minWidth="30dp"
+                    android:textAlignment="center"
+                    android:text="00:00" />
+                </RelativeLayout>
         </LinearLayout>
         <TextView
             android:textSize="@dimen/notification_artist"
@@ -97,4 +208,5 @@
     </LinearLayout>
         </FrameLayout>
     </LinearLayout>
+    </FrameLayout>
 </RelativeLayout>
