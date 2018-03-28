@@ -20,14 +20,14 @@
         <item
                 android:icon="@drawable/ic_move_to_inbox_black_24dp"
                 android:id="@+id/menu_main_transfer_file"
-                android:title="Organize Music on Android"
+                android:title="Move songs to Music Library"
                 app:showAsAction="always|withText"/>
     </group>
     <group android:id="@+id/grpDelete">
         <item
             android:icon="@drawable/ic_delete_black_24dp"
             android:id="@+id/menu_main_delete_file"
-            android:title="Delete Music from Android"
+            android:title="Delete songs from Android"
             app:showAsAction="always|withText"/>
     </group>
     <group android:id="@+id/grpOthers">
@@ -36,10 +36,12 @@
             android:id="@+id/menu_file_manager"
             android:title="Open on File Manager"
             app:showAsAction="always|withText"/>
+        <!--
         <item
             android:icon="@drawable/ic_play_arrow_black_24dp"
         android:id="@+id/menu_play_song"
         android:title="Play on Music Player"
         app:showAsAction="always|withText"/>
+        -->
     </group>
 </menu>

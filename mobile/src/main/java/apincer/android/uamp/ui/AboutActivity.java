@@ -18,9 +18,9 @@ public class AboutActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(new AboutPage(this)
                 .setBackground(android.R.color.white)
-                .setDescription("Music Mate\nManaging music collections on Android.")
+                .setDescription("Music Mate\nManaging music collections on Android Phone. :-)\nreco")
                 .setImage(R.drawable.ic_launcher)
-                .addItem(new Item("Version 1.0.0rc4",null,null))
+                .addItem(new Item("Version 1.0.0",null,null))
                 .addEmail("thaweemail@gmail.com")
                 .addGithub("thawee")
                 .addWebsite("https://github.com/thawee/musixmate")

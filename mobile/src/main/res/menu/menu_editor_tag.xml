@@ -16,38 +16,41 @@
   -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto" >
-    <group android:id="@+id/grpTags"
-        android:menuCategory="container"
-        android:orderInCategory="100">
-        <item
-            android:icon="@drawable/ic_translate_black_24dp"
-            android:id="@+id/menu_change_charset"
-            android:title="Change Charset"
-            app:showAsAction="never" />
-        <item
-            android:icon="@drawable/ic_format_size_black_24dp"
-            android:id="@+id/menu_format_tag"
-            android:title="Format Tags"
-            app:showAsAction="never"/>
-        <item
-            android:icon="@drawable/ic_swap_horiz_black_24dp"
-            android:id="@+id/menu_label_swap_artist"
-            android:title="Title ~ Artist"
-            app:showAsAction="never" />
-    </group>
+
     <group
         android:id="@+id/grpRead"
         android:menuCategory="container"
         android:orderInCategory="100">
         <item
+            android:id="@+id/menu_label_smart_reader"
+            android:icon="@drawable/ic_insert_drive_file_black_24dp"
+            android:title="Set tags by file name"
+            app:showAsAction="never" />
+        <item
             android:id="@+id/menu_label_hierarchy"
             android:icon="@drawable/ic_file_tree_black_24dp"
-            android:title="Tags from File Hierarchy"
+            android:title="Set tags by file hierarchy"
             app:showAsAction="never|collapseActionView" />
+    </group>
+
+    <group android:id="@+id/grpTags"
+        android:menuCategory="container"
+        android:orderInCategory="100">
         <item
-            android:id="@+id/menu_label_smart_reader"
-            android:icon="@drawable/ic_tag_outline_black_24dp"
-            android:title="Tags from SmartReader"
+            android:icon="@drawable/ic_swap_horiz_black_24dp"
+            android:id="@+id/menu_label_swap_artist"
+            android:title="Swap Title ~ Artist"
             app:showAsAction="never" />
+        <item
+            android:icon="@drawable/ic_text_format_black_24dp"
+            android:id="@+id/menu_format_tag"
+            android:title="Clean and reformat tags"
+            app:showAsAction="never"/>
+        <item
+            android:icon="@drawable/ic_translate_black_24dp"
+            android:id="@+id/menu_change_charset"
+            android:title="Change charset"
+            app:showAsAction="never" />
+
     </group>
 </menu>

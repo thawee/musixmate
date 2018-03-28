@@ -20,10 +20,11 @@ public class MediaMetadata  {
     protected String displayPath;
     protected transient String audioBitDepth; // 16/24/32 bits
     protected transient String audioSampleRate; //44.1, 48,96, kHz
-    protected transient long audioSampleRateInt;
+    protected transient long audioSampleRateInt; //
 
     protected String audioBitRate; //128, 256, 320 kbps
-    protected transient String audioCodingFormat; // MP3, FLAC
+    protected transient String audioFormatInfo; // MP3, FLAC
+    protected transient String audioCodecInfo; // Mpeg Layer 3, Free Lossless
     private MediaQuality quality = MediaQuality.NORMAL;
     private long audioDuration;
 
@@ -96,16 +97,24 @@ public class MediaMetadata  {
         this.audioBitRate = audioBitRate;
     }
 
-    public void setAudioCodingFormat(String audioCodingFormat) {
-        this.audioCodingFormat = audioCodingFormat;
+    public void setAudioFormatInfo(String audioFormatInfo) {
+        this.audioFormatInfo = audioFormatInfo;
     }
 
     public String getAudioBitRate() {
         return audioBitRate;
     }
 
-    public String getAudioCodingFormat() {
-        return audioCodingFormat;
+    public String getAudioFormatInfo() {
+        return audioFormatInfo;
+    }
+
+    public String getAudioCodecInfo() {
+        return audioCodecInfo;
+    }
+
+    public void setAudioCodecInfo(String audioCodecInfo) {
+        this.audioCodecInfo = audioCodecInfo;
     }
 
     MediaMetadata(int id) {

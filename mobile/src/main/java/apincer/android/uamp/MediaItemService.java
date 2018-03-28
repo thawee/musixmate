@@ -26,6 +26,7 @@ import apincer.android.uamp.model.MediaTag;
 import apincer.android.uamp.provider.AndroidFile;
 import apincer.android.uamp.provider.MediaProvider;
 import apincer.android.uamp.utils.StringUtils;
+import stream.custompermissionsdialogue.utils.PermissionUtils;
 
 /**
  * Created by e1022387 on 1/8/2018.
@@ -41,6 +42,9 @@ public class MediaItemService extends IntentService {
     private static final List<String> mMediaArtists= new ArrayList<>();
     private static final List<String> mMediaAlbums= new ArrayList<>();
     private static final List<String> mMediaAlbumArtists= new ArrayList<>();
+
+    private static double MIN_TITLE = 0.70;
+    private static double MIN_ARTIST = 0.60;
 
     public  void addPending(MediaItem item) {
         if(pendingItems==null) {
@@ -90,7 +94,7 @@ public class MediaItemService extends IntentService {
         for (MediaItem item:getMediaItems()) {
             //similarity
            // if (StringUtils.similarity(item.getTag().getTitle(), preTitle)>0.92) {
-            if (preItem!=null && (StringUtils.similarity(item.getTag().getTitle(), preItem.getTag().getTitle())>0.6) && (StringUtils.similarity(item.getTag().getArtist(), preItem.getTag().getArtist())>0.5)) {
+            if (preItem!=null && (StringUtils.similarity(item.getTag().getTitle(), preItem.getTag().getTitle())>MIN_TITLE) && (StringUtils.similarity(item.getTag().getArtist(), preItem.getTag().getArtist())>MIN_ARTIST)) {
                 if(!preAdded && preItem != null) {
                     similarTitles.add(preItem);
                 }
@@ -112,7 +116,7 @@ public class MediaItemService extends IntentService {
         boolean preAdded = false;
         for (MediaItem item:getMediaItems()) {
             //similarity
-            if (preItem!=null && StringUtils.similarity(item.getTag().getTitle(), preItem.getTag().getTitle())>0.90) {
+            if (preItem!=null && StringUtils.similarity(item.getTag().getTitle(), preItem.getTag().getTitle())>MIN_TITLE) {
                 if(!preAdded && preItem != null) {
                     similarTitles.add(preItem);
                 }
@@ -183,6 +187,9 @@ public class MediaItemService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         String command = intent.getStringExtra("command");
+        if(!PermissionUtils.IsPermissionsEnabled(getApplicationContext(), MusicService.PERMISSIONS_STORAGE)) {
+            return ;
+        }
         if("load".equalsIgnoreCase(command) ) {
             loadMediaItems();
             // send broadcast load completed
@@ -194,18 +201,6 @@ public class MediaItemService extends IntentService {
             }
             pendingItems.clear();
             sendBroadcast("read",-1,"success",null);
-        }  else if("delete".equalsIgnoreCase(command) ) {
-            int id = intent.getIntExtra("mediaId", -1);
-            int index=0;
-            for(index=0; index<mMediaItems.size();index++) {
-                MediaItem item = mMediaItems.get(index);
-                if(item.getId() == id) {
-                    mMediaItems.remove(index);
-                    sendBroadcast("delete", id, "success",null);
-                    break;
-                }
-            }
-            // send broadcast read tags completed
         }
     }
 
@@ -306,7 +301,7 @@ public class MediaItemService extends IntentService {
         tag.setAndroidArtist(mediaArtist);
         tag.setArtist(mediaArtist);
         metadata.setAudioDuration(mediaDuration);
-        metadata.setAudioCodingFormat(metadata.getMediaType()==null?"":metadata.getMediaType().toUpperCase());
+        metadata.setAudioFormatInfo(metadata.getMediaType()==null?"":metadata.getMediaType().toUpperCase());
         metadata.setDisplayPath(mAndroidFile.getDisplayPath(item.getPath()));
         metadata.setMediaPath(item.getPath());
         addPending(item); // pending for read tags
@@ -331,7 +326,7 @@ public class MediaItemService extends IntentService {
                             sendBroadcast("read",item.getId(),"success",null);
                         }else {
                             mMediaItems.remove(i);
-                            sendBroadcast("delete",item.getId(),"success",null);
+                           // sendBroadcast(apincer.android.uamp.Constants.COMMAND_DELETE,item.getId(),"success",null);
                         }
                         break;
                     }

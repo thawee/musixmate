@@ -110,6 +110,6 @@
     <color name="dimension_transparent_20">#20D2DD07</color>
 
     <color name="editor_hint_color">@color/material_color_orange_200</color>
-    <color name="editor_label_color">@color/material_color_orange_900</color>
+    <color name="editor_label_color">@color/material_text_color_black_secondary_text</color>
 
 </resources>

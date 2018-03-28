@@ -12,6 +12,8 @@ import org.kc7bfi.jflac.util.ByteData;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,10 +41,11 @@ public class FLACAnalyzer extends Thread implements PCMProcessor {
     private float sampleRate;
 
     private int bitsPerSample;
+    private int maxFrameSize;
 
     public FLACAnalyzer(Activity activity,FrequencyView frequencyView, int fftResolution, FileInputStream stream) {
         decoder = new FLACDecoder(stream);
-        decoder.setSamplesDecoded(fftResolution);
+       // decoder.setSamplesDecoded(fftResolution);
         decoder.addPCMProcessor(this);
         this.frequencyView = frequencyView;
         this.fftResolution = fftResolution;
@@ -55,9 +58,10 @@ public class FLACAnalyzer extends Thread implements PCMProcessor {
     @Override
     public void run() {
         try {
-            bufferStack = new ArrayList<>();
             // Build buffers for runtime
             int n = fftResolution;
+            bufferStack = new ArrayList<>();
+            // Build buffers for runtime
             fftBuffer = new short[n];
             re = new float[n];
             im = new float[n];
@@ -72,11 +76,21 @@ public class FLACAnalyzer extends Thread implements PCMProcessor {
         sampleRate = streamInfo.getSampleRate();
         channels = streamInfo.getChannels();
         bitsPerSample = streamInfo.getBitsPerSample();
+        maxFrameSize = streamInfo.getMaxFrameSize();
+        // Build buffers for runtime
+        int n = fftResolution;
+        int l = maxFrameSize/(n/2);
+        for (int i=0; i<l+1; i++) //+1 because the last one has to be used again and sent to first position
+            bufferStack.add(new short[n/2]); // preallocate to avoid new within processing loop
+
     }
 
     @Override
     public void processPCM(ByteData pcm) {
-        byte[] recordBuffer = pcm.getData();
+        byte[] byteBuffer = pcm.getData();
+        short[] recordBuffer = new short[byteBuffer.length/2];
+        // to turn bytes to shorts as either big endian or little endian.
+        ByteBuffer.wrap(byteBuffer).order(ByteOrder.BIG_ENDIAN).asShortBuffer().get(recordBuffer);
         int n = fftResolution;
 
         // Trunks are consecutive n/2 length samples

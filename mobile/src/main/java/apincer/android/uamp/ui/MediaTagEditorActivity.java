@@ -15,9 +15,8 @@
  */
 package apincer.android.uamp.ui;
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -28,11 +27,11 @@ import android.content.pm.ResolveInfo;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -44,35 +43,29 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.transition.Slide;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.bumptech.glide.signature.ObjectKey;
-import com.gdacciaro.iOSDialog.iOSDialog;
-import com.gdacciaro.iOSDialog.iOSDialogBuilder;
-import com.gdacciaro.iOSDialog.iOSDialogClickListener;
 import com.github.javiersantos.bottomdialogs.BottomDialog;
-import com.intentfilter.androidpermissions.PermissionManager;
 import com.rengwuxian.materialedittext.MaterialAutoCompleteTextView;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
@@ -85,12 +78,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
 import apincer.android.uamp.BuildConfig;
+import apincer.android.uamp.Constants;
 import apincer.android.uamp.FileManagerService;
 import apincer.android.uamp.MediaItemService;
 import apincer.android.uamp.MusicService;
@@ -120,6 +114,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
+import stream.customalert.CustomAlertDialogue;
 
 /**
  * A full screen editor that shows the current  music with a background image
@@ -128,13 +123,11 @@ import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 public class MediaTagEditorActivity extends AppCompatActivity implements FlexibleAdapter.OnItemClickListener {
     private static final String TAG = LogHelper.makeLogTag(MediaTagEditorActivity.class);
     private static final int fftResolution = 2048; //;
-    private static final String ANSI_CHARSET="ISO8859_1";
+   // private static final String ANSI_CHARSET="ISO8859_1";
   // private static final String ANSI_CHARSET="TIS-620";
 
-    public static final int REQUEST_EDIT_MEDIA_TAG = 222;
     public static final int REQUEST_GET_CONTENT_IMAGE = 555;
     public static final int REQUEST_SAVE_FILE_RESULT_CODE = 888;
-    public static final String ARG_MEDIA_PATH = "media_path";
     private CollapsingToolbarLayout collapsingToolbarLayout;
     private MediaProvider mediaStoreHelper;
     private boolean tagChanged;
@@ -157,7 +150,6 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
     private MaterialEditText mDiscView;
     private TextView mFormatView;
     private TextView mSamplerateView;
-   // private TextView mBitrateView;
     private TextView mDurationView;
     private TextView mFileSizeView;
     private TextView mMediaPathView;
@@ -192,50 +184,38 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
     private MaterialProgressBar mMaterialProgressBar;
     private Snackbar mSnackbar;
 
-    public static boolean navigateForResult(AppCompatActivity context, MediaItem item) {
+    public static boolean navigateForResult(AppCompatActivity context, final MediaItem item) {
         Intent intent = new Intent(context, MediaTagEditorActivity.class);
-        MediaProvider mediaMusicTagHelper = MediaProvider.getInstance();
+        final MediaProvider mediaMusicTagHelper = MediaProvider.getInstance();
         if (mediaMusicTagHelper.isMediaFileExist(item)) {
             FileManagerService.addToEdit(item);
-            ActivityCompat.startActivityForResult(context, intent, REQUEST_EDIT_MEDIA_TAG, null);
+            ActivityCompat.startActivityForResult(context, intent, MusicService.REQUEST_CODE_EDIT_MEDIA_TAG, null);
             return true;
         }else {
-            try {
-                mediaMusicTagHelper.deleteMediaFile(item.getPath());
-                mediaMusicTagHelper.deleteFromMediaStore(item.getPath());
-            }catch (Exception ex) {}
-            alertFail(context, R.string.alert_error_title,context.getString(R.string.alert_invalid_media_file, item.getTag().getTitle()));
+            CustomAlertDialogue.Builder alert = new CustomAlertDialogue.Builder(context)
+                    .setStyle(CustomAlertDialogue.Style.DIALOGUE)
+                    .setTitle(context.getString(R.string.alert_error_title))
+                    .setMessage(context.getString(R.string.alert_invalid_media_file, item.getTag().getTitle()))
+                    .setNegativeText("OK")
+                    .setNegativeColor(R.color.negative)
+                    .setNegativeTypeface(Typeface.DEFAULT_BOLD)
+                    .setOnNegativeClicked(new CustomAlertDialogue.OnNegativeClicked() {
+                        @Override
+                        public void OnClick(View view, Dialog dialog) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .setDecorView(context.getWindow().getDecorView())
+                    .build();
+            alert.show();
             return false;
         }
-    }
-
-    private static void alertFail(AppCompatActivity context, int titleResId, String text) {
-        new iOSDialogBuilder(context)
-                .setTitle(context.getString(titleResId))
-                .setSubtitle(text)
-                .setBoldPositiveLabel(true)
-                .setCancelable(true)
-                .setPositiveListener(context.getString(R.string.alert_btn_ok),new iOSDialogClickListener() {
-                    @Override
-                    public void onClick(iOSDialog dialog) {
-                        dialog.dismiss();
-
-                    }
-                })
-                /*
-                .setNegativeListener(getString(R.string.dismiss), new iOSDialogClickListener() {
-                    @Override
-                    public void onClick(iOSDialog dialog) {
-                        dialog.dismiss();
-                    }
-                })*/
-                .build().show();
     }
 
     public static boolean navigateForResult(Activity context, List<MediaItem> items) {
        FileManagerService.addToEdit(items);
        Intent intent = new Intent(context, MediaTagEditorActivity.class);
-       ActivityCompat.startActivityForResult(context, intent, REQUEST_EDIT_MEDIA_TAG, null);
+       ActivityCompat.startActivityForResult(context, intent, MusicService.REQUEST_CODE_EDIT_MEDIA_TAG, null);
        return true;
     }
 
@@ -253,11 +233,14 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
             initActivityTransitions();
             setContentView(R.layout.activity_editor);
 
-            ViewCompat.setTransitionName(findViewById(R.id.app_bar_layout), ARG_MEDIA_PATH);
+            ViewCompat.setTransitionName(findViewById(R.id.app_bar_layout), Constants.KEY_MEDIA_PATH);
             supportPostponeEnterTransition();
 
             MediaProvider.initialize(getApplicationContext());
             mediaStoreHelper = MediaProvider.getInstance();
+
+        mediaItems = new ArrayList<>();
+        mediaItems.addAll(FileManagerService.getEditItems());
 
             // file toolbar
             mToolbar = findViewById(R.id.toolbar);
@@ -267,7 +250,7 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
 
             // tag toolbar
         mTagsToolbar = findViewById(R.id.tags_toolbar);
-        mTagsToolbar.inflateMenu(R.menu.menu_editor_tags_main);
+        mTagsToolbar.inflateMenu(R.menu.menu_editor);
       //  mTagsToolbar.setBackgroundResource(R.drawable.md_transparent);
         mTagsToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
@@ -277,7 +260,16 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         });
         for(int i = 0; i < mTagsToolbar.getMenu().size(); i++) {
             MenuItem item = mTagsToolbar.getMenu().getItem(i);
-            UIUtils.setColorFilter(item, getColor(R.color.menu_delete_background));
+            if(item.getItemId() == R.id.menu_editor_spectrum) {
+                if(isAnalyzerEnable()) {
+                    UIUtils.setColorFilter(item, getColor(R.color.menu_delete_background));
+                }else {
+                    item.setEnabled(false);
+                    UIUtils.setColorFilter(item, getColor(R.color.grey600));
+                }
+            } else{
+                UIUtils.setColorFilter(item, getColor(R.color.menu_delete_background));
+            }
         }
         mTagsToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -292,8 +284,6 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
             }
         });
 
-        mediaItems = new ArrayList<>();
-        mediaItems.addAll(FileManagerService.getEditItems());
         prepareDisplayTag(mediaItems);
 
         setUpProgressBar();
@@ -301,7 +291,7 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
 
             if (displayTag == null) {
                 // should stop
-                setResultData("INVALID", getIntent().getStringExtra(ARG_MEDIA_PATH),null);
+                setResultData("INVALID", getIntent().getStringExtra(Constants.KEY_MEDIA_PATH),null);
                 finish();
                 return;
             }
@@ -324,7 +314,6 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
             mMusicBrainzView = findViewById(R.id.musicbrainz);
         mSpectrumView = findViewById(R.id.spectrum);
 
-
         toggleSaveFabAction(); //hide until tag changed
 
         MediaMetadata metadata = getSingleMediaItem().getMetadata();
@@ -332,7 +321,8 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         mMediaPathView.setText(metadata.getDisplayPath());
 
         mFormatView = findViewById(R.id.media_format);
-        mFormatView.setText(metadata.getAudioCodingFormat());
+       // mFormatView.setText(metadata.getAudioCodingFormat());
+        mFormatView.setText(metadata.getAudioCodecInfo());
 
         mSamplerateView = findViewById(R.id.media_samplerate);
         mSamplerateView.setText(metadata.getAudioCoding());
@@ -415,7 +405,7 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
             mCountryView.setText(displayTag.getGrouping());
             mCountryView.addTextChangedListener(mTextWatcher);
 
-            String [] langs = {"classic","eng","tha"};
+            String [] langs = {"eng","tha"};
             ArrayAdapter<String> countryAdapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.select_dialog_item,langs);
             mCountryView.setThreshold(0);//will start working from first character
             mCountryView.setAdapter(countryAdapter); //setting the adapter data into the AutoCompleteTextView
@@ -464,6 +454,13 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         tagChanged = false;
     }
 
+    private boolean isAnalyzerEnable() {
+        if(isSingleMediaItem()) {
+            return "FLAC".equalsIgnoreCase(getSingleMediaItem().getMetadata().getMediaType());
+        }
+        return false;
+    }
+
     private void setUpSpectrumAnalyzer() {
         int fftResolution = 2048; //
         mFrequencyView = findViewById(R.id.frequency_view);
@@ -471,45 +468,6 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         mFrequencyView.setSamplingRate((int)getSingleMediaItem().getMetadata().getAudioSampleRateAsInt());
         mFrequencyView.setDuration(getSingleMediaItem().getMetadata().getAudioDuration());
         mFrequencyView.setBackgroundColor(Color.BLACK);
-
-        // run
-        //mFrequencyView.setMagnitudes(re);
-
-        /*
-        Resources res = getResources();
-        mAnalyzerParam = new AnalyzerParameters(res);
-        mAnalyzerParam.audioSourceId = 2000; // testing data
-        mAnalyzerParam.wndFuncName = "Hanning";
-        mAnalyzerParam.spectrogramDuration = 6.0;
-        mAnalyzerParam.overlapPercent = 50.0;
-        mAnalyzerParam.fftLen=2048;
-        mAnalyzerParam.hopLen = (int)(mAnalyzerParam.fftLen*(1 - mAnalyzerParam.overlapPercent/100) + 0.5);
-        mAnalyzerParam.sampleRate = (int)getSingleMediaItem().getMetadata().getAudioSampleRateAsInt();
-        mAnalyzerParam.isAWeighting = true;
-
-       // samplingThread = new MusicSamplingLoop(analyzerParam);
-        mAnalyzerViews = new AnalyzerViews(this);
-
-        // Settings of graph view
-        // spectrum
-        mAnalyzerViews.graphView.setShowLines(true);
-        // set spectrum show range
-        mAnalyzerViews.graphView.setSpectrumDBLowerBound(AnalyzerGraphic.minDB);
-
-        // spectrogram
-        mAnalyzerViews.graphView.setSpectrogramModeShifting(false);
-        mAnalyzerViews.graphView.setShowTimeAxis(true);
-        mAnalyzerViews.graphView.setShowFreqAlongX(true);
-        mAnalyzerViews.graphView.setSmoothRender(false);
-        mAnalyzerViews.graphView.setColorMap("Hot");
-        // set spectrogram show range
-        mAnalyzerViews.graphView.setSpectrogramDBLowerBound(mAnalyzerViews.graphView.spectrogramPlot.spectrogramBMP.dBLowerBound);
-        mAnalyzerViews.graphView.setLogAxisMode(true);
-
-        mAnalyzerViews.bWarnOverrun = false;
-      //  mAnalyzerViews.setFpsLimit();
-        mAnalyzerViews.setupView(mAnalyzerParam);
-        */
     }
 
     private void displayDefaultCoverart() {
@@ -522,13 +480,13 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
             mImageDimensionView.setText(width+" x "+height +" px");
             imageView.setImageBitmap(art);
             Palette palette = Palette.from(art).generate();
-            int primaryColor = palette.getVibrantColor(getColor(R.color.colorPrimaryDark_light));
+           // int primaryColor = palette.getVibrantColor(getColor(R.color.colorPrimaryDark_light));
             int backgroundColor = palette.getDominantColor(getColor(R.color.grey600));
 
             mainView.setBackgroundColor(backgroundColor);
         }else {
             imageView.setImageDrawable(getDrawable(R.drawable.ic_music));
-            mImageDimensionView.setText("No Coverart");
+            mImageDimensionView.setText("No Cover Art");
         }
     }
 
@@ -536,8 +494,9 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         new BottomDialog.Builder(this)
                 .autoDismiss(false)
                 .setTitle("File Options...")
+                .setTitleColor(R.color.colorPrimary)
                 .setIcon(R.drawable.ic_save_black_24dp)
-                .setMenu(R.menu.menu_editor_file)
+                .setMenu(isSingleMediaItem()?R.menu.menu_editor_file:R.menu.menu_editor_file_multiple)
                 .onMenuItemClick(new BottomDialog.OnMenuItemClick() {
                     @Override
                     public boolean onMenuItemClick(BottomDialog dialog, MenuItem item) {
@@ -548,12 +507,12 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
                 .show();
     }
 
-
     private void displayBottomTagMenu() {
         new BottomDialog.Builder(this)
                 .autoDismiss(false)
                 .setTitle("Tags Options...")
-                .setIcon(R.drawable.ic_tag_outline_black_24dp)
+                .setTitleColor(R.color.colorPrimary)
+                .setIcon(R.drawable.ic_label_black_24dp)
                 .setMenu(R.menu.menu_editor_tag)
                 .onMenuItemClick(new BottomDialog.OnMenuItemClick() {
                     @Override
@@ -569,6 +528,7 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         new BottomDialog.Builder(this)
                 .autoDismiss(false)
                 .setTitle("Cover Art Options...")
+                .setTitleColor(R.color.colorPrimary)
                 .setIcon(R.drawable.ic_image_black_24dp)
                 .setMenu(R.menu.menu_editor_image)
                 .onMenuItemClick(new BottomDialog.OnMenuItemClick() {
@@ -611,6 +571,7 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
             @Override
             public void onComplete() {
                 if(songs.size()>0) {
+                    /*
                     mMusicBrainzRCView = findViewById(R.id.musicbrainz_items_list);
                     FlexibleAdapter adapter = new FlexibleAdapter(songs);
                     adapter.addListener(MediaTagEditorActivity.this);
@@ -619,6 +580,33 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
                     RecyclerView.ItemDecoration itemDecoration = new LinearDividerItemDecoration(MediaTagEditorActivity.this, Color.WHITE, 2);
                     mMusicBrainzRCView.addItemDecoration(itemDecoration);
                     mMusicBrainzView.setVisibility(View.VISIBLE);
+                    */
+
+                    LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    View customView = inflater.inflate(R.layout.view_musicbrainz, null);
+                    mMusicBrainzRCView = customView.findViewById(R.id.musicbrainz_items_list);
+                    FlexibleAdapter adapter = new FlexibleAdapter(songs);
+                    adapter.addListener(MediaTagEditorActivity.this);
+                    mMusicBrainzRCView.setAdapter(adapter);
+                    mMusicBrainzRCView.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false));
+                    RecyclerView.ItemDecoration itemDecoration = new LinearDividerItemDecoration(MediaTagEditorActivity.this, Color.WHITE, 2);
+                    mMusicBrainzRCView.addItemDecoration(itemDecoration);
+                    UIUtils.setHeight(mMusicBrainzRCView,65,songs.size(),360);
+                    new BottomDialog.Builder(MediaTagEditorActivity.this)
+                            .autoDismiss(false)
+                            .setIcon(R.drawable.musicbrainz)
+                            .setTitle(R.string.editor_musicbrainz_matched)
+                            .setTitleColor(R.color.colorPrimary)
+                            .setCustomView(customView)
+                            //.setMenu(isSingleMediaItem()?R.menu.menu_editor_file:R.menu.menu_editor_file_multiple)
+                            //.onMenuItemClick(new BottomDialog.OnMenuItemClick() {
+                            //    @Override
+                            //    public boolean onMenuItemClick(BottomDialog dialog, MenuItem item) {
+                            //        dialog.dismiss();
+                            //        return onOptionsItemSelected(item);
+                            //    }
+                            //})
+                            .show();
                 }else {
                     mSnackbar = Snacky.builder().setActivity(MediaTagEditorActivity.this)
                             .setText("No matched found on MusicBrainz!")
@@ -647,20 +635,6 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
 
         stopProgressBar();
     }
-/*
-    private SamplingLoop getAnalyzer() {
-        try {
-            if (getSingleMediaItem().getPath().toLowerCase().endsWith("wav")) {
-                return new FLACAnalyzer(mAnalyzerParam, fftResolution, new FileInputStream(getSingleMediaItem().getPath()));
-            } else if (getSingleMediaItem().getPath().toLowerCase().endsWith("flac")) {
-                return new FLACAnalyzer(mAnalyzerParam, fftResolution, new FileInputStream(getSingleMediaItem().getPath()));
-            }
-        }catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
-*/
 
     private void doSaveMediaItem() {
         if(!(tagChanged || coverartChanged)) {
@@ -670,28 +644,24 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
             item.setArtworkPath(null);
             if(coverartChanged && coverartFile!=null) {
                 item.setArtworkPath(coverartFile.getAbsolutePath());
-                // This method must be called on the main thread.
-                Glide.get(getApplicationContext()).clearMemory();
             }
             if(tagChanged) {
-                MediaTag tagUpdate = prepareNewTags(item);
-                item.setNewTag(tagUpdate);
+                prepareNewTags(item);
             }
             FileManagerService.addToSave(item);
         }
-        if(isSingleMediaItem()) {
-            MediaItem mediaItem = getSingleMediaItem();
-            final String title = mediaItem.getTitle();
-            final String path = mediaItem.getMetadata().getDisplayPath();
+        if(coverartChanged) {
+            // This method must be called on the main thread.
+            Glide.get(getApplicationContext()).clearMemory();
         }
         startProgressBar();
         // Construct our Intent specifying the Service
         Intent intent = new Intent(getApplicationContext(), FileManagerService.class);
         // Add extras to the bundle
-        intent.putExtra("command", "save");
+        intent.putExtra(Constants.KEY_COMMAND, Constants.COMMAND_SAVE);
         // Start the service
         startService(intent);
-        setResultData("save",null,null);
+        setResultData(Constants.COMMAND_SAVE,null,null);
         tagChanged = false;
         coverartChanged = false;
         editorCardview.clearFocus();
@@ -767,79 +737,80 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         showSongList = (!showSongList);
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
-    private void triggerStorageAccessFramework() {
-        if( this.getContentResolver().getPersistedUriPermissions().isEmpty()) {
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-            startActivityForResult(intent, MusicService.REQUEST_CODE_PERMISSION_All);
-        }
-    }
-
     private void prepareDisplayTag(List<MediaItem> items) {
-        if(items.size()==1) {
-            if(!items.get(0).isLoadedEncoding()) {
-                mediaStoreHelper.readId3Tag(items.get(0), null);
-            }
-           displayTag = items.get(0).getTag().clone();
-        }else if(items.size()>1){
-            MediaItem baseItem = getSingleMediaItem();
-            if(!items.get(0).isLoadedEncoding()) {
-                mediaStoreHelper.readId3Tag(baseItem, null);
-            }
-            displayTag = baseItem.getTag().clone();
+       // if(items.size()==1) {
+        //    if(!items.get(0).isLoadedEncoding()) {
+        //        mediaStoreHelper.readId3Tag(items.get(0), null);
+        //    }
+        //   displayTag = items.get(0).getTag().clone();
+        //}else if(items.size()>1){
 
-            displayTag.setTrack("");
-            displayTag.setLyrics("");
-            for (int i=1;i<items.size();i++) {
-                MediaItem item = items.get(i);
-                if(!item.isLoadedEncoding()) {
-                    mediaStoreHelper.readId3Tag(item, null);
-                }
-                if(!equals(displayTag.getTitle(), item.getTag().getTitle())) {
-                    displayTag.setTitle(StringUtils.MULTI_VALUES);
-                }
-                if(!equals(displayTag.getTrack(), item.getTag().getTrack())) {
-                    displayTag.setTrack(StringUtils.MULTI_VALUES);
-                }
-                if(!equals(displayTag.getAlbum(), item.getTag().getAlbum())) {
+        // if new tag existed, read from new tag, else use actual tag
+        MediaItem baseItem = getSingleMediaItem();
+        if(!baseItem.isLoadedEncoding()) {
+            mediaStoreHelper.readId3Tag(baseItem, null);
+        }
+
+        if(baseItem.getNewTag()!=null) {
+            displayTag = baseItem.getNewTag().clone();
+        }else {
+            displayTag = baseItem.getTag().clone();
+        }
+//            displayTag.setTrack("");
+//            displayTag.setLyrics("");
+        for (int i=1;i<items.size();i++) {
+            MediaItem item = items.get(i);
+            if(!item.isLoadedEncoding()) {
+                mediaStoreHelper.readId3Tag(item, null);
+            }
+            MediaTag displayTag2 = item.getNewTag();
+            if(displayTag2==null) {
+                displayTag2 = item.getTag();
+            }
+            if(!equals(displayTag.getTitle(), displayTag2.getTitle())) {
+                displayTag.setTitle(StringUtils.MULTI_VALUES);
+            }
+            if(!equals(displayTag.getTrack(), displayTag2.getTrack())) {
+                displayTag.setTrack(StringUtils.MULTI_VALUES);
+            }
+            if(!equals(displayTag.getAlbum(), displayTag2.getAlbum())) {
                     displayTag.setAlbum(StringUtils.MULTI_VALUES);
                 }
-                if(!equals(displayTag.getArtist(), item.getTag().getArtist())) {
+                if(!equals(displayTag.getArtist(), displayTag2.getArtist())) {
                     displayTag.setArtist(StringUtils.MULTI_VALUES);
                 }
-                if(!equals(displayTag.getAlbumArtist(), item.getTag().getAlbumArtist())) {
+                if(!equals(displayTag.getAlbumArtist(), displayTag2.getAlbumArtist())) {
                     displayTag.setAlbumArtist(StringUtils.MULTI_VALUES);
                 }
-                if(!equals(displayTag.getGenre(), item.getTag().getGenre())) {
+                if(!equals(displayTag.getGenre(), displayTag2.getGenre())) {
                     displayTag.setGenre(StringUtils.MULTI_VALUES);
                 }
-                if(!equals(displayTag.getYear(), item.getTag().getYear())) {
+                if(!equals(displayTag.getYear(), displayTag2.getYear())) {
                     displayTag.setYear(StringUtils.MULTI_VALUES);
                 }
-                if(!equals(displayTag.getTrackTotal(), item.getTag().getTrackTotal())) {
+                if(!equals(displayTag.getTrackTotal(), displayTag2.getTrackTotal())) {
                     displayTag.setTrackTotal(StringUtils.MULTI_VALUES);
                 }
-                if(!equals(displayTag.getDisc(), item.getTag().getDisc())) {
+                if(!equals(displayTag.getDisc(), displayTag2.getDisc())) {
                     displayTag.setDisc(StringUtils.MULTI_VALUES);
                 }
-                if(!equals(displayTag.getDiscTotal(), item.getTag().getDiscTotal())) {
+                if(!equals(displayTag.getDiscTotal(), displayTag2.getDiscTotal())) {
                     displayTag.setDiscTotal(StringUtils.MULTI_VALUES);
                 }
-                if(!equals(displayTag.getComment(), item.getTag().getComment())) {
+                if(!equals(displayTag.getComment(), displayTag2.getComment())) {
                     displayTag.setComment(StringUtils.MULTI_VALUES);
                 }
-                if(!equals(displayTag.getComposer(), item.getTag().getComposer())) {
+                if(!equals(displayTag.getComposer(), displayTag2.getComposer())) {
                     displayTag.setComposer(StringUtils.MULTI_VALUES);
                 }
-                if(!equals(displayTag.getGrouping(), item.getTag().getGrouping())) {
+                if(!equals(displayTag.getGrouping(), displayTag2.getGrouping())) {
                     displayTag.setCountry(StringUtils.MULTI_VALUES);
                 }
-            }
         }
     }
 
     private boolean equals(String album, String album1) {
-       return StringUtils.trimToEmpty(album).equals(StringUtils.trimTitle(album1));
+       return StringUtils.trimTitle(album).equals(StringUtils.trimTitle(album1));
     }
 
     private void startProgressBar() {
@@ -900,8 +871,13 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         }
     }
 
-    private MediaTag prepareNewTags(MediaItem item) {
-        final MediaTag tagUpdate = item.getTag().clone();
+    private void prepareNewTags(MediaItem item) {
+        // update new tag with data from UI
+        MediaTag tagUpdate = item.getNewTag();
+        if(tagUpdate==null) {
+            tagUpdate = item.getTag().clone();
+            item.setNewTag(tagUpdate);
+        }
         if(isSingleMediaItem()) {
             if(!StringUtils.MULTI_VALUES.equalsIgnoreCase(getText(mLyricsView)) ) {
                 tagUpdate.setLyrics(getText(mLyricsView));
@@ -940,7 +916,6 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         if(!StringUtils.MULTI_VALUES.equalsIgnoreCase(getText(mDiscView)) ) {
             tagUpdate.setDisc(getText(mDiscView));
         }
-        return tagUpdate;
     }
 
     private String getText(TextView textView) {
@@ -960,12 +935,12 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         return pathList;
     }
 
-    private void setResultData(String action, String path, String oldPath) {
+    private void setResultData(String command, String path, String oldPath) {
        if(mResultData==null) {
            mResultData = new Intent();
        }
-       if(action!=null) {
-           mResultData.putExtra("action", action);
+       if(command!=null) {
+           mResultData.putExtra(Constants.KEY_COMMAND, command);
        }
        setResult(RESULT_OK,mResultData);
     }
@@ -1043,9 +1018,8 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        switch (id) {
+        int menuItemId = item.getItemId();
+        switch (menuItemId) {
             case R.id.menu_main_delete_file:
                 doDeleteMediaItem();
                 break;
@@ -1056,42 +1030,29 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
                 doOpenFileManager();
                 break;
             case R.id.menu_change_charset:
-                //FIXME not decode properly yet
-                doCreateCharsetOptions();
-                //doChangeCharset("TIS-620");
+                displayCharsetOptions();
                 break;
             case R.id.menu_format_tag:
                 doFormatTags();
                 break;
             //case R.id.menu_label_simple:
-             case R.id.menu_label_smart_reader:
-             //case R.id.menu_label_smart_reader2:
-             case R.id.menu_label_hierarchy:
-                 doReadTags(item);
-                 break;
-             case R.id.menu_label_swap_artist:
-                 doSwapArtistTitle();
-                 break;
+            case R.id.menu_label_smart_reader:
+                //case R.id.menu_label_smart_reader2:
+            case R.id.menu_label_hierarchy:
+                doReadTags(menuItemId);
+                break;
+            case R.id.menu_label_swap_artist:
+                doSwapArtistTitle();
+                break;
+                /*
             case R.id.menu_play_song:
                 doPlayOnMusicPlayer();
-                break;
+                break; */
             case R.id.menu_label_pick_cover_image:
                 pickCoverart();
                 break;
             case R.id.menu_label_save__cover_image:
                 saveCoverart();
-                break;
-            //case R.id.menu_label_remove__cover_image:
-            //    removeCoverart();
-            //    break;
-            case R.id.menu_view_mode:
-                if(showSimpleMode) {
-                    enableFullViewMode();
-                    item.setIcon(R.drawable.ic_view_stream_black_24dp);
-                }else {
-                    enableSimpleViewMode();
-                    item.setIcon(R.drawable.ic_view_list_black_24dp);
-                }
                 break;
             case R.id.menu_editor_musicbrainz:
                 if(mMusicBrainzView.getVisibility() == View.GONE) {
@@ -1113,10 +1074,6 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
                     mSpectrumView.setVisibility(View.GONE);
                 }
                 break;
-
-            //case R.id.menu_view_simple:
-            //    enableSimpleViewMode();
-            //    break;
         }
         toggleSaveFabAction();
         return super.onOptionsItemSelected(item);
@@ -1126,13 +1083,6 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
         startActivityForResult(intent,REQUEST_GET_CONTENT_IMAGE);
-    }
-
-    private void removeCoverart() {
-        coverartFile = null;
-        coverartChanged = true;
-       // final ImageView image = findViewById(R.id.image);
-       // image.reImageResource(null);
     }
 
     private void saveCoverart() {
@@ -1147,85 +1097,67 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
     }
 
     private void doDeleteMediaItem() {
-        final String selectedSongs = String.valueOf(mediaItems.size());
-
-        verifyStoragePermissions();;
-        List<PathItem> pathList = getPathItems(false);
-
-        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View customView = inflater.inflate(R.layout.view_custom_media_editor, null);
-        RecyclerView filesView = customView.findViewById(R.id.custom_files_view);
-        UIUtils.setHeight(filesView, 110, pathList.size(),240);
-        filesView.setAdapter(new FlexibleAdapter(pathList));
-        filesView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-        RecyclerView.ItemDecoration itemDecoration = new LinearDividerItemDecoration(this, Color.WHITE,2);
-        filesView.addItemDecoration(itemDecoration);
-
-        new BottomDialog.Builder(this)
-                .autoDismiss(false)
-                .setTitle(getString(R.string.alert_delete_confirm_many,selectedSongs))
-               // .setContent(getString(R.string.alert_delete_confirm_many,selectedSongs))
-                .setIcon(R.drawable.ic_delete_black_24dp)
-                //.setCustomView(customView,8,8,8,10)
-                .setCustomView(customView,0,8,0,0)
-                .setPositiveText(R.string.alert_btn_delete)
-                .setPositiveBackgroundColorResource(R.color.colorPrimary)
-                .setPositiveTextColorResource(android.R.color.white)
-                .onPositive(new BottomDialog.ButtonCallback() {
+        String text = "Delete ";
+        if(mediaItems.size()>1) {
+            text = text + mediaItems.size() + " songs?";
+        }else {
+            text = text + "'"+getSingleMediaItem().getTitle()+"' song?";
+        }
+        CustomAlertDialogue.Builder alert = new CustomAlertDialogue.Builder(MediaTagEditorActivity.this)
+                .setStyle(CustomAlertDialogue.Style.DIALOGUE)
+                .setCancelable(false)
+                .setTitle("Delete Songs")
+                .setMessage(text)
+                .setPositiveText("Confirm")
+                .setPositiveColor(R.color.negative)
+                .setPositiveTypeface(Typeface.DEFAULT_BOLD)
+                .setOnPositiveClicked(new CustomAlertDialogue.OnPositiveClicked() {
                     @Override
-                    public void onClick(BottomDialog dialog) {
+                    public void OnClick(View view, Dialog dialog) {
                         for (MediaItem item : mediaItems) {
                             FileManagerService.addToDelete(item);
                         }
                         // Construct our Intent specifying the Service
                         Intent intent = new Intent(getApplicationContext(), FileManagerService.class);
                         // Add extras to the bundle
-                        intent.putExtra("command", "delete");
+                        intent.putExtra(Constants.KEY_COMMAND, Constants.COMMAND_DELETE);
                         // Start the service
                         startService(intent);
+                        setResultData(Constants.COMMAND_DELETE,null,null);
                         dialog.dismiss();
-                        setResultData("delete",null,null);
-                        onBackPressed();
                     }
                 })
-                .setNegativeText(R.string.alert_btn_cancel)
-                .onNegative(new BottomDialog.ButtonCallback() {
+                .setNegativeText("Cancel")
+                .setNegativeColor(R.color.positive)
+                .setOnNegativeClicked(new CustomAlertDialogue.OnNegativeClicked() {
                     @Override
-                    public void onClick(@NonNull BottomDialog bottomDialog) {
-                        bottomDialog.dismiss();
+                    public void OnClick(View view, Dialog dialog) {
+                        dialog.dismiss();
                     }
                 })
-                .show();
+                .setDecorView(getWindow().getDecorView())
+                .build();
+        alert.show();
     }
 
     private void doMoveMediaItem() {
-        final String selctedSongs = String.valueOf(mediaItems.size());
-
-        verifyStoragePermissions();
-        List<PathItem> pathList = getPathItems(true);
-
-        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View customView = inflater.inflate(R.layout.view_custom_media_editor, null);
-        RecyclerView filesView = customView.findViewById(R.id.custom_files_view);
-        UIUtils.setHeight(filesView, 110, pathList.size(),240);
-        filesView.setAdapter(new FlexibleAdapter(pathList));
-        filesView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-        RecyclerView.ItemDecoration itemDecoration = new LinearDividerItemDecoration(this, Color.WHITE,2);
-        filesView.addItemDecoration(itemDecoration);
-
-        new BottomDialog.Builder(this)
-                .autoDismiss(false)
-                .setTitle(getString(R.string.alert_organize_confirm_many, selctedSongs))
-                //.setContent(getString(R.string.alert_organize_confirm_many, selctedSongs))
-                //.setCustomView(customView,8,8,8,10)
-                .setCustomView(customView,0,8,0,0)
-                .setIcon(R.drawable.ic_move_to_inbox_black_24dp)
-                .setPositiveText(R.string.alert_btn_move)
-                .setPositiveBackgroundColorResource(R.color.colorPrimary)
-                .setPositiveTextColorResource(android.R.color.white)
-                .onPositive(new BottomDialog.ButtonCallback() {
+        String text = "Move ";
+        if(mediaItems.size()>1) {
+            text = text + mediaItems.size() + " songs to Music Library?";
+        }else {
+            text = text + "'"+getSingleMediaItem().getTitle()+"' song to Music Library?";
+        }
+        CustomAlertDialogue.Builder alert = new CustomAlertDialogue.Builder(MediaTagEditorActivity.this)
+                .setStyle(CustomAlertDialogue.Style.DIALOGUE)
+                .setCancelable(false)
+                .setTitle("Move Songs")
+                .setMessage(text)
+                .setPositiveText("Confirm")
+                .setPositiveColor(R.color.negative)
+                .setPositiveTypeface(Typeface.DEFAULT_BOLD)
+                .setOnPositiveClicked(new CustomAlertDialogue.OnPositiveClicked() {
                     @Override
-                    public void onClick(BottomDialog dialog) {
+                    public void OnClick(View view, Dialog dialog) {
                         for(MediaItem item:mediaItems) {
                             FileManagerService.addToMove(item);
                         }
@@ -1233,21 +1165,24 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
                         // Construct our Intent specifying the Service
                         Intent intent = new Intent(getApplicationContext(), FileManagerService.class);
                         // Add extras to the bundle
-                        intent.putExtra("command", "move");
+                        intent.putExtra(Constants.KEY_COMMAND, Constants.COMMAND_MOVE);
                         // Start the service
                         startService(intent);
-                        setResultData("move",null,null);
+                        setResultData(Constants.COMMAND_MOVE,null,null);
                         dialog.dismiss();
                     }
                 })
-                .setNegativeText(R.string.alert_btn_cancel)
-                .onNegative(new BottomDialog.ButtonCallback() {
+                .setNegativeText("Cancel")
+                .setNegativeColor(R.color.positive)
+                .setOnNegativeClicked(new CustomAlertDialogue.OnNegativeClicked() {
                     @Override
-                    public void onClick(@NonNull BottomDialog bottomDialog) {
-                        bottomDialog.dismiss();
+                    public void OnClick(View view, Dialog dialog) {
+                        dialog.dismiss();
                     }
                 })
-                .show();
+                .setDecorView(getWindow().getDecorView())
+                .build();
+        alert.show();
     }
 
     private void doPlayOnMusicPlayer() {
@@ -1388,7 +1323,11 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
 
     private void doSwapArtistTitle() {
         for(MediaItem mItem:mediaItems) {
-            MediaTag tag = mItem.getTag();
+            MediaTag tag = mItem.getNewTag();
+            if(tag==null) {
+                tag = mItem.getTag().clone();
+                mItem.setNewTag(tag);
+            }
             String title = StringUtils.trimToEmpty(tag.getTitle());
             String artist = StringUtils.trimToEmpty(tag.getArtist());
             tag.setTitle(mediaStoreHelper.formatTitle(artist));
@@ -1398,7 +1337,7 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         updateTagView(false);
     }
 
-    private void doReadTags(MenuItem item) {
+    private void doReadTags(int itemId) {
         //enable for single item only
         TagReader reader = new TagReader();
         for(MediaItem mItem:mediaItems) {
@@ -1406,14 +1345,18 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
             File file = new File(mediaPath);
             if(!file.exists()) continue;
             MediaTag newTag = null;
-            if(item.getItemId() == R.id.menu_label_smart_reader) {
-                newTag = reader.parser(mItem, TagReader.READ_MODE.SM1);
+            if(itemId == R.id.menu_label_smart_reader) {
+                newTag = reader.parser(mItem, TagReader.READ_MODE.SMART);
             }else {
                 // menu_label_hierarchy
                 newTag = reader.parser(mItem, TagReader.READ_MODE.HIERARCHY);
             }
             if(newTag!=null) {
-                MediaTag tag = mItem.getTag();
+                MediaTag tag = mItem.getNewTag();
+                if(tag==null) {
+                    tag = mItem.getTag().clone();
+                    mItem.setNewTag(tag);
+                }
                 if(!StringUtils.isEmpty(newTag.getTitle())) {
                     tag.setTitle(newTag.getTitle());
                 }
@@ -1435,37 +1378,36 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         updateTagView(false);
     }
 
-    private void doCreateCharsetOptions() {
-        View anchor = findViewById(R.id.menu_editor_tags_main);
-        @SuppressLint("RestrictedApi") Context wrapper = new ContextThemeWrapper(this, R.style.PopupMenuStyle);
-        final PopupMenu popupMenu = new PopupMenu(wrapper, anchor);
-        UIUtils.makePopForceShowIcon(popupMenu);
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                //onOptionsItemSelected(item);
-                return true;
-            }
-        });
-        Map<String, Charset> charsets = Charset.availableCharsets();
-        String title = displayTag.getTitle();
+    private void displayCharsetOptions() {
+        final Map<Integer,String> charsetList = new HashMap<>();
+
+        String title = displayTag.getTitle()+ StringUtils.ARTIST_SEP+MusicService.getSubtitle(displayTag.getAlbum(),displayTag.getArtist());
+        ArrayList<String> destructive = new ArrayList<>();
+        destructive.add(title);
+        charsetList.put(0, "");
+
+        ArrayList<String> other = new ArrayList<>();
+        final Map<String, Charset> charsets = Charset.availableCharsets();
+        int indx = 1;
         for(Charset charset:charsets.values()) {
-            popupMenu.getMenu().add(charset.name() +" - "+encodeText(displayTag.getTitle(), charset.name()));
+            other.add(StringUtils.encodeText(title, charset.name()));
+            charsetList.put(indx++, charset.name());
         }
-/*
-        MenuItem menuItem = popupMenu.getMenu().add(encodeText(displayTag.getTitle(), "TIS-620"));
-        menuItem = popupMenu.getMenu().add(encodeText(displayTag.getTitle(), "MS874"));
-        menuItem = popupMenu.getMenu().add(encodeText(displayTag.getTitle(), "CP874"));
-        menuItem = popupMenu.getMenu().add(encodeText(displayTag.getTitle(), "ISO8859_1"));
-        menuItem = popupMenu.getMenu().add(encodeText(displayTag.getTitle(), "ISO8859_11"));
-        menuItem = popupMenu.getMenu().add(encodeText(displayTag.getTitle(), "UTF-8"));
-*/
-        //popupMenu.inflate(R.menu.menu_editor_full);
-        for(int cn=0; cn< popupMenu.getMenu().size();cn++) {
-            MenuItem item = popupMenu.getMenu().getItem(cn);
-            UIUtils.setColorFilter(item, getColor(R.color.menu_editor_background));
-        }
-        popupMenu.show();
+
+        CustomAlertDialogue.Builder alert = new CustomAlertDialogue.Builder(MediaTagEditorActivity.this)
+                .setStyle(CustomAlertDialogue.Style.SELECTOR)
+                .setDestructive(destructive)
+                .setOthers(other)
+                .setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        CustomAlertDialogue.getInstance().dismiss();
+                        doChangeCharset(charsetList.get(i));
+                    }
+                })
+                .setDecorView(getWindow().getDecorView())
+                .build();
+        alert.show();
     }
 
     private void doOpenFileManager() {
@@ -1491,6 +1433,10 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         mTitleView.setText(StringUtils.trimToEmpty(displayTag.getTitle()));
         // artist
         mArtistView.setText(StringUtils.trimToEmpty(displayTag.getArtist()));
+
+        //genre
+        mGenreView.setText(StringUtils.trimToEmpty(displayTag.getGenre()));
+
         // album
         mAlbumView.setText(StringUtils.trimToEmpty(displayTag.getAlbum()));
         // album artist
@@ -1510,7 +1456,11 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
 
     private void doFormatTags() {
         for(MediaItem mItem:mediaItems) {
-            MediaTag tag = mItem.getTag();
+            MediaTag tag = mItem.getNewTag();
+            if(tag==null) {
+                tag = mItem.getTag().clone();
+                mItem.setNewTag(tag);
+            }
             tag.setTitle(mediaStoreHelper.formatTitle(tag.getTitle()));
             tag.setArtist(mediaStoreHelper.formatTitle(tag.getArtist()));
             tag.setAlbum(mediaStoreHelper.formatTitle(tag.getAlbum()));
@@ -1530,38 +1480,9 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         toggleSaveFabAction();
     }
 
-    private void verifyStoragePermissions() {
-        try {
-            PermissionManager permissionManager = PermissionManager.getInstance(this);
-            List<String> permissions = Arrays.asList(MusicService.PERMISSIONS_STORAGE);
-            permissionManager.checkPermissions(permissions, new PermissionManager.PermissionRequestListener() {
-                @Override
-                public void onPermissionGranted() {
-                    triggerStorageAccessFramework();
-                }
-
-                @Override
-                public void onPermissionDenied() {
-                    Toast.makeText(getApplicationContext(), "Permissions Denied", Toast.LENGTH_LONG).show();
-                }
-            });
-        } catch (Exception ex) {
-            LogHelper.e(TAG, ex);
-        }
-    }
-
     @Override
     public final void onActivityResult(final int requestCode, final int resultCode, final Intent resultData) {
-        if (requestCode == MusicService.REQUEST_CODE_PERMISSION_All) {
-            Uri treeUri = null;
-            if (resultCode == Activity.RESULT_OK) {
-                // Get Uri from Storage Access Framework.
-                treeUri = resultData.getData();
-
-                // Persist access permissions.
-                this.getContentResolver().takePersistableUriPermission(treeUri, (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION));
-            }
-        }else if(requestCode == REQUEST_GET_CONTENT_IMAGE) {
+        if(requestCode == REQUEST_GET_CONTENT_IMAGE) {
             try {
                     if (resultData == null || resultData.getData() == null) {
                         return;
@@ -1597,47 +1518,47 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
     @Override
     public void onBackPressed() {
         if(tagChanged || coverartChanged) {
-            if(tagChanged) {
-                final Runnable run = new Runnable() {
-                    @Override
-                    public void run() {
-                        for (MediaItem item : mediaItems) {
-                            mediaStoreHelper.readId3Tag(item, null);
-                        }
-                        prepareDisplayTag(mediaItems);
-                        updateTagView(true);
-                        tagChanged = false;
-                        toggleSaveFabAction();
-                    }
-                };
-                new iOSDialogBuilder(this)
-                        .setTitle(getString(R.string.alert_warning_title))
-                        .setSubtitle(getString(R.string.alert_media_file_not_save))
-                        .setBoldPositiveLabel(true)
+           CustomAlertDialogue.Builder alert = new CustomAlertDialogue.Builder(MediaTagEditorActivity.this)
+                        .setStyle(CustomAlertDialogue.Style.DIALOGUE)
                         .setCancelable(false)
-                        .setPositiveListener(getString(R.string.alert_btn_ok),new iOSDialogClickListener() {
+                        .setTitle(getString(R.string.alert_warning_title))
+                        .setMessage(getString(R.string.alert_media_file_not_save))
+                        .setPositiveText(getString(R.string.alert_btn_ok))
+                        .setPositiveColor(R.color.negative)
+                        .setPositiveTypeface(Typeface.DEFAULT_BOLD)
+                        .setOnPositiveClicked(new CustomAlertDialogue.OnPositiveClicked() {
                             @Override
-                            public void onClick(iOSDialog dialog) {
+                            public void OnClick(View view, Dialog dialog) {
                                 dialog.dismiss();
-                                run.run();
+                                if(tagChanged) {
+                                    for (MediaItem item : mediaItems) {
+                                        item.setNewTag(null); // reset updated tag
+                                    }
+                                    prepareDisplayTag(mediaItems);
+                                    updateTagView(true);
+                                }
+                                if(coverartChanged) {
+                                    displayDefaultCoverart();
+                                    coverartFile = null;
+                                    coverartChanged = false;
+                                }
+                                tagChanged = false;
+                                toggleSaveFabAction();
+                                //onBackPressed();
                             }
                         })
-                        .setNegativeListener(getString(R.string.alert_btn_cancel), new iOSDialogClickListener() {
+                        .setNegativeText(getString(R.string.alert_btn_cancel))
+                        .setNegativeColor(R.color.positive)
+                        .setOnNegativeClicked(new CustomAlertDialogue.OnNegativeClicked() {
                             @Override
-                            public void onClick(iOSDialog dialog) {
+                            public void OnClick(View view, Dialog dialog) {
                                 dialog.dismiss();
                             }
                         })
-                        .build().show();
-            }
-            if(coverartChanged) {
-                displayDefaultCoverart();
-                coverartFile = null;
-                coverartChanged = false;
-            }
-            toggleSaveFabAction();
+                        .setDecorView(getWindow().getDecorView())
+                        .build();
+                alert.show();
             return;
-            //super.onBackPressed();
         }
         super.onBackPressed();
     }
@@ -1646,65 +1567,29 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         if(StringUtils.isEmpty(charset)) {
             // re-load from media file
             for (MediaItem item : mediaItems) {
+                item.setLoadedEncoding(false);
                 mediaStoreHelper.readId3Tag(item, null);
             }
         }else {
             for(MediaItem item: mediaItems) {
-                MediaTag tag = item.getTag();
-                tag.setTitle(encodeText(tag.getTitle(),charset));
-                tag.setArtist(encodeText(tag.getArtist(),charset));
-                tag.setAlbum(encodeText(tag.getAlbum(),charset));
-                tag.setAlbumArtist(encodeText(tag.getAlbumArtist(),charset));
-                tag.setGenre(encodeText(tag.getGenre(),charset));
-                tag.setComment(encodeText(tag.getComment(),charset));
-                tag.setComposer(encodeText(tag.getComment(),charset));
-                tag.setLyrics(encodeText(tag.getLyrics(),charset));
-                tag.setCountry(encodeText(tag.getGrouping(),charset));
+                MediaTag tag = item.getNewTag();
+                if(tag==null) {
+                    tag = item.getTag().clone();
+                    item.setNewTag(tag);
+                }
+                tag.setTitle(StringUtils.encodeText(tag.getTitle(),charset));
+                tag.setArtist(StringUtils.encodeText(tag.getArtist(),charset));
+                tag.setAlbum(StringUtils.encodeText(tag.getAlbum(),charset));
+                tag.setAlbumArtist(StringUtils.encodeText(tag.getAlbumArtist(),charset));
+                tag.setGenre(StringUtils.encodeText(tag.getGenre(),charset));
+                tag.setComment(StringUtils.encodeText(tag.getComment(),charset));
+                tag.setComposer(StringUtils.encodeText(tag.getComment(),charset));
+                tag.setLyrics(StringUtils.encodeText(tag.getLyrics(),charset));
+                tag.setCountry(StringUtils.encodeText(tag.getGrouping(),charset));
             }
         }
         prepareDisplayTag(mediaItems);
         updateTagView(true);
-    }
-
-    private String encodeText(String text, String encode) {
-        if(StringUtils.isEmpty(encode)) {
-            return text;
-        }
-        if(StringUtils.isEmpty(text)) {
-            return "";
-        }
-        try {
-            //return new String(text.getBytes(ANSI_CHARSET), encode);
-            //String temp = new String(text.getBytes(), encode);
-            //return new String(temp.getBytes(), "UTF-8");
-            byte [] byteString = ASCIIToUnicode(text).getBytes();
-            return new String(byteString,encode);
-//            return convertToThaiTIS620();
-            //return new String(text.getBytes(ANSI_CHARSET), encode);
-            //return new String(theString.getBytes("UTF-8"));
-        } catch (Exception e) {
-            return text;
-        }
-    }
-
-    public static String ASCIIToUnicode(String ascii) {
-//initial temporary space of unicode
-        StringBuffer unicode = new StringBuffer(ascii);
-        int code;
-
-//continue loop based on number of character.
-        for (int i = 0; i < ascii.length(); i++) {
-            code = (int) ascii.charAt(i);
-
-//check the value is Thai language in ASCII scope or not.
-            if ((0xA1 <= code) && (code <= 0xFB)) {
-//if yes, it will be converted to Thai language in Unicode scope.
-                unicode.setCharAt(i, (char) (code + 0xD60));
-            }
-        }
-
-//convert unicode to be as String type to use continue.
-        return unicode.toString();
     }
 
     @Override
@@ -1750,7 +1635,7 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         if(mMusicBrainzView==null) return false;
 
         final RecordingItem item = (RecordingItem) ((FlexibleAdapter)mMusicBrainzRCView.getAdapter()).getItem(position);
-        final View customView = getLayoutInflater().inflate(R.layout.view_tags_selecter_view, null);
+        final View customView = getLayoutInflater().inflate(R.layout.view_musicbrainz_preview, null);
             ImageView imageView = customView.findViewById(R.id.coverart);
             if(imageView!=null) {
                 GlideApp.with(getApplicationContext())
@@ -1909,7 +1794,7 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
                            mSnackbar.dismiss();
                            mSnackbar = null;
                        }
-                       if ("delete".equalsIgnoreCase(command)) {
+                       if (apincer.android.uamp.Constants.COMMAND_DELETE.equalsIgnoreCase(command)) {
                             // back to main activity after delete all
                             onBackPressed();
                         }else {

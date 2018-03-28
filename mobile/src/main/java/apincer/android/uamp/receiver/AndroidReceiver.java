@@ -33,6 +33,7 @@ public class AndroidReceiver extends BroadcastReceiver {
             extractTitle(context, intent);
             displayNotification();
         }
+        service.setListeningReceiver(this);
     }
 
     private boolean isStopPlaying(Intent intent) {

@@ -12,6 +12,48 @@ public class StringUtils {
     public static final String UNTITLED_CAP = "<Untitled>";
     public static final String MULTI_VALUES = "<Multi-Values>";
 
+
+    public static String encodeText(String text, String encode) {
+        if(StringUtils.isEmpty(encode)) {
+            return text;
+        }
+        if(StringUtils.isEmpty(text)) {
+            return "";
+        }
+        try {
+            //return new String(text.getBytes(ANSI_CHARSET), encode);
+            //String temp = new String(text.getBytes(), encode);
+            //return new String(temp.getBytes(), "UTF-8");
+            byte [] byteString = asciiToUnicode(text).getBytes();
+            return new String(byteString,encode);
+//            return convertToThaiTIS620();
+            //return new String(text.getBytes(ANSI_CHARSET), encode);
+            //return new String(theString.getBytes("UTF-8"));
+        } catch (Exception e) {
+            return text;
+        }
+    }
+
+    public static String asciiToUnicode(String ascii) {
+//initial temporary space of unicode
+        StringBuffer unicode = new StringBuffer(ascii);
+        int code;
+
+//continue loop based on number of character.
+        for (int i = 0; i < ascii.length(); i++) {
+            code = (int) ascii.charAt(i);
+
+//check the value is Thai language in ASCII scope or not.
+            if ((0xA1 <= code) && (code <= 0xFB)) {
+//if yes, it will be converted to Thai language in Unicode scope.
+                unicode.setCharAt(i, (char) (code + 0xD60));
+            }
+        }
+
+//convert unicode to be as String type to use continue.
+        return unicode.toString();
+    }
+
     public static String trimTitle(String text) {
         if(text == null) return "";
         if("-".equals(text)) return "";

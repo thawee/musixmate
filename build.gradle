@@ -24,8 +24,8 @@ ext {
     developerEmail = "thaweemail@gmail.com"
 
     //Library
-    applicationCode = 8
-    applicationVersion = "1.0.0-rc5"
+    applicationCode = 13
+    applicationVersion = "1.0.0"
     applicationDate = " built on " + getDate()
     applicationDescription = "Managing music collections on Android Phone :-)"
     applicationName = "Music Mate"

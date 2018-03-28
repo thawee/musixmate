@@ -1,0 +1,17 @@
+com.special.ResideMenu
+int drawable ic_launcher 0x7f090001
+int drawable shadow 0x7f090002
+int id iv_background 0x7f0c0001
+int id iv_icon 0x7f0c0002
+int id iv_shadow 0x7f0c0003
+int id layout_left_menu 0x7f0c0004
+int id layout_right_menu 0x7f0c0005
+int id sv_left_menu 0x7f0c0006
+int id sv_menu_holder 0x7f0c0007
+int id sv_right_menu 0x7f0c0008
+int id tv_title 0x7f0c0009
+int layout residemenu_custom 0x7f0f0001
+int layout residemenu_custom_left_scrollview 0x7f0f0002
+int layout residemenu_custom_right_scrollview 0x7f0f0003
+int layout residemenu_item 0x7f0f0004
+int string app_name 0x7f150001

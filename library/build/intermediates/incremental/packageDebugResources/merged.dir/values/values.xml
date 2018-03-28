@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="flat_pressed">#66999999</color>
+    <dimen name="btn_corner_radius">2dp</dimen>
+    <dimen name="btn_flat_padding">8dp</dimen>
+    <dimen name="btn_margin">4dp</dimen>
+    <dimen name="btn_min_height">36dp</dimen>
+    <dimen name="btn_min_width">88dp</dimen>
+    <dimen name="btn_normal_margin">4dp</dimen>
+    <dimen name="btn_normal_padding">8dp</dimen>
+    <dimen name="btn_padding">16dp</dimen>
+    <dimen name="dimen_16_dp">16dp</dimen>
+    <dimen name="dimen_1_dp">1dp</dimen>
+    <dimen name="dimen_24_dp">24dp</dimen>
+    <dimen name="dimen_2_dp">2dp</dimen>
+    <dimen name="dimen_32_dp">32dp</dimen>
+    <dimen name="dimen_8_dp">8dp</dimen>
+    <string name="app_name">BottomDialog</string>
+    <string name="define_bottomdialog">year;owner</string>
+    <string name="library_bottomdialog_author">Raphaël Bussa</string>
+    <string name="library_bottomdialog_authorWebsite">http://rebus007.altervista.org</string>
+    <string name="library_bottomdialog_isOpenSource">true</string>
+    <string name="library_bottomdialog_libraryDescription">This is a custom dialog attached at the bottom</string>
+    <string name="library_bottomdialog_libraryName">Bottom Dialog</string>
+    <string name="library_bottomdialog_libraryVersion">0.0.5</string>
+    <string name="library_bottomdialog_libraryWebsite">http://rebus007.github.io/BottomDialog/</string>
+    <string name="library_bottomdialog_licenseId">mit</string>
+    <string name="library_bottomdialog_owner">Raphaël Bussa</string>
+    <string name="library_bottomdialog_repositoryLink">https://github.com/rebus007/BottomDialog</string>
+    <string name="library_bottomdialog_year">2016</string>
+    <style name="BottomDialogs" parent="@android:style/Theme.Dialog">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:windowAnimationStyle">@style/BottomDialogsAnimation</item>
+    </style>
+    <style name="BottomDialogsAnimation">
+        <item name="android:windowEnterAnimation">@anim/sheet_show</item>
+        <item name="android:windowExitAnimation">@anim/sheet_hide</item>
+    </style>
+    <style name="Button" parent="Button.Base"/>
+    <style name="Button.Base" parent="Base.TextAppearance.AppCompat.Button">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:minHeight">@dimen/btn_min_height</item>
+        <item name="android:minWidth">@dimen/btn_min_width</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingLeft">@dimen/btn_padding</item>
+        <item name="android:paddingRight">@dimen/btn_padding</item>
+        <item name="android:layout_marginLeft">@dimen/btn_margin</item>
+        <item name="android:layout_marginRight">@dimen/btn_margin</item>
+    </style>
+    <style name="Button.Flat" parent="Button.Flat.Base"/>
+    <style name="Button.Flat.Base" parent="Base.TextAppearance.AppCompat.Button">
+        <item name="android:background">@drawable/btn_flat_selector</item>
+        <item name="android:minWidth">@dimen/btn_min_width</item>
+        <item name="android:minHeight">@dimen/btn_min_height</item>
+        <item name="android:textColor">?attr/colorAccent</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:paddingLeft">@dimen/btn_flat_padding</item>
+        <item name="android:paddingRight">@dimen/btn_flat_padding</item>
+        <item name="android:layout_marginLeft">@dimen/btn_margin</item>
+        <item name="android:layout_marginRight">@dimen/btn_margin</item>
+    </style>
+    <style name="DialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/slide_up</item>
+        <item name="android:windowExitAnimation">@anim/slide_down</item>
+    </style>
+</resources>

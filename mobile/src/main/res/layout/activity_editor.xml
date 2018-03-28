@@ -130,7 +130,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@color/float_transparent"
-                        tools:listitem="@layout/view_list_auto_tag"
+                        tools:listitem="@layout/view_list_item_mini"
                         />
                 </LinearLayout>
                 <!-- quality -->

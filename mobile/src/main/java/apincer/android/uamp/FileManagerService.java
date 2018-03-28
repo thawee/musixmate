@@ -93,7 +93,7 @@ public class FileManagerService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         String command = intent.getStringExtra("command");
-        if("delete".equalsIgnoreCase(command)) {
+        if(apincer.android.uamp.Constants.COMMAND_DELETE.equalsIgnoreCase(command)) {
             if(!deleteItems.isEmpty()) {
                 int index=0;
                 for(MediaItem item: deleteItems) {
@@ -101,7 +101,7 @@ public class FileManagerService extends IntentService {
                 }
                 deleteItems.clear();
             }
-        }else if("save".equalsIgnoreCase(command)) {
+        }else if(apincer.android.uamp.Constants.COMMAND_SAVE.equalsIgnoreCase(command)) {
             if(!saveItems.isEmpty()) {
                 int index=0;
                 for(MediaItem item: saveItems) {
@@ -109,7 +109,7 @@ public class FileManagerService extends IntentService {
                 }
                 saveItems.clear();
             }
-        }else if("move".equalsIgnoreCase(command)) {
+        }else if(apincer.android.uamp.Constants.COMMAND_MOVE.equalsIgnoreCase(command)) {
             if(!moveItems.isEmpty()) {
                 int index = 0;
                 for(MediaItem item: moveItems) {
@@ -131,7 +131,9 @@ public class FileManagerService extends IntentService {
         intent.putExtra("message", message);
         intent.putExtra("totalItems", total);
         intent.putExtra("currentItem", index); // index start from 0
-        intent.putExtra("mediaId", item.getId());
+        if(item !=null) {
+            intent.putExtra("mediaId", item.getId());
+        }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
@@ -144,9 +146,9 @@ public class FileManagerService extends IntentService {
             if(deleteItems.size()>1) {
                 msg = getString(R.string.alert_many, indexStr, totalStr, msg);
             }
-            showNotification(deleteItems.size(),item, index, "delete", "start", msg);
-            playNextSong(item);
+            showNotification(deleteItems.size(),item, index, apincer.android.uamp.Constants.COMMAND_DELETE, "start", msg);
             status = MediaProvider.getInstance().deleteMediaFile(item.getPath());
+            playNextSong(item);
         } catch (Exception|OutOfMemoryError ex) {
             status = false;
         }
@@ -156,7 +158,7 @@ public class FileManagerService extends IntentService {
         if(deleteItems.size()>1) {
             msg = getString(R.string.alert_many, indexStr, totalStr, msg);
         }
-        showNotification(deleteItems.size(),item, index, "delete", statusStr, msg);
+        showNotification(deleteItems.size(),item, index, apincer.android.uamp.Constants.COMMAND_DELETE, statusStr, msg);
     }
 
     private void moveFile(MediaItem item,int index) {
@@ -168,7 +170,7 @@ public class FileManagerService extends IntentService {
             if(moveItems.size()>1) {
                 msg = getString(R.string.alert_many, indexStr, totalStr, msg);
             }
-            showNotification(moveItems.size(),item, index, "move", "start", msg);
+            showNotification(moveItems.size(),item, index, apincer.android.uamp.Constants.COMMAND_MOVE, "start", msg);
             MediaProvider provider = MediaProvider.getInstance();
             String newPath = provider.getOrganizedPath(item);
             if (provider.moveMediaFile(item.getPath(), newPath)) {
@@ -185,7 +187,7 @@ public class FileManagerService extends IntentService {
         if(moveItems.size()>1) {
             msg = getString(R.string.alert_many, indexStr, totalStr, msg);
         }
-        showNotification(moveItems.size(), item, index, "move", statusStr, msg);
+        showNotification(moveItems.size(), item, index, apincer.android.uamp.Constants.COMMAND_MOVE, statusStr, msg);
     }
 
     private void saveFile(MediaItem item,int index) {
@@ -197,7 +199,7 @@ public class FileManagerService extends IntentService {
             if(saveItems.size()>1) {
                 msg = getString(R.string.alert_many, indexStr, totalStr, msg);
             }
-            showNotification(saveItems.size(), item, index, "save", "start", msg);
+            showNotification(saveItems.size(), item, index, apincer.android.uamp.Constants.COMMAND_SAVE, "start", msg);
             MediaProvider provider = MediaProvider.getInstance();
             MediaTag tagUpdate = item.getNewTag();
             String artworkPath = item.getArtworkPath();
@@ -221,7 +223,7 @@ public class FileManagerService extends IntentService {
         if(saveItems.size()>1) {
             msg = getString(R.string.alert_many, indexStr, totalStr, msg);
         }
-        showNotification(saveItems.size(), item, index, "save", statusStr, msg);
+        showNotification(saveItems.size(), item, index, apincer.android.uamp.Constants.COMMAND_SAVE, statusStr, msg);
     }
 
     private void playNextSong(MediaItem item) {

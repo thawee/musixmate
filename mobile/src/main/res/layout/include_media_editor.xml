@@ -174,7 +174,7 @@
         app:met_textColorHint="@color/editor_hint_color"
         app:met_textColor="@color/colorPrimaryDark_light"
         app:met_floatingLabelTextColor="@color/editor_label_color"
-        app:met_floatingLabelText="@string/editor_label_artist"
+        app:met_floatingLabelText="@string/editor_label_album_artist"
         android:hint="@string/editor_hint_album_artist"/>
 
     <LinearLayout

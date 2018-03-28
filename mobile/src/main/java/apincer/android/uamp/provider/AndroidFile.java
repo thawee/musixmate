@@ -107,7 +107,7 @@ public class AndroidFile {
                 }
             }
         } catch (Exception e) {
-            LogHelper.e("FileUtils",
+            LogHelper.e(TAG,
                     "Error when copying file from " + source.getAbsolutePath() + " to " + target.getAbsolutePath(), e);
             return false;
         } finally {

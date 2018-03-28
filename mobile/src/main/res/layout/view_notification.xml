@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_margin="10dp"
-            android:layout_marginLeft="4dp"
+            android:layout_marginLeft="2dp"
             android:layout_marginRight="4dp"
             android:layout_gravity="center">
         <ImageView
@@ -51,7 +51,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="6dp"
-        android:layout_marginRight="4dp"
+        android:layout_marginRight="2dp"
         android:layout_toRightOf="@id/notification_coverart"
         android:layout_centerVertical="true">
         <TextView
@@ -187,8 +187,8 @@
                     android:textSize="10dp"
                     android:textColor="@color/black"
                     android:gravity="center"
-                    android:paddingLeft="4dp"
-                    android:paddingRight="4dp"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="1dp"

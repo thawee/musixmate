@@ -24,10 +24,10 @@ import org.jaudiotagger.tag.TagException;
 import org.jaudiotagger.tag.TagOptionSingleton;
 import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
 import org.jaudiotagger.tag.id3.ID3v1Tag;
-import org.jaudiotagger.tag.id3.ID3v23Frames;
 import org.jaudiotagger.tag.id3.ID3v24Tag;
 import org.jaudiotagger.tag.id3.valuepair.TextEncoding;
 import org.jaudiotagger.tag.images.Artwork;
+import org.jaudiotagger.tag.vorbiscomment.VorbisAlbumArtistSaveOptions;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -144,6 +144,7 @@ public class MediaProvider {
         TagOptionSingleton.getInstance().setPadNumbers(true);
         TagOptionSingleton.getInstance().setId3v1Save(true);
         TagOptionSingleton.getInstance().setLyrics3Save(true);
+        TagOptionSingleton.getInstance().setVorbisAlbumArtistSaveOptions(VorbisAlbumArtistSaveOptions.WRITE_BOTH);
     }
 
     public MediaItem searchListeningMediaItem(String currentTitle, String currentArtist, String currentAlbum) {
@@ -234,7 +235,7 @@ public class MediaProvider {
         tag.setAndroidArtist(mediaArtist);
         tag.setArtist(mediaArtist);
         metadata.setAudioDuration(mediaDuration);
-        metadata.setAudioCodingFormat(metadata.getMediaType()==null?"":metadata.getMediaType().toUpperCase());
+        metadata.setAudioFormatInfo(metadata.getMediaType()==null?"":metadata.getMediaType().toUpperCase());
         metadata.setDisplayPath(androidFile.getDisplayPath(item.getPath()));
         metadata.setMediaPath(item.getPath());
         readId3Tag(item,null); // pending for read tags
@@ -394,7 +395,7 @@ public class MediaProvider {
         setTagField(audioFile,id3Tag,FieldKey.COMPOSER, changedTag.getComposer());
     }
 
-    private boolean isValidTagValue(String oldTag, String newTag) {
+    private boolean isValidTagValue(String newTag) {
         if(!StringUtils.MULTI_VALUES.equalsIgnoreCase(newTag)) { // && !StringUtils.trimToEmpty(oldTag).equals(newTag)) {
             return true;
         }
@@ -410,7 +411,7 @@ public class MediaProvider {
 
     private void setTagField(AudioFile audioFile, Tag id3Tag,FieldKey key, String text) {
         try {
-            if(isValidTagValue(getId3TagValue(id3Tag, key), text)) {
+            if(isValidTagValue(text)) {
                 setupTagOptionsForWriting();
                 if (StringUtils.isEmpty(text)) {
                     id3Tag.deleteField(key);
@@ -593,6 +594,7 @@ public class MediaProvider {
     public void readId3Tag(MediaItem mediaItem, String path) {
         try {
             if(mediaItem.isLoadedEncoding()) return;
+            mediaItem.setNewTag(null); // reset updated tag
             MediaTag mediaTag = mediaItem.getTag();
             MediaMetadata metadata = mediaItem.getMetadata();
 
@@ -610,7 +612,6 @@ public class MediaProvider {
                 return;
             }
 
-            readAudioCodingFormat(audioFile,mediaItem); //MP3-xxx &&128/256/320kbps
             readAudioCoding(audioFile,metadata); //16/24/32 bit and 44.1/48/96/192 kHz
             metadata.setMediaSize(getMediaSize(audioFile));
             metadata.setLossless(audioFile.getAudioHeader().isLossless());
@@ -621,87 +622,10 @@ public class MediaProvider {
                 mediaItem.setIdv3Tag(false);
             }
 
-            /*
-            Tag tag = null;
-            String ext = AndroidFile.getFileExtention(path);
-            if("mp3".equalsIgnoreCase(ext)) {
-                MP3File mp3 = (MP3File)audioFile;
-                if(mp3.hasID3v2Tag()) {
-                    loadMP3V2Tag(mp3, mediaTag);
-                }else {
-                    // mp3 v1 tag
-                    readId3Tag(audioFile, mediaTag);
-                }
-            }else {
-               readId3Tag(audioFile, mediaTag);
-            }
-            */
             mediaItem.setLoadedEncoding(true);
             mediaItem.setIdv3Tag(true);
         } catch (Exception |OutOfMemoryError oom) {
             LogHelper.e(TAG, oom);
-            //System.gc();
-        }
-    }
-
-    private void readId3v2Tag(MP3File mp3, MediaTag mediaTag) {
-        AbstractID3v2Tag tag = mp3.getID3v2Tag();
-        if (tag != null && !tag.isEmpty()) {
-            try {
-                mediaTag.setTitle(tag.getFirst(ID3v23Frames.FRAME_ID_V3_TITLE));
-            } catch (UnsupportedOperationException ignored) {
-                //default to file name
-                mediaTag.setTitle(AndroidFile.getNameWithoutExtension(mp3.getFile()));
-            }
-            try {
-                mediaTag.setAlbum(tag.getFirst(ID3v23Frames.FRAME_ID_V3_ALBUM));
-            } catch (UnsupportedOperationException ignored) {
-            }
-            try {
-                mediaTag.setArtist(tag.getFirst(ID3v23Frames.FRAME_ID_V3_ARTIST));
-            } catch (UnsupportedOperationException ignored) {
-            }
-            try {
-                mediaTag.setAlbumArtist(tag.getFirst(ID3v23Frames.FRAME_ID_V3_ACCOMPANIMENT));  //TPE2
-            } catch (UnsupportedOperationException ignored) {
-            }
-            try {
-                mediaTag.setGenre(tag.getFirst(ID3v23Frames.FRAME_ID_V3_GENRE));
-            } catch (UnsupportedOperationException ignored) {
-            }
-            try {
-                mediaTag.setYear(tag.getFirst(ID3v23Frames.FRAME_ID_V3_TYER));
-            } catch (UnsupportedOperationException ignored) {
-            }
-            try {
-                mediaTag.setTrack(tag.getFirst(ID3v23Frames.FRAME_ID_V3_TRACK));
-            } catch (UnsupportedOperationException ignored) {
-            }
-            try {
-                mediaTag.setComposer(tag.getFirst(ID3v23Frames.FRAME_ID_V3_COMPOSER));
-            } catch (UnsupportedOperationException ignored) {
-            }
-
-            try {
-                mediaTag.setDisc(tag.getFirst(ID3v23Frames.FRAME_ID_V3_SET)); //TPOS
-            } catch (UnsupportedOperationException ignored) {
-           }
-//            try {
-//                mediaTag.setDiscTotal(tag.getFirst(ID3v23Frames.FRAME_ID_V3_SET));  //TPOS
-//            } catch (UnsupportedOperationException ignored) {
-//            }
-            try {
-                mediaTag.setLyrics(tag.getFirst(ID3v23Frames.FRAME_ID_V3_LYRICIST));
-            } catch (UnsupportedOperationException ignored) {
-            }
-            try {
-                mediaTag.setComment(tag.getFirst(ID3v23Frames.FRAME_ID_V3_COMMENT));
-            } catch (UnsupportedOperationException ignored) {
-            }
-            try {
-                mediaTag.setCountry(tag.getFirst(ID3v23Frames.FRAME_ID_V3_CONTENT_GROUP_DESC));
-            } catch (UnsupportedOperationException ignored) {
-            }
         }
     }
 
@@ -728,20 +652,6 @@ public class MediaProvider {
             return true;
         }
         return false;
-    }
-
-    private void readAudioCodingFormat(AudioFile audioFile, MediaItem mediaItem) {
-        try {
-            MediaMetadata metadata = mediaItem.getMetadata();
-            long bitrate = audioFile.getAudioHeader().getBitRateAsNumber();
-            metadata.setAudioBitRate(String.format(Locale.getDefault(),"%dkbps",new Object[]{bitrate}));
-
-           // if(audioFile.getAudioHeader().isLossless()) {
-           //     metadata.setAudioCodingFormat(metadata.getMediaType());
-           //  }else {
-                metadata.setAudioCodingFormat(String.format(Locale.getDefault(), "%s/%dkbps", new Object[]{metadata.getMediaType(), bitrate}));
-           // }
-        }catch (Exception ex) {}
     }
 
     public Bitmap getArtwork(MediaItem mediaItem) {
@@ -794,7 +704,12 @@ public class MediaProvider {
             long sampling = read.getAudioHeader().getSampleRateAsNumber(); //44100/48000 Hz
             long bitdepth = read.getAudioHeader().getBitsPerSample(); //16/24/32
             long bitrate = read.getAudioHeader().getBitRateAsNumber(); //128/256/320
+            String codec = read.getAudioHeader().getEncodingType();
+           // long bitrate = audioFile.getAudioHeader().getBitRateAsNumber();
 
+            metadata.setAudioBitRate(String.format(Locale.getDefault(),"%dkbps",new Object[]{bitrate}));
+            metadata.setAudioFormatInfo(String.format(Locale.getDefault(), "%s/%dkbps", new Object[]{metadata.getMediaType(), bitrate}));
+            metadata.setAudioCodecInfo(String.format(Locale.getDefault(), "%s/%dkbps", new Object[]{codec, bitrate}));
             metadata.setQuality(MediaMetadata.MediaQuality.NORMAL);
             if(sampling<QUALITY_SAMPLING_RATE_HIGH || bitdepth < QUALITY_BIT_DEPTH_GOOD) {
                 metadata.setQuality(MediaMetadata.MediaQuality.LOW);

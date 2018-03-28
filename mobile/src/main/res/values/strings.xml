@@ -18,7 +18,7 @@
 
     <string name="app_name">Music Mate</string>
     <string name="app_descriptions">Music Mate - Managing Music Collections</string>
-    <string name="app_version">1.0.0rc4</string>
+    <string name="app_version">1.0.0rc6</string>
     <string name="app_developer">Thawee Prakaipetch</string>
     <string name="label_developer">Developer</string>
 
@@ -123,8 +123,7 @@
     <string name="alert_listening_not_found">Now playing \"%1$s\" is not found</string>
     <string name="alert_listening_title">Now playing \"%1$s\" - \"%2$s\"</string>
     <string name="alert_file_not_exists">This file is no longer available</string>
-    <string name="alert_media_file_not_save">Tags are not saved, discard tag changed?</string>
-
+    <string name="alert_media_file_not_save">Please reload, unsaved tags may be lost?</string>
     <string name="alert_find_music_title">Find song information</string>
     <string name="alert_find_music_information">Enquiry song information for\n  \"%1$s\" by \"%2$s\"</string>
 
