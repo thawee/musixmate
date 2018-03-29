@@ -1,7 +1,7 @@
 Music Mate
 =====================================
 
-Managing music cllection on  Android phones, tablets, Android Auto, Android TV.
+Managing music collection on Android phones and Android Music Player.
 
 
 Pre-requisites
