@@ -11,6 +11,11 @@
 		android:id="@+id/action_edit"
 		android:title="Edit Music"
 		app:showAsAction="always"/>
+	<item
+		android:icon="@drawable/ic_move_to_inbox_black_24dp"
+		android:id="@+id/action_transfer_file"
+		android:title="Move songs to Music Library"
+		app:showAsAction="always|withText"/>
 
 	<item android:id="@+id/action_select_all"
 		android:title="@string/action_select_all"
