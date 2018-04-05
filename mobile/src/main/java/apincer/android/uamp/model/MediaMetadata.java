@@ -1,6 +1,6 @@
 package apincer.android.uamp.model;
 
-import apincer.android.uamp.provider.MediaProvider;
+import apincer.android.uamp.provider.MediaItemProvider;
 import apincer.android.uamp.utils.StringUtils;
 
 public class MediaMetadata  {
@@ -138,7 +138,7 @@ public class MediaMetadata  {
     }
 
     public String getAudioDurationAsString() {
-            return MediaProvider.formatDuration(audioDuration);
+            return MediaItemProvider.formatDuration(audioDuration);
     }
 
     public long getAudioDuration() {

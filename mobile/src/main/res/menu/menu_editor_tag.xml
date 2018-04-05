@@ -49,8 +49,7 @@
         <item
             android:icon="@drawable/ic_translate_black_24dp"
             android:id="@+id/menu_change_charset"
-            android:title="Change charset"
+            android:title="Change charset encoding"
             app:showAsAction="never" />
-
     </group>
 </menu>

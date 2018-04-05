@@ -18,6 +18,7 @@
  */
 package org.jaudiotagger.audio;
 
+
 import org.jaudiotagger.audio.dsf.Dsf;
 import org.jaudiotagger.audio.exceptions.CannotReadException;
 import org.jaudiotagger.audio.exceptions.CannotWriteException;
@@ -25,18 +26,22 @@ import org.jaudiotagger.audio.exceptions.NoReadPermissionsException;
 import org.jaudiotagger.audio.exceptions.NoWritePermissionsException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.audio.flac.metadatablock.MetadataBlockDataPicture;
+import org.jaudiotagger.audio.generic.GenericAudioHeader;
 import org.jaudiotagger.audio.real.RealTag;
-import org.jaudiotagger.tag.TagOptionSingleton;
-import org.jaudiotagger.tag.id3.*;
-import org.jaudiotagger.tag.reference.ID3V2Version;
-import org.jaudiotagger.tag.wav.WavTag;
 import org.jaudiotagger.logging.ErrorMessage;
 import org.jaudiotagger.tag.Tag;
+import org.jaudiotagger.tag.TagOptionSingleton;
 import org.jaudiotagger.tag.aiff.AiffTag;
 import org.jaudiotagger.tag.asf.AsfTag;
 import org.jaudiotagger.tag.flac.FlacTag;
+import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
+import org.jaudiotagger.tag.id3.ID3v22Tag;
+import org.jaudiotagger.tag.id3.ID3v23Tag;
+import org.jaudiotagger.tag.id3.ID3v24Tag;
 import org.jaudiotagger.tag.mp4.Mp4Tag;
+import org.jaudiotagger.tag.reference.ID3V2Version;
 import org.jaudiotagger.tag.vorbiscomment.VorbisCommentTag;
+import org.jaudiotagger.tag.wav.WavTag;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -114,6 +119,11 @@ public class AudioFile
     public AudioFile(String s, AudioHeader audioHeader, Tag tag)
     {
         this.file = new File(s);
+        this.audioHeader = audioHeader;
+        this.tag = tag;
+    }
+
+    public AudioFile(GenericAudioHeader info, Tag tag) {
         this.audioHeader = audioHeader;
         this.tag = tag;
     }

@@ -1,5 +1,6 @@
 package apincer.android.uamp.utils;
 
+import java.io.UnsupportedEncodingException;
 import java.text.BreakIterator;
 import java.util.List;
 import java.util.Locale;
@@ -11,7 +12,7 @@ public class StringUtils {
     public static final String UNKNOWN_ALL_CAP = "<UNKNOWN>";
     public static final String UNTITLED_CAP = "<Untitled>";
     public static final String MULTI_VALUES = "<Multi-Values>";
-
+    public static final String CHARSET_ISO_8859_1 = "ISO-8859-1";
 
     public static String encodeText(String text, String encode) {
         if(StringUtils.isEmpty(encode)) {
@@ -21,17 +22,35 @@ public class StringUtils {
             return "";
         }
         try {
-            //return new String(text.getBytes(ANSI_CHARSET), encode);
+            return changeCharset(text, encode,"UTF-8");
+           // return new String(text.getBytes(CHARSET_ISO_8859_1), encode);
             //String temp = new String(text.getBytes(), encode);
             //return new String(temp.getBytes(), "UTF-8");
-            byte [] byteString = asciiToUnicode(text).getBytes();
-            return new String(byteString,encode);
+         ////   byte [] byteString = asciiToUnicode(text).getBytes();
+         ////   return new String(byteString,encode);
 //            return convertToThaiTIS620();
             //return new String(text.getBytes(ANSI_CHARSET), encode);
             //return new String(theString.getBytes("UTF-8"));
         } catch (Exception e) {
             return text;
         }
+    }
+
+    public static String changeCharset(String str, String newCharset) throws UnsupportedEncodingException {
+        if (str != null) {
+            byte[] bs = str.getBytes();
+            return new String(bs, newCharset);
+        }
+        return null;
+    }
+
+    public static String changeCharset(String str, String oldCharset, String newCharset)
+            throws UnsupportedEncodingException {
+        if (str != null) {
+            byte[] bs = str.getBytes(oldCharset);
+            return new String(bs, newCharset);
+        }
+        return null;
     }
 
     public static String asciiToUnicode(String ascii) {
@@ -267,5 +286,12 @@ public class StringUtils {
             return StringUtils.trimToEmpty(text);
          }
          return  StringUtils.trimToEmpty(text.substring(0, num));
+    }
+
+    public static boolean isDigitOnly(String text) {
+        for (char c : text.toCharArray()) {
+            if (!Character.isDigit(c)) return false;
+        }
+        return true;
     }
 }

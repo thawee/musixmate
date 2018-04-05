@@ -12,6 +12,9 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.webkit.MimeTypeMap;
+
+import org.jaudiotagger.audio.SupportedFileFormat;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,8 +26,8 @@ import java.util.Map;
 import apincer.android.uamp.model.MediaItem;
 import apincer.android.uamp.model.MediaMetadata;
 import apincer.android.uamp.model.MediaTag;
-import apincer.android.uamp.provider.AndroidFile;
-import apincer.android.uamp.provider.MediaProvider;
+import apincer.android.uamp.provider.MediaFileProvider;
+import apincer.android.uamp.provider.MediaItemProvider;
 import apincer.android.uamp.utils.StringUtils;
 import stream.custompermissionsdialogue.utils.PermissionUtils;
 
@@ -35,7 +38,6 @@ import stream.custompermissionsdialogue.utils.PermissionUtils;
 public class MediaItemService extends IntentService {
     public static final String ACTION = "com.apincer.uamp.MediaItemService";
     private Context mContext;
-    private AndroidFile mAndroidFile;
     private List<MediaItem> pendingItems = new ArrayList<>();
     private static List<MediaItem> mPlayedItems = Collections.synchronizedList(new ArrayList<MediaItem>());
     private static final List<MediaItem> mMediaItems = Collections.synchronizedList(new ArrayList<MediaItem>());
@@ -66,7 +68,7 @@ public class MediaItemService extends IntentService {
         for(int ix=(mPlayedItems.size()-1); ix >0;ix--) {
             MediaItem item = mPlayedItems.get(ix);
             String id = String.valueOf(item.getId());
-            if(MediaProvider.getInstance().isMediaFileExist(item) && !mapped.containsKey(id)) {
+            if(MediaItemProvider.getInstance().isMediaFileExist(item) && !mapped.containsKey(id)) {
                 songList.add(item);
                 mapped.put(id,item);
             }
@@ -76,6 +78,10 @@ public class MediaItemService extends IntentService {
 
     public static Collection<? extends MediaItem> getMediaItems() {
         return mMediaItems;
+    }
+
+    public static MediaItem getMediaItem(int index) {
+        return mMediaItems.get(index);
     }
 
     public static void startService(Context context, String command) {
@@ -91,7 +97,8 @@ public class MediaItemService extends IntentService {
         List<MediaItem> similarTitles = new ArrayList<>();
         MediaItem preItem = null;
         boolean preAdded = false;
-        for (MediaItem item:getMediaItems()) {
+        for (int i=0; i<getMediaItems().size();i++) {
+            MediaItem item = getMediaItem(i);
             //similarity
            // if (StringUtils.similarity(item.getTag().getTitle(), preTitle)>0.92) {
             if (preItem!=null && (StringUtils.similarity(item.getTag().getTitle(), preItem.getTag().getTitle())>MIN_TITLE) && (StringUtils.similarity(item.getTag().getArtist(), preItem.getTag().getArtist())>MIN_ARTIST)) {
@@ -178,7 +185,6 @@ public class MediaItemService extends IntentService {
     public void onCreate() {
         super.onCreate(); // if you override onCreate(), make sure to call super().
         this.mContext = getApplicationContext();
-        this.mAndroidFile = new AndroidFile(mContext);
 
         IntentFilter filter = new IntentFilter(FileManagerService.ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(operationReceiver, filter);
@@ -195,7 +201,7 @@ public class MediaItemService extends IntentService {
             // send broadcast load completed
             sendBroadcast("load",-1,"success",null);
             for(MediaItem item: pendingItems) {
-                MediaProvider.getInstance().readId3Tag(item, null);
+                MediaItemProvider.getInstance().readId3Tag(item, null);
                 updateAlbumArtist(item.getTag().getAlbumArtist());
                 //sendBroadcast("read", item.getId(),"success",null);
             }
@@ -204,7 +210,65 @@ public class MediaItemService extends IntentService {
         }
     }
 
+    public static String buildMediaSelection(){
+        StringBuilder selection=new StringBuilder();
+        for(SupportedFileFormat format : SupportedFileFormat.values()) {
+            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(format.name().toLowerCase());
+            selection.append("(" + MediaStore.Files.FileColumns.MIME_TYPE + "=='"+ mimeType+ "') OR ");
+        }
+        selection.append(" ("+MediaStore.Audio.Media.IS_MUSIC + " = 1 ) ");
+        return selection.substring(0,selection.lastIndexOf(")") + 1);
+    }
+
     private boolean loadMediaItems() {
+        mMediaItems.clear();
+        mMediaArtists.clear();
+        mMediaAlbums.clear();
+        mMediaAlbumArtists.clear();
+        ContentResolver mContentResolver = mContext.getContentResolver();
+        Uri uri = android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        // Perform a query on the content resolver. The URI we're passing specifies that we
+        // want to query for all audio media on external storage (e.g. SD card)
+       // String selection = MediaStore.Audio.Media.IS_MUSIC + " = 1";
+        String selection = buildMediaSelection();
+        Cursor cur = mContentResolver.query(uri, null, selection, null, "LOWER ("+MediaStore.Audio.Media.TITLE+") ASC");
+        if (cur == null) {
+            // Query failed...
+            return false;
+        }
+        if (!cur.moveToFirst()) {
+            // Nothing to query. There is no music on the device. How boring.
+            cur.close();
+            return false;
+        }
+        // retrieve the indices of the columns where the ID, title, etc. of the song are
+        int idColumn = cur.getColumnIndex(MediaStore.Audio.Media._ID);
+        int artistColumn = cur.getColumnIndex(MediaStore.Audio.Media.ARTIST);
+        int titleColumn = cur.getColumnIndex(MediaStore.Audio.Media.TITLE);
+        int albumColumn = cur.getColumnIndex(MediaStore.Audio.Media.ALBUM);
+        int durationColumn = cur.getColumnIndex(MediaStore.Audio.Media.DURATION);
+        int dataColumn = cur.getColumnIndex(MediaStore.Audio.Media.DATA);
+
+        // add each song to mItems
+        int index = 0;
+        do {
+            int id = cur.getInt(idColumn);
+            String mediaPath =  cur.getString(dataColumn);
+            String mediaTitle = cur.getString(titleColumn);
+            String mediaAlbum = cur.getString(albumColumn);
+            String mediaArtist = cur.getString(artistColumn);
+            long mediaDuration = cur.getLong(durationColumn);
+            mMediaItems.add(buildMediaItem(id,mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration,index++));
+            updateArtist(mediaArtist);
+            updateAlbum(mediaAlbum);
+        } while (cur.moveToNext());
+
+        cur.close();
+
+        return true;
+    }
+
+    private boolean loadMediaItemsMusicOnly() {
         mMediaItems.clear();
         mMediaArtists.clear();
         mMediaAlbums.clear();
@@ -240,7 +304,7 @@ public class MediaItemService extends IntentService {
             String mediaAlbum = cur.getString(albumColumn);
             String mediaArtist = cur.getString(artistColumn);
             long mediaDuration = cur.getLong(durationColumn);
-            mMediaItems.add(createMediaItem(id,mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration,index++));
+            mMediaItems.add(buildMediaItem(id,mediaTitle,mediaArtist, mediaAlbum,mediaPath,mediaDuration,index++));
             updateArtist(mediaArtist);
             updateAlbum(mediaAlbum);
         } while (cur.moveToNext());
@@ -288,12 +352,12 @@ public class MediaItemService extends IntentService {
     /*
      * Creates a normal item with a Header linked.
     */
-    protected MediaItem createMediaItem(int id, String mediaTitle, String mediaArtist, String mediaAlbum, String mediaPath, long mediaDuration, int index) {
+    protected MediaItem buildMediaItem(int id, String mediaTitle, String mediaArtist, String mediaAlbum, String mediaPath, long mediaDuration, int index) {
         final MediaItem item = new MediaItem(id);
         item.setPath(mediaPath);
         MediaTag tag = item.getTag();
         MediaMetadata metadata = item.getMetadata();
-        metadata.setMediaType(AndroidFile.getFileExtention(item.getPath()).toUpperCase());
+        metadata.setMediaType(MediaFileProvider.getExtension(item.getPath()).toUpperCase());
         tag.setAndroidTitle(mediaTitle);
         tag.setTitle(mediaTitle);
         tag.setAndroidAlbum(mediaAlbum);
@@ -302,7 +366,7 @@ public class MediaItemService extends IntentService {
         tag.setArtist(mediaArtist);
         metadata.setAudioDuration(mediaDuration);
         metadata.setAudioFormatInfo(metadata.getMediaType()==null?"":metadata.getMediaType().toUpperCase());
-        metadata.setDisplayPath(mAndroidFile.getDisplayPath(item.getPath()));
+        metadata.setDisplayPath(item.getPath());
         metadata.setMediaPath(item.getPath());
         addPending(item); // pending for read tags
         return item;
@@ -320,9 +384,9 @@ public class MediaItemService extends IntentService {
                 for(int i =0; i<mMediaItems.size();i++) {
                     MediaItem item = mMediaItems.get(i);
                     if(item.getId() == mediaId) {
-                        if(MediaProvider.getInstance().isMediaFileExist(item)) {
+                        if(MediaItemProvider.getInstance().isMediaFileExist(item)) {
                             item.setLoadedEncoding(false);
-                            MediaProvider.getInstance().readId3Tag(item, null);
+                            MediaItemProvider.getInstance().readId3Tag(item, null);
                             sendBroadcast("read",item.getId(),"success",null);
                         }else {
                             mMediaItems.remove(i);

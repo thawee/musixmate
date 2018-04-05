@@ -73,27 +73,23 @@ public abstract class AudioFileWriter2 extends AudioFileWriter
     public void write(AudioFile af) throws CannotWriteException
     {
         final File file = af.getFile();
-        checkCanWriteAndSize(af, file);
-        try (FileChannel channel = new RandomAccessFile(file, "rw").getChannel())
-        {
-            writeTag(af.getTag(), channel, file.getAbsolutePath());
-        }
-        catch (FileNotFoundException e)
-        {
-            if (file.exists()) {
-                // file exists, permission error
-                logger.warning(ErrorMessage.GENERAL_WRITE_FAILED_TO_OPEN_FILE_FOR_EDITING.getMsg(file));
-                throw new NoWritePermissionsException(ErrorMessage.GENERAL_WRITE_FAILED_TO_OPEN_FILE_FOR_EDITING.getMsg(file));
-            } else {
-                logger.warning(ErrorMessage.GENERAL_WRITE_FAILED_BECAUSE_FILE_NOT_FOUND.getMsg(file));
-                throw new CannotWriteException(ErrorMessage.GENERAL_WRITE_FAILED_BECAUSE_FILE_NOT_FOUND.getMsg(file), e);
+
+            checkCanWriteAndSize(af, file);
+            try (FileChannel channel = new RandomAccessFile(file, "rw").getChannel()) {
+                writeTag(af.getTag(), channel, file.getAbsolutePath());
+            } catch (FileNotFoundException e) {
+                if (file.exists()) {
+                    // file exists, permission error
+                    logger.warning(ErrorMessage.GENERAL_WRITE_FAILED_TO_OPEN_FILE_FOR_EDITING.getMsg(file));
+                    throw new NoWritePermissionsException(ErrorMessage.GENERAL_WRITE_FAILED_TO_OPEN_FILE_FOR_EDITING.getMsg(file));
+                } else {
+                    logger.warning(ErrorMessage.GENERAL_WRITE_FAILED_BECAUSE_FILE_NOT_FOUND.getMsg(file));
+                    throw new CannotWriteException(ErrorMessage.GENERAL_WRITE_FAILED_BECAUSE_FILE_NOT_FOUND.getMsg(file), e);
+                }
+            } catch (IOException e) {
+                logger.warning(ErrorMessage.GENERAL_WRITE_FAILED_BECAUSE.getMsg(file, e.getMessage()));
+                throw new CannotWriteException(e);
             }
-        }
-        catch (IOException e)
-        {
-            logger.warning(ErrorMessage.GENERAL_WRITE_FAILED_BECAUSE.getMsg(file, e.getMessage()));
-            throw new CannotWriteException(e);
-        }
     }
 
     /**

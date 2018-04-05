@@ -31,7 +31,11 @@ import org.jaudiotagger.audio.exceptions.NoWritePermissionsException;
 import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
 import org.jaudiotagger.audio.flac.FlacFileReader;
 import org.jaudiotagger.audio.flac.FlacFileWriter;
-import org.jaudiotagger.audio.generic.*;
+import org.jaudiotagger.audio.generic.AudioFileModificationListener;
+import org.jaudiotagger.audio.generic.AudioFileReader;
+import org.jaudiotagger.audio.generic.AudioFileWriter;
+import org.jaudiotagger.audio.generic.ModificationHandler;
+import org.jaudiotagger.audio.generic.Utils;
 import org.jaudiotagger.audio.mp3.MP3FileReader;
 import org.jaudiotagger.audio.mp3.MP3FileWriter;
 import org.jaudiotagger.audio.mp4.Mp4FileReader;
@@ -487,5 +491,4 @@ public class AudioFileIO
 
         afw.write(f);
     }
-
 }

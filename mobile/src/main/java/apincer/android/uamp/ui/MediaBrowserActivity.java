@@ -44,7 +44,7 @@ import apincer.android.uamp.MusicService;
 import apincer.android.uamp.R;
 import apincer.android.uamp.glide.GlideApp;
 import apincer.android.uamp.model.MediaItem;
-import apincer.android.uamp.provider.MediaProvider;
+import apincer.android.uamp.provider.MediaItemProvider;
 import apincer.android.uamp.ui.view.LinearDividerItemDecoration;
 import apincer.android.uamp.utils.LogHelper;
 import apincer.android.uamp.utils.StringUtils;
@@ -131,6 +131,11 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                 }
                 mActionModeHelper.destroyActionModeIfCan();
                 return MediaTagEditorActivity.navigateForResult(this, items);
+            case R.id.action_transfer_file:
+                doMoveMediaItems(selected);
+                mLibraryAdapter.clearSelection();
+                mActionModeHelper.destroyActionModeIfCan();
+                return true;
             case R.id.action_delete:
                 doDeleteMediaItems(selected);
                 mLibraryAdapter.clearSelection();
@@ -173,6 +178,57 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                         intent.putExtra(Constants.KEY_COMMAND, apincer.android.uamp.Constants.COMMAND_DELETE);
                         // Start the service
                         startService(intent);
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeText("Cancel")
+                .setNegativeColor(R.color.positive)
+                .setOnNegativeClicked(new CustomAlertDialogue.OnNegativeClicked() {
+                    @Override
+                    public void OnClick(View view, Dialog dialog) {
+                        dialog.dismiss();
+                    }
+                })
+                .setDecorView(getWindow().getDecorView())
+                .build();
+        alert.show();
+    }
+
+
+    private void doMoveMediaItems(List<Integer> selectedPositions) {
+        String text = "Move ";
+        final List<MediaItem> itemsList = new ArrayList<>();
+        for (int position : selectedPositions) {
+            MediaItem mediaItem = (MediaItem) mLibraryAdapter.getItem(position);
+            itemsList.add(mediaItem);
+        }
+        if(itemsList.size()>1) {
+            text = text + itemsList.size() + " songs to Music Library?";
+        }else {
+            text = text + "'"+itemsList.get(0).getTitle()+"' song to Music Library?";
+        }
+        CustomAlertDialogue.Builder alert = new CustomAlertDialogue.Builder(MediaBrowserActivity.this)
+                .setStyle(CustomAlertDialogue.Style.DIALOGUE)
+                .setCancelable(false)
+                .setTitle("Move Songs")
+                .setMessage(text)
+                .setPositiveText("Confirm")
+                .setPositiveColor(R.color.negative)
+                .setPositiveTypeface(Typeface.DEFAULT_BOLD)
+                .setOnPositiveClicked(new CustomAlertDialogue.OnPositiveClicked() {
+                    @Override
+                    public void OnClick(View view, Dialog dialog) {
+                        for(MediaItem item:itemsList) {
+                            FileManagerService.addToMove(item);
+                        }
+                       // startProgressBar();
+                        // Construct our Intent specifying the Service
+                        Intent intent = new Intent(getApplicationContext(), FileManagerService.class);
+                        // Add extras to the bundle
+                        intent.putExtra(Constants.KEY_COMMAND, Constants.COMMAND_MOVE);
+                        // Start the service
+                        startService(intent);
+                       // setResultData(Constants.COMMAND_MOVE,null,null);
                         dialog.dismiss();
                     }
                 })
@@ -242,8 +298,7 @@ public class MediaBrowserActivity extends AppCompatActivity implements
             if (flexibleItem instanceof MediaItem) {
                 changedPositions.clear();
                 changedPositions.add(position);
-                boolean good = MediaTagEditorActivity.navigateForResult(this, (MediaItem) flexibleItem);
-                if(!good) {
+                if(!MediaTagEditorActivity.navigateForResult(this, (MediaItem) flexibleItem)) {
                     FileManagerService.addToDelete((MediaItem) flexibleItem);
                     // Construct our Intent specifying the Service
                     Intent intent = new Intent(getApplicationContext(), FileManagerService.class);
@@ -362,7 +417,7 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                     title = "High-Resolution Songs";
                     break;
                 default:
-                    title = "All Songs";
+                    title = "Music Library";
                     break;
             }
             title = title +" ("+getItemCount() + " songs)";
@@ -430,7 +485,7 @@ public class MediaBrowserActivity extends AppCompatActivity implements
     private ActionModeHelper mActionModeHelper;
 
     private List<MediaItem> mediaItems = new ArrayList<>();
-    private MediaProvider mProvider;
+    private MediaItemProvider mProvider;
     private BROWSER_MODE browserMode = BROWSER_MODE.ALL_SONGS;
 
 
@@ -453,7 +508,7 @@ public class MediaBrowserActivity extends AppCompatActivity implements
         setUpPermissions();
 
         // Initialize the views
-        mProvider = MediaProvider.getInstance();
+        mProvider = MediaItemProvider.getInstance();
 
         mExitSnackbar = Snacky.builder().setActivity(MediaBrowserActivity.this)
                 .setText(getString(R.string.alert_back_to_exit))
@@ -523,12 +578,12 @@ public class MediaBrowserActivity extends AppCompatActivity implements
         mResideMenu.setScaleValue(0.5f);
 
         // items
-        mRMenuItemLibrary = new ResideMenuItem(this, R.drawable.ic_library_music_black_24dp,     "All Songs");
+        mRMenuItemLibrary = new ResideMenuItem(this, R.drawable.ic_library_music_black_24dp,     "Music Library");
         mRMenuItemNew = new ResideMenuItem(this, R.drawable.ic_filter_new_black_24dp,     "#NEW Songs");
         mRMenuItemSimilar = new ResideMenuItem(this, R.drawable.ic_filter_2_black_24dp,     "#SIMILAR Songs");
         mRMenuItemSimilarTitles = new ResideMenuItem(this, R.drawable.ic_filter_1_black_24dp,     "#SIMILAR Titles");
        // mRMenuItemHiRes = new ResideMenuItem(this, R.drawable.ic_filter_hq_black_24dp,     "Hi-Res Songs");
-        mRMenuItemPlayed = new ResideMenuItem(this, R.drawable.ic_filter_played_black_24dp,     "Played Songs");
+       // mRMenuItemPlayed = new ResideMenuItem(this, R.drawable.ic_filter_played_black_24dp,     "Played Songs");
         mRMenuItemSettings = new ResideMenuItem(this, R.drawable.ic_settings_applications_black_24dp,     "Settings");
         mRMenuItemAbout = new ResideMenuItem(this, R.drawable.ic_copyright_black_24dp,     "About");
 
@@ -589,14 +644,14 @@ public class MediaBrowserActivity extends AppCompatActivity implements
         mRMenuItemSimilar.setOnClickListener(onClickListener);
         mRMenuItemSimilarTitles.setOnClickListener(onClickListener);
        // mRMenuItemHiRes.setOnClickListener(onClickListener);
-        mRMenuItemPlayed.setOnClickListener(onClickListener);
+       // mRMenuItemPlayed.setOnClickListener(onClickListener);
         mRMenuItemSettings.setOnClickListener(onClickListener);
         mRMenuItemAbout.setOnClickListener(onClickListener);
 
         //add to reside menu
        // mResideMenu.addMenuItem(mRMenuItemHiRes, ResideMenu.DIRECTION_LEFT);
         mResideMenu.addMenuItem(mRMenuItemLibrary, ResideMenu.DIRECTION_LEFT);
-        mResideMenu.addMenuItem(mRMenuItemPlayed, ResideMenu.DIRECTION_LEFT);
+        //mResideMenu.addMenuItem(mRMenuItemPlayed, ResideMenu.DIRECTION_LEFT);
         mResideMenu.addMenuItem(mRMenuItemNew, ResideMenu.DIRECTION_LEFT);
         mResideMenu.addMenuItem(mRMenuItemSimilarTitles, ResideMenu.DIRECTION_LEFT);
         mResideMenu.addMenuItem(mRMenuItemSimilar, ResideMenu.DIRECTION_LEFT);

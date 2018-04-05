@@ -11,6 +11,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -18,6 +19,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -33,13 +35,11 @@ import java.util.List;
 
 import apincer.android.uamp.model.MediaItem;
 import apincer.android.uamp.model.MediaMetadata;
-import apincer.android.uamp.provider.MediaProvider;
+import apincer.android.uamp.provider.MediaItemProvider;
 import apincer.android.uamp.receiver.AndroidReceiver;
 import apincer.android.uamp.receiver.HFPlayerReader;
-import apincer.android.uamp.receiver.HTCReceiver;
 import apincer.android.uamp.receiver.NotificationReader;
 import apincer.android.uamp.receiver.RADSONEReader;
-import apincer.android.uamp.receiver.SamsungReceiver;
 import apincer.android.uamp.receiver.SonyReceiver;
 import apincer.android.uamp.receiver.TPlayerReader;
 import apincer.android.uamp.receiver.UAPPReceiver;
@@ -195,7 +195,7 @@ public class MusicService extends AccessibilityService {
         setServiceInfo(info);
     }
 
-    public void showNotification(String title, String artist, String album) {
+    public void setListeningSong(String title, String artist, String album) {
         currentTitle = StringUtils.trimTitle(title);
         currentArtist = StringUtils.trimTitle(artist);
         currentAlbum = StringUtils.trimTitle(album);
@@ -215,8 +215,14 @@ public class MusicService extends AccessibilityService {
            //     mAutoScrollToListening = false;
            // }
         }
-        Notification notification = createNotification(listeningSong);
-        displayNotification(context, notification);
+
+        SharedPreferences prefs =
+                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        boolean showNotification = prefs.getBoolean("preference_notification",false);
+        if(showNotification) {
+            Notification notification = createNotification(listeningSong);
+            displayNotification(context, notification);
+        }
     }
 
     private PendingIntent getPendingIntent(MediaItem item) {
@@ -244,7 +250,7 @@ public class MusicService extends AccessibilityService {
             int panelColor = getColor(R.color.grey200);
             int textColor = Color.WHITE;
             if (item != null) {
-                Bitmap bmp = MediaProvider.getInstance().getSmallArtwork(item);
+                Bitmap bmp = MediaItemProvider.getInstance().getSmallArtwork(item);
                 if (bmp != null) {
                     contentView.setImageViewBitmap(R.id.notification_coverart, bmp);
                     Palette palette = Palette.from(bmp).generate();
@@ -398,10 +404,10 @@ public class MusicService extends AccessibilityService {
     }
 
     private void getListeningItem() {
-        MediaProvider provider = MediaProvider.getInstance();
+        MediaItemProvider provider = MediaItemProvider.getInstance();
         if(provider!=null) {
-            MediaProvider.initialize(this);
-            provider = MediaProvider.getInstance();
+            MediaItemProvider.initialize(this);
+            provider = MediaItemProvider.getInstance();
         }
         try {
             listeningSong = provider.searchListeningMediaItem(currentTitle, currentArtist, currentAlbum);

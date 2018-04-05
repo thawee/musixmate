@@ -7,7 +7,7 @@ android {
         minSdkVersion minSdk
         targetSdkVersion targetSdk
         versionCode 1
-        versionName "2.2.3"
+        versionName "2.2.6"
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -27,4 +27,5 @@ tasks.withType(JavaCompile) {
 }
 
 dependencies {
+    implementation 'com.android.support:appcompat-v7:'+project.supportLibVersion;
 }

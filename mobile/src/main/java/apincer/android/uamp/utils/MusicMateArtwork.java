@@ -29,18 +29,12 @@ public class MusicMateArtwork extends AndroidArtwork {
 
         Bitmap bitmap = BitmapHelper.decodeBitmap(imagedata, MAX_ALBUM_ART_SIZE, MAX_ALBUM_ART_SIZE);
 
-        //int size = bitmap.getRowBytes() * bitmap.getHeight();
-        //ByteBuffer byteBuffer = ByteBuffer.allocate(size);
-        //bitmap.copyPixelsToBuffer(byteBuffer);
-        //imagedata = byteBuffer.array();
-
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
         setBinaryData(stream.toByteArray());
         bitmap.recycle();
         stream.close();
 
-        //setBinaryData(imagedata);
         setMimeType(ImageFormats.getMimeTypeForBinarySignature(imagedata));
         setDescription("");
         setPictureType(PictureTypes.DEFAULT_ID);

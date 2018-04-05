@@ -6,7 +6,7 @@ import apincer.android.uamp.model.MediaItem;
 import apincer.android.uamp.model.MediaTag;
 import apincer.android.uamp.utils.StringUtils;
 
-public class TagReader {
+public class MediaTagReader {
      public enum READ_MODE {SIMPLE,HIERARCHY,SMART};
      String titleSep="- ";
     String titleSep2=". ";
@@ -20,7 +20,7 @@ public class TagReader {
         }
 
         MediaTag tag = item.getTag().clone();
-        String text = AndroidFile.getNameWithoutExtension(file);
+        String text = MediaFileProvider.removeExtension(file);
         if(mode==READ_MODE.SIMPLE) {
             // filename
             tag.setTitle(text);

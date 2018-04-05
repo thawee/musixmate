@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import apincer.android.uamp.model.MediaItem;
-import apincer.android.uamp.provider.MediaProvider;
+import apincer.android.uamp.provider.MediaItemProvider;
 
 /**
  * Created by e1022387 on 12/24/2017.
@@ -29,7 +29,7 @@ class MediaItemDataFetcher implements DataFetcher<InputStream> {
         try {
            // Timber.e(mediaItem.getPath());
             if (!isCanceled) {
-                MediaProvider provider = MediaProvider.getInstance();
+                MediaItemProvider provider = MediaItemProvider.getInstance();
                 //if(!mediaItem.isLoadedEncoding()) {
                 //    provider.loadMediaTag(mediaItem, null);
                 //}

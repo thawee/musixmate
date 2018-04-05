@@ -28,7 +28,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
-        <!--
+<!--
         <com.lapism.searchview.widget.SearchView
             android:id="@+id/searchView"
             android:layout_width="match_parent"
@@ -54,6 +54,7 @@
             app:search_show_progress="false"
             app:search_voice="false"
             app:layout_behavior="com.lapism.searchview.SearchBehavior" />
+
     </android.support.design.widget.AppBarLayout>
     <LinearLayout
         android:layout_width="match_parent"

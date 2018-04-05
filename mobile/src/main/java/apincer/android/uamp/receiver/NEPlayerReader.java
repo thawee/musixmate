@@ -43,7 +43,7 @@ public class NEPlayerReader extends NotificationReader {
             album = StringUtils.trimToEmpty(artist.substring(artist.indexOf("/")+1, artist.length()));
             artist = StringUtils.trimToEmpty(artist.substring(0,artist.indexOf("/")));
         }
-        service.showNotification(track, artist, album);
+        service.setListeningSong(track, artist, album);
     }
 
     public NEPlayerReader(MusicService service) {

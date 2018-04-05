@@ -293,6 +293,7 @@ public abstract class AudioFileWriter
     {
         logger.config("Started writing tag data for file:" + af.getFile().getName());
 
+
         // Prechecks
         precheckWrite(af);
 

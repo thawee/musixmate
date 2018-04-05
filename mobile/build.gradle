@@ -76,7 +76,7 @@ def uiLibs = dependencyGroup {
     //
     implementation 'com.rengwuxian.materialedittext:library:2.1.4'
     implementation 'com.lapism:searchview:5.0.0-alpha7'
-    //implementation 'com.lapism:searchview:27.0.2.0.0-beta1 (it will be out ASAP)'
+   // implementation 'com.lapism:searchview:27.1.0.0.0'
     implementation 'com.github.siyamed:android-shape-imageview:0.9.+@aar'
     implementation 'com.github.matecode:Snacky:1.0.3'
     implementation 'com.github.husaynhakeem:about-page:0.1.1'

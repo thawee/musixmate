@@ -63,6 +63,6 @@ public class AndroidReceiver extends BroadcastReceiver {
     }
 
     protected final void displayNotification() {
-        service.showNotification(title, artist,album);
+        service.setListeningSong(title, artist,album);
     }
 }

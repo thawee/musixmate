@@ -19,6 +19,10 @@
     <dimen name="dimen_8_dp">8dp</dimen>
     <string name="app_name">BottomDialog</string>
     <string name="define_bottomdialog">year;owner</string>
+    <string name="empty">No items</string>
+    <string name="index_empty">empty</string>
+    <string name="index_file">file</string>
+    <string name="label_storage">Storage</string>
     <string name="library_bottomdialog_author">Raphaël Bussa</string>
     <string name="library_bottomdialog_authorWebsite">http://rebus007.altervista.org</string>
     <string name="library_bottomdialog_isOpenSource">true</string>
@@ -30,6 +34,9 @@
     <string name="library_bottomdialog_owner">Raphaël Bussa</string>
     <string name="library_bottomdialog_repositoryLink">https://github.com/rebus007/BottomDialog</string>
     <string name="library_bottomdialog_year">2016</string>
+    <string name="root_external_storage">External Storage</string>
+    <string name="root_internal_storage">Internal Storage</string>
+    <string name="root_phone_storage">Device Storage</string>
     <style name="BottomDialogs" parent="@android:style/Theme.Dialog">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>

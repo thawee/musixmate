@@ -119,7 +119,7 @@
     <string name="alert_organize_fail_many">Cannot move %1$s songs to Music Directory</string>
 
     <string name="alert_back_to_exit">Press BACK again to exit</string>
-    <string name="alert_invalid_media_file">Media file for \"%1$s\" is not valid, could not open with editor!</string>
+    <string name="alert_invalid_media_file">Media file for \"%1$s\" is not valid!</string>
     <string name="alert_listening_not_found">Now playing \"%1$s\" is not found</string>
     <string name="alert_listening_title">Now playing \"%1$s\" - \"%2$s\"</string>
     <string name="alert_file_not_exists">This file is no longer available</string>
@@ -133,10 +133,10 @@
     <string name="alert_btn_delete">DELETE</string>
     <string name="alert_btn_cancel">CANCEL</string>
     <string name="alert_btn_move">MOVE</string>
-    <string name="alert_btn_set">SET</string>
+    <string name="alert_btn_set">UPDATE</string>
     <string name="alert_btn_ok">OK</string>
 
-    <string name="alert_select_tags">Tags and coverart</string>
+    <string name="alert_select_tags">Tags and Cover Art</string>
 
     <string name="progress_load_media_store">Loading Music Library...</string>
     <string name="progress_update_media_store">Updating Android Media Store</string>
@@ -156,6 +156,8 @@
     <string name="preferences_sub_tags">Tags</string>
     <string name="preference_charset">Tag Encoding</string>
     <string name="preference_charsets_encoding">Tags Charset Encoding Options</string>
+    <string name="MetaDataEncoding">Tag Encoding</string>
+    <string name="MetaDataEncodingSummary">Choose the encoding of music tags if you track with difference encoding than latin or UTF-8</string>
 
     <!-- Action -->
     <string name="action_search">Search...</string>

@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import apincer.android.uamp.provider.MediaProvider;
+import apincer.android.uamp.provider.MediaItemProvider;
 import apincer.android.uamp.utils.LogHelper;
 import timber.log.Timber;
 
@@ -188,7 +188,7 @@ public class MusixMateApp extends Application {
             }
         }).start();
 
-        MediaProvider.initialize(this);
+        MediaItemProvider.initialize(this);
 
         // TURN OFF log for J audio tagger
         jAudioTaggerLogger1.setLevel(Level.OFF);

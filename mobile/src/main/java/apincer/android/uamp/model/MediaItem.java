@@ -16,7 +16,7 @@ import java.util.List;
 
 import apincer.android.uamp.MusicService;
 import apincer.android.uamp.R;
-import apincer.android.uamp.provider.MediaProvider;
+import apincer.android.uamp.provider.MediaItemProvider;
 import apincer.android.uamp.ui.MediaBrowserActivity;
 import apincer.android.uamp.utils.StringUtils;
 import apincer.android.uamp.utils.UIUtils;
@@ -215,7 +215,7 @@ public class MediaItem extends AbstractFlexibleItem<MediaItem.MediaItemViewHolde
         if(!isLoadedEncoding()) {
             bindViewHolder(adapter,holder);
             holder.mSamplingRate.setText("Loading...");
-            MediaProvider.getInstance().readId3Tag(MediaItem.this, null);
+            MediaItemProvider.getInstance().readId3Tag(MediaItem.this, null);
         }
 
         bindViewHolder(adapter,holder);

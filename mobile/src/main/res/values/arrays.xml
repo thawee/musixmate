@@ -10,4 +10,14 @@
         <item>Thai</item>
         <item>Unicode</item>
     </array>
+    <array name="MetaDataEncodingArray">
+        <item>Latin / UTF-8</item>
+        <item>Thai</item>
+        <item>Thai (Windows)</item>
+    </array>
+    <array name="MetaDataEncodingArrayValues">
+        <item></item>
+        <item>TIS-620</item>
+        <item>MS-874</item>
+    </array>
 </resources>

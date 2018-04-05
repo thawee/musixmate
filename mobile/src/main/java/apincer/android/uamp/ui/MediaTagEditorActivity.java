@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.ColorStateList;
@@ -32,6 +33,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -46,6 +48,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.transition.Slide;
 import android.view.LayoutInflater;
@@ -76,7 +79,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -98,8 +100,9 @@ import apincer.android.uamp.model.PathItem;
 import apincer.android.uamp.model.RecordingItem;
 import apincer.android.uamp.musicbrainz.MusicBrainz;
 import apincer.android.uamp.provider.AndroidFile;
-import apincer.android.uamp.provider.MediaProvider;
-import apincer.android.uamp.provider.TagReader;
+import apincer.android.uamp.provider.MediaFileProvider;
+import apincer.android.uamp.provider.MediaItemProvider;
+import apincer.android.uamp.provider.MediaTagReader;
 import apincer.android.uamp.ui.view.LinearDividerItemDecoration;
 import apincer.android.uamp.utils.LogHelper;
 import apincer.android.uamp.utils.MusicMateArtwork;
@@ -129,7 +132,7 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
     public static final int REQUEST_GET_CONTENT_IMAGE = 555;
     public static final int REQUEST_SAVE_FILE_RESULT_CODE = 888;
     private CollapsingToolbarLayout collapsingToolbarLayout;
-    private MediaProvider mediaStoreHelper;
+    private MediaItemProvider mediaStoreHelper;
     private boolean tagChanged;
     private boolean coverartChanged;
     private List<MediaItem> mediaItems;
@@ -186,7 +189,7 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
 
     public static boolean navigateForResult(AppCompatActivity context, final MediaItem item) {
         Intent intent = new Intent(context, MediaTagEditorActivity.class);
-        final MediaProvider mediaMusicTagHelper = MediaProvider.getInstance();
+        final MediaItemProvider mediaMusicTagHelper = MediaItemProvider.getInstance();
         if (mediaMusicTagHelper.isMediaFileExist(item)) {
             FileManagerService.addToEdit(item);
             ActivityCompat.startActivityForResult(context, intent, MusicService.REQUEST_CODE_EDIT_MEDIA_TAG, null);
@@ -236,8 +239,8 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
             ViewCompat.setTransitionName(findViewById(R.id.app_bar_layout), Constants.KEY_MEDIA_PATH);
             supportPostponeEnterTransition();
 
-            MediaProvider.initialize(getApplicationContext());
-            mediaStoreHelper = MediaProvider.getInstance();
+            MediaItemProvider.initialize(getApplicationContext());
+            mediaStoreHelper = MediaItemProvider.getInstance();
 
         mediaItems = new ArrayList<>();
         mediaItems.addAll(FileManagerService.getEditItems());
@@ -571,17 +574,6 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
             @Override
             public void onComplete() {
                 if(songs.size()>0) {
-                    /*
-                    mMusicBrainzRCView = findViewById(R.id.musicbrainz_items_list);
-                    FlexibleAdapter adapter = new FlexibleAdapter(songs);
-                    adapter.addListener(MediaTagEditorActivity.this);
-                    mMusicBrainzRCView.setAdapter(adapter);
-                    mMusicBrainzRCView.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, false));
-                    RecyclerView.ItemDecoration itemDecoration = new LinearDividerItemDecoration(MediaTagEditorActivity.this, Color.WHITE, 2);
-                    mMusicBrainzRCView.addItemDecoration(itemDecoration);
-                    mMusicBrainzView.setVisibility(View.VISIBLE);
-                    */
-
                     LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     View customView = inflater.inflate(R.layout.view_musicbrainz, null);
                     mMusicBrainzRCView = customView.findViewById(R.id.musicbrainz_items_list);
@@ -591,21 +583,13 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
                     mMusicBrainzRCView.setLayoutManager(new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false));
                     RecyclerView.ItemDecoration itemDecoration = new LinearDividerItemDecoration(MediaTagEditorActivity.this, Color.WHITE, 2);
                     mMusicBrainzRCView.addItemDecoration(itemDecoration);
-                    UIUtils.setHeight(mMusicBrainzRCView,65,songs.size(),360);
+                    UIUtils.setHeight(mMusicBrainzRCView,120,songs.size(),380);
                     new BottomDialog.Builder(MediaTagEditorActivity.this)
                             .autoDismiss(false)
                             .setIcon(R.drawable.musicbrainz)
                             .setTitle(R.string.editor_musicbrainz_matched)
                             .setTitleColor(R.color.colorPrimary)
                             .setCustomView(customView)
-                            //.setMenu(isSingleMediaItem()?R.menu.menu_editor_file:R.menu.menu_editor_file_multiple)
-                            //.onMenuItemClick(new BottomDialog.OnMenuItemClick() {
-                            //    @Override
-                            //    public boolean onMenuItemClick(BottomDialog dialog, MenuItem item) {
-                            //        dialog.dismiss();
-                            //        return onOptionsItemSelected(item);
-                            //    }
-                            //})
                             .show();
                 }else {
                     mSnackbar = Snacky.builder().setActivity(MediaTagEditorActivity.this)
@@ -927,8 +911,7 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         for(MediaItem item: mediaItems) {
             String path = item.getMetadata().getDisplayPath();
             if(withOrganizedPath) {
-                path = mediaStoreHelper.getOrganizedPath(item);
-                path = mediaStoreHelper.getDisplayPath(path);
+                path = MediaFileProvider.getInstance().getDisplayName(mediaStoreHelper.getOrganizedPath(item));
             }
             pathList.add(new PathItem(item.getId(), item.getTitle(), item.getSubtitle(), path));
         }
@@ -1339,17 +1322,17 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
 
     private void doReadTags(int itemId) {
         //enable for single item only
-        TagReader reader = new TagReader();
+        MediaTagReader reader = new MediaTagReader();
         for(MediaItem mItem:mediaItems) {
             String mediaPath =  mItem.getPath();
             File file = new File(mediaPath);
             if(!file.exists()) continue;
             MediaTag newTag = null;
             if(itemId == R.id.menu_label_smart_reader) {
-                newTag = reader.parser(mItem, TagReader.READ_MODE.SMART);
+                newTag = reader.parser(mItem, MediaTagReader.READ_MODE.SMART);
             }else {
                 // menu_label_hierarchy
-                newTag = reader.parser(mItem, TagReader.READ_MODE.HIERARCHY);
+                newTag = reader.parser(mItem, MediaTagReader.READ_MODE.HIERARCHY);
             }
             if(newTag!=null) {
                 MediaTag tag = mItem.getNewTag();
@@ -1387,11 +1370,19 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
         charsetList.put(0, "");
 
         ArrayList<String> other = new ArrayList<>();
-        final Map<String, Charset> charsets = Charset.availableCharsets();
+       // final Map<String, Charset> charsets = Charset.availableCharsets();
+       // int indx = 1;
+       // for(Charset charset:charsets.values()) {
+       //     other.add(StringUtils.encodeText(title, charset.name()));
+       //     charsetList.put(indx++, charset.name());
+       // }
+        SharedPreferences prefs =
+                PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        String [] charsets = TextUtils.split(prefs.getString("preference_tags_charsets_encoding","ISO8859_1,MS874,TIS-620"),",");
         int indx = 1;
-        for(Charset charset:charsets.values()) {
-            other.add(StringUtils.encodeText(title, charset.name()));
-            charsetList.put(indx++, charset.name());
+        for(String charset:charsets) {
+            other.add(StringUtils.encodeText(title, charset));
+            charsetList.put(indx++, charset);
         }
 
         CustomAlertDialogue.Builder alert = new CustomAlertDialogue.Builder(MediaTagEditorActivity.this)
@@ -1494,7 +1485,7 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
                     if (coverartFile.exists()) {
                         coverartFile.delete();
                     }
-                    AndroidFile.copy(input, coverartFile);
+                    MediaFileProvider.getInstance().copy(input, coverartFile);
                     final ImageView image = findViewById(R.id.image);
                     GlideApp.with(getApplicationContext())
                             .load(coverartFile)
@@ -1670,7 +1661,7 @@ public class MediaTagEditorActivity extends AppCompatActivity implements Flexibl
                                         if (coverartFile.exists()) {
                                             coverartFile.delete();
                                         }
-                                        AndroidFile.saveImage(resource, coverartFile);
+                                        MediaFileProvider.saveImage(resource, coverartFile);
                                         final ImageView image = findViewById(R.id.image);
                                         GlideApp.with(getApplicationContext())
                                                 .load(coverartFile)

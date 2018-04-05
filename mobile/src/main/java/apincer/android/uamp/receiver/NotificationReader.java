@@ -35,7 +35,7 @@ public abstract class NotificationReader {
         String track = StringUtils.trimTitle(text.get(getTitleKey()));
         String artist = StringUtils.trimTitle(text.get(getArtistKey()));
         String album = StringUtils.trimTitle(text.get(getAlbumKey()));
-        service.showNotification(track, artist, album);
+        service.setListeningSong(track, artist, album);
     }
 
     public boolean isValidPackage(String pack) {

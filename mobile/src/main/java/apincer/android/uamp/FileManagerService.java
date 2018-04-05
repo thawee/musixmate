@@ -12,7 +12,7 @@ import java.util.List;
 
 import apincer.android.uamp.model.MediaItem;
 import apincer.android.uamp.model.MediaTag;
-import apincer.android.uamp.provider.MediaProvider;
+import apincer.android.uamp.provider.MediaItemProvider;
 
 /**
  * Created by e1022387 on 1/8/2018.
@@ -147,7 +147,7 @@ public class FileManagerService extends IntentService {
                 msg = getString(R.string.alert_many, indexStr, totalStr, msg);
             }
             showNotification(deleteItems.size(),item, index, apincer.android.uamp.Constants.COMMAND_DELETE, "start", msg);
-            status = MediaProvider.getInstance().deleteMediaFile(item.getPath());
+            status = MediaItemProvider.getInstance().deleteMediaFile(item.getPath());
             playNextSong(item);
         } catch (Exception|OutOfMemoryError ex) {
             status = false;
@@ -171,7 +171,7 @@ public class FileManagerService extends IntentService {
                 msg = getString(R.string.alert_many, indexStr, totalStr, msg);
             }
             showNotification(moveItems.size(),item, index, apincer.android.uamp.Constants.COMMAND_MOVE, "start", msg);
-            MediaProvider provider = MediaProvider.getInstance();
+            MediaItemProvider provider = MediaItemProvider.getInstance();
             String newPath = provider.getOrganizedPath(item);
             if (provider.moveMediaFile(item.getPath(), newPath)) {
                 playNextSong(item);
@@ -200,7 +200,7 @@ public class FileManagerService extends IntentService {
                 msg = getString(R.string.alert_many, indexStr, totalStr, msg);
             }
             showNotification(saveItems.size(), item, index, apincer.android.uamp.Constants.COMMAND_SAVE, "start", msg);
-            MediaProvider provider = MediaProvider.getInstance();
+            MediaItemProvider provider = MediaItemProvider.getInstance();
             MediaTag tagUpdate = item.getNewTag();
             String artworkPath = item.getArtworkPath();
             if (tagUpdate != null) {
