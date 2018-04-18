@@ -6,6 +6,13 @@ import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.support.v4.provider.DocumentFile;
 
+import org.kc7bfi.jflac.Constants;
+import org.kc7bfi.jflac.FLACDecoder;
+import org.kc7bfi.jflac.PCMProcessor;
+import org.kc7bfi.jflac.io.BitOutputStream;
+import org.kc7bfi.jflac.metadata.StreamInfo;
+import org.kc7bfi.jflac.util.ByteData;
+
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -21,19 +28,10 @@ import apincer.android.provider.StorageProvider;
 import apincer.android.uamp.BuildConfig;
 import apincer.android.uamp.utils.LogHelper;
 import apincer.android.uamp.utils.StringUtils;
-import apincer.android.utils.FileUtils;
 
-public class MediaFileProvider extends StorageProvider {
+class MediaFileProvider extends StorageProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".storage.documents";
     private static final String TAG = LogHelper.makeLogTag(MediaFileProvider.class);
-    private static MediaFileProvider INSTANCE;
-    public MediaFileProvider() {
-        INSTANCE = this;
-    }
-
-    public static MediaFileProvider getInstance() {
-        return INSTANCE;
-    }
 
     public Uri getPersistedUri() {
         if(! getContext().getContentResolver().getPersistedUriPermissions().isEmpty()) {
@@ -90,19 +88,41 @@ public class MediaFileProvider extends StorageProvider {
         return (dotIndex == -1) ? fileName : fileName.substring(0, dotIndex);
     }
 
-    public String getDisplayName(String path) {
-        StorageProvider.RootInfo root = MediaFileProvider.getInstance().getRootInfo(path);
+    public String buildDisplayName(String path) {
+        StorageProvider.RootInfo root = getRootInfo(path);
         if(root!=null) {
             String rootPath = root.path.getAbsolutePath();
             if(path.startsWith(rootPath)) {
-                path = path.replace(rootPath, root.title+":/");
+                path = path.replace(rootPath, getStorageTitle(root)+":");
             }
         }
         return path;
     }
 
+    public static String getStorageTitle(StorageProvider.RootInfo root) {
+        String title = "Unknown";
+        if(root !=null && root.title !=null) {
+            title = root.title;
+            if(title.endsWith("Storage") || title.endsWith("storage")) {
+                title = title.substring(0, (title.length()-"storage".length()));
+            }
+            if(title.endsWith("Card") || title.endsWith("card")) {
+                title = title.substring(0, (title.length()-"card".length()));
+            }
+        }
+        return StringUtils.trimToEmpty(title);
+    }
+
+    public static boolean isDeviceStorage(StorageProvider.RootInfo info) {
+        String path = info.path.getAbsolutePath();
+        if (path.equalsIgnoreCase("/") || path.equalsIgnoreCase("/system") || path.equalsIgnoreCase("/data")) {
+            return true;
+        }
+        return false;
+    }
+
     public String getRootPath(String path) {
-        StorageProvider.RootInfo root = MediaFileProvider.getInstance().getRootInfo(path);
+        StorageProvider.RootInfo root = getRootInfo(path);
         if(root!=null) {
             String rootPath = root.path.getAbsolutePath();
             if(path.startsWith(rootPath)) {
@@ -112,11 +132,11 @@ public class MediaFileProvider extends StorageProvider {
         return "";
     }
 
-    public  DocumentFile getDocumentFile(final File file) {
+    public DocumentFile getDocumentFile(final File file) {
         String documentId = null;
         try {
             documentId = getDocIdForFile(file);
-            return FileUtils.getDocumentFile(getContext(),documentId,file);
+            return getDocumentFile(getContext(),documentId,file);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -136,7 +156,6 @@ public class MediaFileProvider extends StorageProvider {
         }
         return null;
     }
-
 
     public void cleanEmptyDirectory(File directory) {
         if(directory !=null && directory.exists() && directory.isDirectory()) {

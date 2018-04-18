@@ -4,11 +4,9 @@ package apincer.android.uamp.ui;
  * Created by Administrator on 8/26/17.
  */
 
-import android.content.SharedPreferences;
-import android.preference.PreferenceActivity;
 import android.os.Bundle;
+import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
 
 import apincer.android.uamp.R;
 
@@ -26,7 +24,7 @@ public class SettingsActivity extends PreferenceActivity {
         {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.settings);
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            //SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
           //  sharedPreferences.edit().
         }
     }

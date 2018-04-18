@@ -16,18 +16,19 @@ import android.provider.DocumentsContract.Root;
 import android.provider.DocumentsProvider;
 import android.support.annotation.GuardedBy;
 import android.support.v4.os.EnvironmentCompat;
+import android.support.v4.provider.BasicDocumentFile;
 import android.support.v4.provider.DocumentFile;
 import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.github.javiersantos.bottomdialogs.BuildConfig;
-import com.github.javiersantos.bottomdialogs.R;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Map;
 
+import apincer.android.library.BuildConfig;
+import apincer.android.library.R;
 import apincer.android.storage.StorageUtils;
 import apincer.android.utils.FileUtils;
 import apincer.android.utils.Utils;
@@ -55,6 +56,10 @@ public class StorageProvider extends DocumentsProvider {
             Document.COLUMN_DOCUMENT_ID, Document.COLUMN_MIME_TYPE, COLUMN_PATH, Document.COLUMN_DISPLAY_NAME,
             Document.COLUMN_LAST_MODIFIED, Document.COLUMN_FLAGS, Document.COLUMN_SIZE, Document.COLUMN_SUMMARY,
     };
+
+    public Map<String, RootInfo> getRootPaths() {
+        return mRoots;
+    }
 
     public static class RootInfo {
         public String rootId;
@@ -279,6 +284,37 @@ public class StorageProvider extends DocumentsProvider {
         return target;
     }
 
+    public static DocumentFile getDocumentFile(Context context, String docId, File file)
+            throws FileNotFoundException {
+
+        DocumentFile documentFile = null;
+        if(null != file && file.canWrite()){
+            documentFile = DocumentFile.fromFile(file);
+            return documentFile;
+        }
+        if(docId.startsWith(ROOT_ID_SECONDARY) && Utils.hasLollipop()){
+            String newDocId = docId.substring(ROOT_ID_SECONDARY.length());
+            Uri uri =  FileUtils.getRootUri(context, newDocId);
+            if(null == uri){
+                if(null != file) {
+                    documentFile = DocumentFile.fromFile(file);
+                }
+                return documentFile;
+            }
+            Uri fileUri = FileUtils.buildDocumentUriMaybeUsingTree(uri, newDocId);
+            documentFile = BasicDocumentFile.fromUri(context, fileUri);
+        } else {
+            if(null != file){
+                documentFile = DocumentFile.fromFile(file);
+            } else {
+                documentFile = BasicDocumentFile.fromUri(context,
+                        DocumentsContract.buildDocumentUri(AUTHORITY, docId));
+            }
+        }
+
+        return documentFile;
+    }
+
 
     private void includeFile(MatrixCursor result, String docId, File file)
             throws FileNotFoundException {
@@ -288,7 +324,7 @@ public class StorageProvider extends DocumentsProvider {
             file = getFileForDocId(docId);
         }
 
-        DocumentFile documentFile = FileUtils.getDocumentFile(getContext(), docId, file);
+        DocumentFile documentFile = getDocumentFile(getContext(), docId, file);
 
         int flags = 0;
 

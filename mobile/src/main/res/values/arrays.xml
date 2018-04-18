@@ -1,23 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <array name="charsetModeValues">
-        <item>None</item>
+    <string-array name="MetaDataEncodingNames">
+        <item>CP720 - Arabic DOS</item>
+        <item>CP1256 - Arabic ANSI</item>
+        <item>CP775 - Baltic DOS</item>
+        <item>CP1257 - Baltic ANSI</item>
+        <item>CP936 - Chinese Simplified ANSI/OEM</item>
+        <item>CP950 - Chinese Traditional ANSI/OEM</item>
+        <item>CP855 - Cyrillic OEM</item>
+        <item>CP1251 - Cyrillic ANSI</item>
+        <item>CP852 - European Central DOS</item>
+        <item>CP1250 - European Central ANSI</item>
+        <item>CP850 - European Western DOS</item>
+        <item>CP1252 - European Western ANSI</item>
+        <item>CP863 - French OEM</item>
+        <item>CP737 - Greek DOS</item>
+        <item>CP1253 - Greek ANSI</item>
+        <item>CP862 - Hebrew DOS</item>
+        <item>CP1255 - Hebrew ANSI</item>
+        <item>CP932 - Japanese Shift_JIS</item>
+        <item>CP949 - Korean ANSI/OEM</item>
+        <item>CP865 - Nordic DOS</item>
+        <item>CP860 - Portuguese DOS</item>
+        <item>CP866 - Russian DOS</item>
+        <item>CP874 - Thai ANSI/OEM</item>
+        <item>CP857 - Turkish DOS</item>
+        <item>CP1254 - Turkish ANSI</item>
+        <item>CP1125 - Ukraine OEM</item>
+        <item>CP437 - US DOS</item>
+        <item>CP1258 - Vietnamese ANSI/OEM</item>
+    </string-array>
+    <string-array name="MetaDataEncodingValues">
+        <item>CP720</item>
+        <item>CP1256</item>
+        <item>CP775</item>
+        <item>CP1257</item>
+        <item>CP936</item>
+        <item>CP950</item>
+        <item>CP855</item>
+        <item>CP1251</item>
+        <item>CP852</item>
+        <item>CP1250</item>
+        <item>CP850</item>
+        <item>CP1252</item>
+        <item>CP863</item>
+        <item>CP737</item>
+        <item>CP1253</item>
+        <item>CP862</item>
+        <item>CP1255</item>
+        <item>CP932</item>
+        <item>CP949</item>
+        <item>CP865</item>
+        <item>CP860</item>
+        <item>CP866</item>
         <item>TIS-620</item>
-        <item>UTF-8</item>
-    </array>
-    <array name="charsetModes">
-        <item>None</item>
-        <item>Thai</item>
-        <item>Unicode</item>
-    </array>
-    <array name="MetaDataEncodingArray">
-        <item>Latin / UTF-8</item>
-        <item>Thai</item>
-        <item>Thai (Windows)</item>
-    </array>
-    <array name="MetaDataEncodingArrayValues">
-        <item></item>
-        <item>TIS-620</item>
-        <item>MS-874</item>
-    </array>
+        <item>CP857</item>
+        <item>CP1254</item>
+        <item>CP1125</item>
+        <item>CP437</item>
+        <item>CP1258</item>
+    </string-array>
+
+    <string-array name="SearchEngines">
+        <item>Google</item>
+        <item>Google (Images)</item>
+        <item>MusicBrainz</item>
+    </string-array>
+
+    <string-array name="empty_array"/>
 </resources>

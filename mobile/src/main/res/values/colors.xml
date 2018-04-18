@@ -48,6 +48,10 @@
     <color name="menu_play_background">#2979FF</color>
     <color name="menu_tag_background">#0096a6</color>
     <color name="menu_charset_background">#0096a6</color>
+    <color name="menu_close_icon_color">@color/grey600</color>
+    <color name="menu_file_icon_color">#ffff1600</color>
+    <color name="menu_parser_icon_color">@color/material_color_blue_700</color>
+    <color name="menu_tag_icon_color">@color/material_color_green_700</color>
 
     <color name="blue_accent200">#2979FF</color>
     <color name="list_item_selected_background">#2979FF</color>
@@ -55,6 +59,7 @@
 
     <!-- Light Theme -->
     <color name="colorPrimary_light">#380396</color><!-- Deep Purple 500 -->
+    <color name="colorPrimary_light_extra">#7c4dff</color><!-- Deep Purple 500 -->
     <color name="colorPrimaryDark_light">#5b15d8</color><!-- Deep Purple 700 -->
     <color name="colorAccent_light">#ff4081</color><!-- Pink A200 -->
     <color name="colorAccentDark_light">#c51162</color><!-- Pink A700: for statusBar in actionMode -->

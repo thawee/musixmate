@@ -5,14 +5,16 @@ import java.text.BreakIterator;
 import java.util.List;
 import java.util.Locale;
 
+import apincer.android.storage.StorageVolume;
+
 public class StringUtils {
     public static final String ARTIST_SEP = " -/- ";
     public static final String UNKNOWN = "<unknown>";
     public static final String UNKNOWN_CAP = "<Unknown>";
     public static final String UNKNOWN_ALL_CAP = "<UNKNOWN>";
     public static final String UNTITLED_CAP = "<Untitled>";
-    public static final String MULTI_VALUES = "<Multi-Values>";
-    public static final String CHARSET_ISO_8859_1 = "ISO-8859-1";
+    public static final String MULTI_VALUES = "<multiple>";
+    public static final String CHARSET_ISO8859_1 = "ISO-8859-1";
 
     public static String encodeText(String text, String encode) {
         if(StringUtils.isEmpty(encode)) {
@@ -22,55 +24,38 @@ public class StringUtils {
             return "";
         }
         try {
-            return changeCharset(text, encode,"UTF-8");
-           // return new String(text.getBytes(CHARSET_ISO_8859_1), encode);
-            //String temp = new String(text.getBytes(), encode);
-            //return new String(temp.getBytes(), "UTF-8");
-         ////   byte [] byteString = asciiToUnicode(text).getBytes();
-         ////   return new String(byteString,encode);
-//            return convertToThaiTIS620();
-            //return new String(text.getBytes(ANSI_CHARSET), encode);
-            //return new String(theString.getBytes("UTF-8"));
+            return newString(getBytesUnchecked(text,CHARSET_ISO8859_1),encode);
         } catch (Exception e) {
             return text;
         }
     }
 
-    public static String changeCharset(String str, String newCharset) throws UnsupportedEncodingException {
-        if (str != null) {
-            byte[] bs = str.getBytes();
-            return new String(bs, newCharset);
+    public static byte[]getBytesUnchecked(String string, String charsetName) {
+
+        if (string == null) {
+            return null;
         }
-        return null;
+        try {
+            return string.getBytes(charsetName);
+        } catch (UnsupportedEncodingException e) {
+            return null;
+        }
     }
 
-    public static String changeCharset(String str, String oldCharset, String newCharset)
-            throws UnsupportedEncodingException {
-        if (str != null) {
-            byte[] bs = str.getBytes(oldCharset);
-            return new String(bs, newCharset);
+    public static String newString(byte[] bytes, String charsetName) {
+        if (bytes == null) {
+            return "";
         }
-        return null;
+
+        try {
+            return new String(bytes, charsetName);
+        } catch (UnsupportedEncodingException e) {
+            return new String(bytes);
+        }
     }
 
-    public static String asciiToUnicode(String ascii) {
-//initial temporary space of unicode
-        StringBuffer unicode = new StringBuffer(ascii);
-        int code;
-
-//continue loop based on number of character.
-        for (int i = 0; i < ascii.length(); i++) {
-            code = (int) ascii.charAt(i);
-
-//check the value is Thai language in ASCII scope or not.
-            if ((0xA1 <= code) && (code <= 0xFB)) {
-//if yes, it will be converted to Thai language in Unicode scope.
-                unicode.setCharAt(i, (char) (code + 0xD60));
-            }
-        }
-
-//convert unicode to be as String type to use continue.
-        return unicode.toString();
+    public static boolean equals(String album, String album1) {
+        return trimTitle(album).equals(trimTitle(album1));
     }
 
     public static String trimTitle(String text) {
@@ -293,5 +278,24 @@ public class StringUtils {
             if (!Character.isDigit(c)) return false;
         }
         return true;
+    }
+
+    public static String formatStorageSize(long bytes) {
+        double s = bytes*1.00;
+        String unit = " Bytes";
+        if(bytes<= StorageVolume.MB_IN_BYTES) {
+            s = s/StorageVolume.KB_IN_BYTES;
+            unit = " KB";
+        }else if(bytes<= StorageVolume.GB_IN_BYTES){
+            s = s/StorageVolume.MB_IN_BYTES;
+            unit = " MB";
+        }else if(bytes> StorageVolume.GB_IN_BYTES) {
+           s = s/StorageVolume.GB_IN_BYTES;
+           unit = " GB";
+        }
+        //double s = bytes / StorageVolume.GB_IN_BYTES;
+        String str = String.format(Locale.getDefault(),"%.2f "+unit, s);
+        //str = str.replace(".0", "");
+        return str;
     }
 }

@@ -65,7 +65,7 @@ public class StorageUtils {
      */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @SuppressWarnings("deprecation")
-    private static long getPartitionSize(String path, boolean isTotal){
+    public static long getPartitionSize(String path, boolean isTotal){
         StatFs stat = null;
         try {
             stat = new StatFs(path);

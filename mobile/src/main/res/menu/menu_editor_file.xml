@@ -20,27 +20,27 @@
         <item
                 android:icon="@drawable/ic_move_to_inbox_black_24dp"
                 android:id="@+id/menu_main_transfer_file"
-                android:title="Move songs to Music Library"
+                android:title="Move to Music Directory"
                 app:showAsAction="always|withText"/>
     </group>
     <group android:id="@+id/grpDelete">
         <item
             android:icon="@drawable/ic_delete_black_24dp"
             android:id="@+id/menu_main_delete_file"
-            android:title="Delete songs from Android"
+            android:title="Delete from Android"
             app:showAsAction="always|withText"/>
     </group>
     <group android:id="@+id/grpOthers">
         <item
             android:icon="@drawable/ic_folder_open_black_24dp"
             android:id="@+id/menu_file_manager"
-            android:title="Open on File Manager"
+            android:title="Open on FileManager"
             app:showAsAction="always|withText"/>
         <!--
         <item
             android:icon="@drawable/ic_play_arrow_black_24dp"
         android:id="@+id/menu_play_song"
-        android:title="Play on Music Player"
+        android:title="Play the song"
         app:showAsAction="always|withText"/>
         -->
     </group>

@@ -18,6 +18,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.support.annotation.ColorInt;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -25,6 +26,7 @@ import android.support.v7.view.menu.MenuPopupHelper;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.DisplayMetrics;
@@ -37,6 +39,8 @@ import android.widget.TextView;
 import java.lang.reflect.Field;
 import java.util.Locale;
 
+import apincer.android.uamp.R;
+
 /**
  * Created by e1022387 on 6/4/2017.
  */
@@ -44,7 +48,6 @@ import java.util.Locale;
 public class UIUtils  {
     public static final int INVALID_COLOR = -1;
     public static int colorAccent = INVALID_COLOR;
-
 
     /**
      * Convert a dp float value to pixels
@@ -81,11 +84,19 @@ public class UIUtils  {
         final Drawable overflowIcon = toolbar.getOverflowIcon();
         if (overflowIcon == null)
             return false;
-        toolbar.setOverflowIcon(getTintedDrawable(toolbar.getContext(), overflowIcon, toolbarIconsColor));
+        toolbar.setOverflowIcon(getTintedDrawable(overflowIcon, toolbarIconsColor));
         return true;
     }
 
-    public static Drawable getTintedDrawable(@NonNull Context context, @NonNull Drawable inputDrawable, @ColorInt int color) {
+    public static Drawable getTintedDrawable(@NonNull Drawable inputDrawable, @ColorInt int color) {
+        Drawable wrapDrawable = DrawableCompat.wrap(inputDrawable);
+        DrawableCompat.setTint(wrapDrawable, color);
+        DrawableCompat.setTintMode(wrapDrawable, PorterDuff.Mode.SRC_IN);
+        return wrapDrawable;
+    }
+
+    public static Drawable getTintedDrawable(@NonNull Context context, @DrawableRes int drawableId, @ColorInt int color) {
+        Drawable inputDrawable = context.getDrawable(drawableId);
         Drawable wrapDrawable = DrawableCompat.wrap(inputDrawable);
         DrawableCompat.setTint(wrapDrawable, color);
         DrawableCompat.setTintMode(wrapDrawable, PorterDuff.Mode.SRC_IN);
@@ -126,42 +137,6 @@ public class UIUtils  {
         return bitmapResult;
     }
 
-    /**
-     * Returns the complimentary (opposite) color.
-     * @param color int RGB color to return the compliment of
-     * @return int RGB of compliment color
-     */
-    public static int getComplimentColor(int color) {
-        // get existing colors
-        int alpha = Color.alpha(color);
-        int red = Color.red(color);
-        int blue = Color.blue(color);
-        int green = Color.green(color);
-
-        // find compliments
-        red = (~red) & 0xff;
-        blue = (~blue) & 0xff;
-        green = (~green) & 0xff;
-
-        return Color.argb(alpha, red, green, blue);
-    }
-
-
-    public static int getInvertedColor(int ColorToInvert)     {
-        int RGBMAX = 255;
-
-        float[] hsv = new float[3];
-        float H;
-
-        Color.RGBToHSV( Color.red( ColorToInvert),  RGBMAX - Color.green( ColorToInvert), Color.blue(ColorToInvert), hsv);
-
-        H = (float) (hsv[0] + 0.5);
-
-        if (H > 1) H -= 1;
-
-        return Color.HSVToColor(hsv );
-    }
-
     public static void setColorFilter(MenuItem item, int color) {
         Drawable drawable = item.getIcon();
         if(drawable != null) {
@@ -187,76 +162,6 @@ public class UIUtils  {
         return colorAccent;
     }
 
-    public static int getDominantColor(Bitmap bitmap) {
-        if (bitmap == null) {
-            return Color.TRANSPARENT;
-        }
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
-        int size = width * height;
-        int pixels[] = new int[size];
-        //Bitmap bitmap2 = bitmap.copy(Bitmap.Config.ARGB_4444, false);
-        bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-        int color;
-        int r = 0;
-        int g = 0;
-        int b = 0;
-        int a;
-        int count = 0;
-        for (int i = 0; i < pixels.length; i++) {
-            color = pixels[i];
-            a = Color.alpha(color);
-            if (a > 0) {
-                r += Color.red(color);
-                g += Color.green(color);
-                b += Color.blue(color);
-                count++;
-            }
-        }
-        r /= count;
-        g /= count;
-        b /= count;
-        r = (r << 16) & 0x00FF0000;
-        g = (g << 8) & 0x0000FF00;
-        b = b & 0x000000FF;
-        color = 0xFF000000 | r | g | b;
-        return color;
-    }
-
-    /**
-     * Calculate the average red, green, blue color values of a bitmap
-     *
-     * @param bitmap
-     *            a {@link android.graphics.Bitmap}
-     * @return
-     */
-    public static int[] getAverageColorRGB(Bitmap bitmap) {
-        final int width = bitmap.getWidth();
-        final int height = bitmap.getHeight();
-        int size = width * height;
-        int pixelColor;
-        int r, g, b;
-        r = g = b = 0;
-        for (int x = 0; x < width; ++x) {
-            for (int y = 0; y < height; ++y) {
-                pixelColor = bitmap.getPixel(x, y);
-                if (pixelColor == 0) {
-                    size--;
-                    continue;
-                }
-                r += Color.red(pixelColor);
-                g += Color.green(pixelColor);
-                b += Color.blue(pixelColor);
-            }
-        }
-        r /= size;
-        g /= size;
-        b /= size;
-        return new int[] {
-                r, g, b
-        };
-    }
-
     public static GradientDrawable createGradient(int backgroundColor) {
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.RECTANGLE);
@@ -266,37 +171,38 @@ public class UIUtils  {
         return shape;
     }
 
-    public static void highlightText(@NonNull TextView textView,
-                                     @Nullable String originalText, @Nullable String constraint) {
-        int accentColor = fetchAccentColor(textView.getContext(), 1);
-        highlightText(textView, originalText, constraint, null, accentColor);
-    }
-
     public static void highlightSearchKeyword(@NonNull TextView textView,
                                      @Nullable String originalText, @Nullable String constraint) {
-        highlightText(textView, originalText, constraint, null, Color.RED);
-    }
-
-    public static void highlightText(@NonNull TextView textView,
-                                     @Nullable String originalText, @Nullable String constraint, String constraint2) {
-        int accentColor = fetchAccentColor(textView.getContext(), 1);
-        highlightText(textView, originalText, constraint, constraint2, accentColor);
+        int color = textView.getContext().getColor(R.color.grey200);
+        originalText = StringUtils.trimToEmpty(originalText);
+        constraint = StringUtils.trimToEmpty(constraint);
+        int i = originalText.toLowerCase(Locale.getDefault()).indexOf(constraint.toLowerCase(Locale.getDefault()));
+        if ((!StringUtils.isEmpty(originalText)) && (i != -1)) {
+            Spannable spanText = Spannable.Factory.getInstance().newSpannable(originalText);
+            if (i != -1 && !StringUtils.isEmpty(constraint)) {
+                spanText.setSpan(new BackgroundColorSpan(color), i, i + constraint.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                spanText.setSpan(new ForegroundColorSpan(Color.BLACK), i, i + constraint.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            textView.setText(spanText, TextView.BufferType.SPANNABLE);
+        } else {
+            textView.setText(originalText, TextView.BufferType.NORMAL);
+        }
     }
 
     public static void highlightText(@NonNull TextView textView, @Nullable String originalText,
                                      @Nullable String constraint, String constraint2, @ColorInt int color) {
-        if (originalText == null) originalText = "";
-        if (constraint == null) constraint = "";
-        if (constraint2 == null) constraint2 = "";
+        originalText = StringUtils.trimToEmpty(originalText);
+        constraint = StringUtils.trimToEmpty(constraint);
+        constraint2 = StringUtils.trimToEmpty(constraint2);
         int i = originalText.toLowerCase(Locale.getDefault()).indexOf(constraint.toLowerCase(Locale.getDefault()));
         int ii = originalText.toLowerCase(Locale.getDefault()).indexOf(constraint2.toLowerCase(Locale.getDefault()));
-        if (i != -1 || ii != -1) {
+        if ((!StringUtils.isEmpty(originalText)) && (i != -1 || ii != -1)) {
             Spannable spanText = Spannable.Factory.getInstance().newSpannable(originalText);
-            if(i != -1) {
+            if(i != -1 && !StringUtils.isEmpty(constraint)) {
                 spanText.setSpan(new ForegroundColorSpan(color), i, i + constraint.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 spanText.setSpan(new StyleSpan(Typeface.BOLD), i, i + constraint.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
-            if(ii != -1) {
+            if(ii != -1 && !StringUtils.isEmpty(constraint2)) {
                 spanText.setSpan(new ForegroundColorSpan(color), ii, ii + constraint2.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 spanText.setSpan(new StyleSpan(Typeface.BOLD), ii, ii + constraint2.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }

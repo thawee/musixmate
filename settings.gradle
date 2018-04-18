@@ -1,1 +1,1 @@
-include ':mobile',':ResideMenu',':jaudiotagger226',':library'
+include ':mobile',':jaudiotagger226',':library'

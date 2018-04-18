@@ -44,7 +44,5 @@ public class FlacFileWriter extends AudioFileWriter2
     {
         tw.delete(tag, channel, fileName);
     }
-
-
 }
 

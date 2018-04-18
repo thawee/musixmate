@@ -50,6 +50,8 @@ public class TagOptionSingleton
 
     private WavOptions wavOptions = WavOptions.READ_ID3_ONLY;
 
+    private boolean removeID3FromFlacOnSave = false;
+
     public void setWavOptions(WavOptions wavOptions)
     {
         this.wavOptions = wavOptions;
@@ -1372,5 +1374,12 @@ public class TagOptionSingleton
     public void setWriteWavForTwonky(boolean isWriteWavForTwonky)
     {
         this.isWriteWavForTwonky = isWriteWavForTwonky;
+    }
+
+    public void setRemoveID3FromFlacOnSave(boolean b) {
+        removeID3FromFlacOnSave = b;
+    }
+    public boolean isRemoveID3FromFlacOnSave() {
+        return removeID3FromFlacOnSave;
     }
 }

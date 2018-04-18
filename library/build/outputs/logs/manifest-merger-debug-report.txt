@@ -1,18 +1,18 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:2:1-6:12
-INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:2:1-6:12
-INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:2:1-6:12
-INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:2:1-6:12
-INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:2:1-6:12
-INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:2:1-6:12
-INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:2:1-6:12
+ADDED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:2:1-7:12
+INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:2:1-7:12
+INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:2:1-7:12
+INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:2:1-7:12
+INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:2:1-7:12
+INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:2:1-7:12
+INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:2:1-7:12
 	package
-		ADDED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:3:7-54
+		ADDED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:3:7-40
 		INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
 		INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
 	android:versionName
-		ADDED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:5:7-32
+		ADDED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:5:7-34
 		INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
 		INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
 	xmlns:android
@@ -22,16 +22,16 @@ INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main
 		INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
 		INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
 uses-sdk
-INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml reason: use-sdk injection requested
-INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
-INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
-INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
-INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
+ADDED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:6:5-43
+INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:6:5-43
+INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:6:5-43
+INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:6:5-43
+INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:6:5-43
 	android:targetSdkVersion
 		INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
-		ADDED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
+		ADDED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:6:5-43
 		INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
 	android:minSdkVersion
+		ADDED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml:6:15-41
 		INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
-		ADDED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml
 		INJECTED from C:\Users\e1022387\AndroidStudioProjects\musixmate\library\src\main\AndroidManifest.xml

@@ -2,7 +2,6 @@ package apincer.android.uamp;
 
 import android.app.Activity;
 import android.app.IntentService;
-import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -11,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import apincer.android.uamp.model.MediaItem;
-import apincer.android.uamp.model.MediaTag;
 import apincer.android.uamp.provider.MediaItemProvider;
 
 /**
@@ -20,9 +18,7 @@ import apincer.android.uamp.provider.MediaItemProvider;
 
 public class FileManagerService extends IntentService {
     public static final String ACTION = "com.apincer.uamp.FileManagerService";
-    private Context mContext;
     private static List<MediaItem> deleteItems = new ArrayList<>();
-    private static List<MediaItem> readItems = new ArrayList<>();
     private static List<MediaItem> moveItems = new ArrayList<>();
     private static List<MediaItem> saveItems = new ArrayList<>();
     public static List<MediaItem> editItems = new ArrayList<>();
@@ -32,14 +28,6 @@ public class FileManagerService extends IntentService {
             deleteItems = new ArrayList<>();
         }
         deleteItems.add(item);
-    }
-    public static void addToEdit(MediaItem item) {
-        if(editItems==null) {
-            editItems = new ArrayList<>();
-        }else {
-            editItems.clear();
-        }
-        editItems.add(item);
     }
     public static void addToEdit(List<MediaItem> items) {
         if(editItems==null) {
@@ -54,12 +42,6 @@ public class FileManagerService extends IntentService {
             moveItems = new ArrayList<>();
         }
         moveItems.add(item);
-    }
-    public static void addToRead(MediaItem item) {
-        if(readItems==null) {
-            readItems = new ArrayList<>();
-        }
-        readItems.add(item);
     }
     public static void addToSave(MediaItem item) {
         if(saveItems==null) {
@@ -87,7 +69,6 @@ public class FileManagerService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate(); // if you override onCreate(), make sure to call super().
-        this.mContext = getApplicationContext();
     }
 
     @Override
@@ -171,11 +152,8 @@ public class FileManagerService extends IntentService {
                 msg = getString(R.string.alert_many, indexStr, totalStr, msg);
             }
             showNotification(moveItems.size(),item, index, apincer.android.uamp.Constants.COMMAND_MOVE, "start", msg);
-            MediaItemProvider provider = MediaItemProvider.getInstance();
-            String newPath = provider.getOrganizedPath(item);
-            if (provider.moveMediaFile(item.getPath(), newPath)) {
+            if(MediaItemProvider.getInstance().moveToManagedDirectory(item)) {
                 playNextSong(item);
-                item.setPath(newPath);
             }
             status = true;
         }catch(Exception|OutOfMemoryError ex) {
@@ -201,18 +179,12 @@ public class FileManagerService extends IntentService {
             }
             showNotification(saveItems.size(), item, index, apincer.android.uamp.Constants.COMMAND_SAVE, "start", msg);
             MediaItemProvider provider = MediaItemProvider.getInstance();
-            MediaTag tagUpdate = item.getNewTag();
-            String artworkPath = item.getArtworkPath();
-            if (tagUpdate != null) {
-                provider.saveMediaTag(item.getPath(), tagUpdate, artworkPath);
-                item.setLoadedEncoding(false); // reload id3 tags
-                provider.readId3Tag(item, null);
-            } else if (artworkPath != null) {
-                provider.saveMediaArtwork(item.getPath(), artworkPath);
+
+            // call new API
+            if(provider.saveMetadata(item)) {
+                provider.readMetadata(item.getMetadata());
             }
-            if(artworkPath!=null) {
-                item.setFlag();
-            }
+            provider.saveMediaArtwork(item);
             status = true;
         }catch (Exception|OutOfMemoryError ex) {
             status = false;

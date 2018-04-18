@@ -7,19 +7,15 @@ import android.content.UriPermission;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
-import android.support.v4.provider.BasicDocumentFile;
 import android.support.v4.provider.DocumentFile;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
-import com.github.javiersantos.bottomdialogs.R;
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.text.NumberFormat;
 import java.util.List;
 
-import apincer.android.provider.StorageProvider;
+import apincer.android.library.R;
 
 import static android.provider.DocumentsContract.buildDocumentUri;
 import static android.provider.DocumentsContract.getTreeDocumentId;
@@ -77,7 +73,7 @@ public class FileUtils {
         return (paths.size() >= 2 && PATH_TREE.equals(paths.get(0)));
     }
 
-    private static Uri buildDocumentUriMaybeUsingTree(Uri baseUri, String documentId) {
+    public static Uri buildDocumentUriMaybeUsingTree(Uri baseUri, String documentId) {
         if (isTreeUri(baseUri)) {
             return buildDocumentUriUsingTree(baseUri, documentId);
         } else {
@@ -85,7 +81,7 @@ public class FileUtils {
         }
     }
 
-    private static Uri getRootUri(Context context, String docId){
+    public static Uri getRootUri(Context context, String docId){
         Uri treeUri = null;
 
         //get root dynamically
@@ -105,37 +101,6 @@ public class FileUtils {
             return DocumentsContract.getTreeDocumentId(uri);
         }
         return DocumentsContract.getDocumentId(uri);
-    }
-
-    public static DocumentFile getDocumentFile(Context context, String docId, File file)
-            throws FileNotFoundException {
-
-        DocumentFile documentFile = null;
-        if(null != file && file.canWrite()){
-            documentFile = DocumentFile.fromFile(file);
-            return documentFile;
-        }
-        if(docId.startsWith(StorageProvider.ROOT_ID_SECONDARY) && Utils.hasLollipop()){
-            String newDocId = docId.substring(StorageProvider.ROOT_ID_SECONDARY.length());
-            Uri uri = getRootUri(context, newDocId);
-            if(null == uri){
-                if(null != file) {
-                    documentFile = DocumentFile.fromFile(file);
-                }
-                return documentFile;
-            }
-            Uri fileUri = buildDocumentUriMaybeUsingTree(uri, newDocId);
-            documentFile = BasicDocumentFile.fromUri(context, fileUri);
-        } else {
-            if(null != file){
-                documentFile = DocumentFile.fromFile(file);
-            } else {
-                documentFile = BasicDocumentFile.fromUri(context,
-                        DocumentsContract.buildDocumentUri(StorageProvider.AUTHORITY, docId));
-            }
-        }
-
-        return documentFile;
     }
 
     /**

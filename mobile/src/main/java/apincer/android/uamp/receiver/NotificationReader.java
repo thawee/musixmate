@@ -1,6 +1,8 @@
 package apincer.android.uamp.receiver;
 
 import android.app.Notification;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.widget.RemoteViews;
 
@@ -10,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import apincer.android.uamp.MusicService;
+import apincer.android.uamp.R;
 import apincer.android.uamp.utils.LogHelper;
 import apincer.android.uamp.utils.StringUtils;
 
@@ -17,7 +20,7 @@ import apincer.android.uamp.utils.StringUtils;
  * Created by Administrator on 12/1/17.
  */
 
-public abstract class NotificationReader {
+public abstract class NotificationReader implements ListeningReceiver{
     private String TAG = LogHelper.makeLogTag(NotificationReader.class);
 
     protected MusicService service;
@@ -25,9 +28,14 @@ public abstract class NotificationReader {
     public abstract  int getArtistKey();
     public abstract  int getAlbumKey();
     public abstract  String[] getPackageName();
+    protected String player;
+    protected String playerPackage;
+    protected Bitmap iconBitmap;
 
     public NotificationReader(MusicService service) {
         this.service = service;
+        iconBitmap = BitmapFactory.decodeResource(service.getResources(), R.drawable.ic_broken_image_black_24dp);
+        player = "UNKNOWN Player";
     }
 
     public void process(Notification notification) {
@@ -121,4 +129,20 @@ public abstract class NotificationReader {
         return sb.toString();
     }
 
+    @Override
+    public String getPlayerPackage(){
+        return playerPackage;
+    }
+
+
+    @Override
+    public String getPlayerName(){
+        return player;
+    }
+
+
+    @Override
+    public Bitmap getPlayerIcon() {
+        return iconBitmap;
+    }
 }

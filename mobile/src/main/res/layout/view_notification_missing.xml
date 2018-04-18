@@ -71,6 +71,14 @@
             android:layout_height="wrap_content"
             android:text="Subtitle"
             android:maxLines="1" />
+        <TextView
+            android:textSize="@dimen/notification_artist"
+            android:ellipsize="end"
+            android:id="@+id/notification_player"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Played on XXXX"
+            android:maxLines="1" />
     </LinearLayout>
         </FrameLayout>
     </LinearLayout>

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 apply plugin: 'com.android.application'
+apply plugin: 'org.greenrobot.greendao' // apply plugin
 
 android {
     compileSdkVersion targetSdk
@@ -52,6 +53,10 @@ android {
     }
 }
 
+greendao {
+    schemaVersion 1
+}
+
 repositories {
     flatDir {
         dirs 'libs'
@@ -72,17 +77,21 @@ def uiLibs = dependencyGroup {
     implementation 'eu.davidea:flexible-adapter-ui:1.0.0-b3'
     // RxAndroid
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.10'
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.12'
     //
     implementation 'com.rengwuxian.materialedittext:library:2.1.4'
-    implementation 'com.lapism:searchview:5.0.0-alpha7'
-   // implementation 'com.lapism:searchview:27.1.0.0.0'
+    implementation 'com.lapism:searchview:27.1.1.0.0'
     implementation 'com.github.siyamed:android-shape-imageview:0.9.+@aar'
     implementation 'com.github.matecode:Snacky:1.0.3'
     implementation 'com.github.husaynhakeem:about-page:0.1.1'
     implementation 'me.zhanghai.android.materialprogressbar:library:1.4.2'
-    implementation 'com.github.searchy2:CustomPermissionsDialogue:1.8'
-    implementation 'com.github.searchy2:CustomAlertViewDialogue:2.3'
+    implementation 'com.github.searchy2:CustomPermissionsDialogue:1.8.1'
+    implementation 'com.github.searchy2:CustomAlertViewDialogue:2.3.1'
+
+    implementation 'com.yalantis:contextmenu:1.0.7'
+    implementation 'com.jaeger.statusbarutil:library:1.5.0'
+    implementation 'com.ogaclejapan.smarttablayout:library:1.6.1@aar'
+    implementation 'com.ogaclejapan.smarttablayout:utils-v4:1.6.1@aar'
 }
 
 def restLibs = dependencyGroup {
@@ -110,7 +119,12 @@ dependencies {
     supportLibs()
     uiLibs()
     restLibs()
-    //JAudioTagger - use custom version bundled in package
+
+    //GreenDAO
+    compile 'org.greenrobot:greendao:3.2.2'
+    compile 'net.zetetic:android-database-sqlcipher:3.5.6' // prevent Failed resolution of: Lnet/sqlcipher/database/SQLiteOpenHelper
+   // compile 'de.greenrobot:java-common:2.3.1'
+
     compile 'com.jakewharton.timber:timber:4.6.1'
     // test
     testCompile 'org.mockito:mockito-core:1.10.19'
@@ -125,7 +139,7 @@ dependencies {
     //debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.4'
     //releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
     implementation project(':jaudiotagger226')
-    implementation project(':ResideMenu')
+   // implementation project(':ResideMenu')
     implementation project(':library')
     implementation files('libs/sound-engine-android-1.0.jar')
 }

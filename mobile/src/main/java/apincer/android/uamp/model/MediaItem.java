@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.TextView;
 
@@ -16,7 +17,6 @@ import java.util.List;
 
 import apincer.android.uamp.MusicService;
 import apincer.android.uamp.R;
-import apincer.android.uamp.provider.MediaItemProvider;
 import apincer.android.uamp.ui.MediaBrowserActivity;
 import apincer.android.uamp.utils.StringUtils;
 import apincer.android.uamp.utils.UIUtils;
@@ -33,89 +33,73 @@ import eu.davidea.viewholders.FlexibleViewHolder;
 public class MediaItem extends AbstractFlexibleItem<MediaItem.MediaItemViewHolder>
         implements IFilterable<String>, Serializable, Key {
 
-    private volatile MediaTag tag;
+    public static int MEDIA_QUALITY_HIRES = 8;
+    public static int MEDIA_QUALITY_HIGH = 7;
+    public static int MEDIA_QUALITY_GOOD = 6;
+    public static int MEDIA_QUALITY_AVERAGE= 5;
+    public static int MEDIA_QUALITY_LOW = 4;
 
     public MediaMetadata getMetadata() {
         return metadata;
     }
 
     private volatile MediaMetadata metadata;
+    private volatile MediaMetadata pendingMetadata;
 
-    public MediaTag getNewTag() {
-        return newTag;
+    public MediaMetadata getPendingMetadata() {
+        return pendingMetadata;
     }
 
-    public void setNewTag(MediaTag newTag) {
-        this.newTag = newTag;
+    public void setPendingMetadata(MediaMetadata pendingMetadata) {
+        this.pendingMetadata= pendingMetadata;
     }
 
-    private volatile MediaTag newTag;
-    private String path;
     protected int id;
 
-    public int getFlag() {
-        return flag;
+    private String pendingArtworkPath;
+
+    public String getPendingArtworkPath() {
+        return pendingArtworkPath;
     }
 
-    public void setFlag() {
-        this.flag = this.flag+1;
+    public void setPendingArtworkPath(String artworkPath) {
+        this.pendingArtworkPath = artworkPath;
     }
 
-    protected int flag = 0;
-    private String artworkPath;
-
-    private volatile boolean loadedEncoding = false;
-
-    public String getArtworkPath() {
-        return artworkPath;
-    }
-
-    public void setArtworkPath(String artworkPath) {
-        this.artworkPath = artworkPath;
-    }
-
-    public boolean isIdv3Tag() {
-        return idv3Tag;
-    }
-
-    public void setIdv3Tag(boolean idv3Tag) {
-        this.idv3Tag = idv3Tag;
-    }
-
-    private volatile boolean idv3Tag = false;
-
+    /*
+    @Deprecated
     public MediaItem(int id) {
         this.id = id;
         setDraggable(false);
         setSwipeable(false);
-        tag = new MediaTag(id);
         metadata = new MediaMetadata(id);
+    }
+    */
+
+    public MediaItem(MediaMetadata metadata) {
+        this.id = (int)metadata.id;
+        setDraggable(false);
+        setSwipeable(false);
+        this.metadata = metadata;
     }
 
     public String getPath() {
-        return path;
+        return metadata.getMediaPath();
     }
 
     public int getId() {
         return id;
     }
-    public void setPath(String path) {
-        this.path = path;
-    }
 
-    public MediaTag getTag() {
-        return tag;
-    }
-
-     public String getTitle() {
-         return StringUtils.trimToEmpty(tag.getTitle());
+    public String getTitle() {
+         return StringUtils.trimToEmpty(metadata.getTitle());
     }
 
     public String getSubtitle() {
-        String album = StringUtils.trimTitle(tag.getAlbum());
-        String artist = StringUtils.trimTitle(tag.getArtist());
+        String album = StringUtils.trimTitle(metadata.getAlbum());
+        String artist = StringUtils.trimTitle(metadata.getArtist());
         if(StringUtils.isEmpty(artist)) {
-            artist = StringUtils.trimTitle(tag.getAlbumArtist());
+            artist = StringUtils.trimTitle(metadata.getAlbumArtist());
         }
         if(StringUtils.isEmpty(album) && StringUtils.isEmpty(artist)) {
             return StringUtils.UNKNOWN_CAP + StringUtils.ARTIST_SEP+StringUtils.UNKNOWN_CAP;
@@ -128,8 +112,7 @@ public class MediaItem extends AbstractFlexibleItem<MediaItem.MediaItemViewHolde
     }
     @Override
     public void updateDiskCacheKey(MessageDigest messageDigest) {
-        //messageDigest.update(String.valueOf(getId()+getFlag()).getBytes());
-        messageDigest.update((""+getId()+getMetadata().getLastModified()).getBytes());
+        messageDigest.update((""+getId()+metadata.getLastModified()).getBytes());
     }
 
     @Override
@@ -186,22 +169,10 @@ public class MediaItem extends AbstractFlexibleItem<MediaItem.MediaItemViewHolde
             listeningItem = MusicService.getRunningService().getListeningSong();
         }
 
-        if(this.equals(listeningItem)) {
-            holder.mCoverArtView.setBorderWidth(8);
-            holder.mCoverArtView.setBorderColor(holder.mContext.getColor(R.color.now_playing));
-        }else if(holder.mCoverArtView.getBorderWidth()!=2){
-            holder.mCoverArtView.setBorderWidth(2);
-            holder.mCoverArtView.setBorderColor(holder.mContext.getColor(R.color.grey600));
-        }
+        holder.setListening(this.equals(listeningItem));
         MediaBrowserActivity.MediaItemAdapter mediaItemAdapter =((MediaBrowserActivity.MediaItemAdapter)adapter);
         mediaItemAdapter.getGlide()
-            //GlideApp.with(holder.mContext)
                 .load(this)
-                /// .apply(RequestOptions.circleCropTransform())
-                   // .placeholder(R.drawable.progress)
-                   // .error(R.drawable.ic_broken_image_black_24dp)
-                   // .fallback(R.drawable.ic_broken_image_black_24dp)
-                   // .dontAnimate()
                     .into(holder.mCoverArtView);
             if (adapter.isSelectAll() || adapter.isLastItemInActionMode()) {
                 // Consume the Animation
@@ -212,11 +183,11 @@ public class MediaItem extends AbstractFlexibleItem<MediaItem.MediaItemViewHolde
             }
 
         //will load tag if not loaded
-        if(!isLoadedEncoding()) {
+        /*if(!isMetadataLoaded()) {
             bindViewHolder(adapter,holder);
             holder.mSamplingRate.setText("Loading...");
-            MediaItemProvider.getInstance().readId3Tag(MediaItem.this, null);
-        }
+            MediaItemProvider.getInstance().readMetadata(getMetadata());
+        }*/
 
         bindViewHolder(adapter,holder);
     }
@@ -243,42 +214,31 @@ public class MediaItem extends AbstractFlexibleItem<MediaItem.MediaItemViewHolde
     }
 
     protected Drawable getQualityBackground(final MediaItem.MediaItemViewHolder holder) {
-        switch (getMetadata().getQuality()) {
-            case HIRES:
-                return holder.getContext().getDrawable(R.drawable.shape_round_format_hires);
-            case HIGH:
-                return holder.getContext().getDrawable(R.drawable.shape_round_format_high);
-            case GOOD:
-                return holder.getContext().getDrawable(R.drawable.shape_round_format_good);
-            case LOW:
-                return holder.getContext().getDrawable(R.drawable.shape_round_format_low);
+        int quality = getMetadata().getAudioEncodingQuality();
+        if (quality == MEDIA_QUALITY_HIRES) {
+            return holder.getContext().getDrawable(R.drawable.shape_round_format_hires);
+        }else if (quality == MEDIA_QUALITY_HIGH) {
+            return holder.getContext().getDrawable(R.drawable.shape_round_format_high);
+        }else if (quality == MEDIA_QUALITY_GOOD) {
+            return holder.getContext().getDrawable(R.drawable.shape_round_format_good);
+        }else if (quality == MEDIA_QUALITY_LOW) {
+            return holder.getContext().getDrawable(R.drawable.shape_round_format_low);
         }
         return holder.getContext().getDrawable(R.drawable.shape_round_format_normal);
     }
 
     @Override
     public boolean filter(String constraint) {
-        return (StringUtils.contains(StringUtils.trimToEmpty(getTag().getTitle()), constraint)
-               || StringUtils.contains(StringUtils.trimToEmpty(getTag().getArtist()), constraint)
-               || StringUtils.contains(StringUtils.trimToEmpty(getTag().getAlbum()), constraint)
-               || StringUtils.contains(StringUtils.trimToEmpty(getTag().getAndroidTitle()), constraint)
-               || StringUtils.contains(StringUtils.trimToEmpty(getTag().getAndroidArtist()), constraint)
-               || StringUtils.contains(StringUtils.trimToEmpty(getTag().getAndroidAlbum()), constraint)
-               || StringUtils.contains(StringUtils.trimToEmpty(getTag().getGenre()), constraint)
+        return (StringUtils.contains(StringUtils.trimToEmpty(getMetadata().getTitle()), constraint)
+               || StringUtils.contains(StringUtils.trimToEmpty(getMetadata().getArtist()), constraint)
+               || StringUtils.contains(StringUtils.trimToEmpty(getMetadata().getAlbum()), constraint)
+               || StringUtils.contains(StringUtils.trimToEmpty(getMetadata().getGenre()), constraint)
                || StringUtils.contains(metadata.getDisplayPath(), constraint));
     }
 
     @Override
     public String toString() {
         return getTitle();
-    }
-
-    public boolean isLoadedEncoding() {
-        return loadedEncoding;
-    }
-
-    public void setLoadedEncoding(boolean loadedEncoding) {
-        this.loadedEncoding = loadedEncoding;
     }
 
     static class MediaItemViewHolder extends FlexibleViewHolder {
@@ -362,5 +322,14 @@ public class MediaItem extends AbstractFlexibleItem<MediaItem.MediaItemViewHolde
             return false;//default=false
         }
 
+        public void setListening(boolean isListening) {
+            if(isListening) {
+                // set border
+                this.itemView.setBackground(ContextCompat.getDrawable(getContext(),R.drawable.selector_item_border));
+            }else {
+                // reset border
+                this.itemView.setBackground(ContextCompat.getDrawable(getContext(),R.drawable.selector_item));
+            }
+        }
     }
 }

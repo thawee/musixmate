@@ -24,12 +24,12 @@
         <item
             android:id="@+id/menu_label_smart_reader"
             android:icon="@drawable/ic_insert_drive_file_black_24dp"
-            android:title="Set tags by file name"
+            android:title="Metadata by File Name"
             app:showAsAction="never" />
         <item
             android:id="@+id/menu_label_hierarchy"
             android:icon="@drawable/ic_file_tree_black_24dp"
-            android:title="Set tags by file hierarchy"
+            android:title="Metadata by Path Hierarchy"
             app:showAsAction="never|collapseActionView" />
     </group>
 
@@ -39,17 +39,17 @@
         <item
             android:icon="@drawable/ic_swap_horiz_black_24dp"
             android:id="@+id/menu_label_swap_artist"
-            android:title="Swap Title ~ Artist"
+            android:title="Swap Metadata (Title ~ Artist)"
             app:showAsAction="never" />
         <item
             android:icon="@drawable/ic_text_format_black_24dp"
             android:id="@+id/menu_format_tag"
-            android:title="Clean and reformat tags"
+            android:title="Reformat Metadata"
             app:showAsAction="never"/>
         <item
             android:icon="@drawable/ic_translate_black_24dp"
             android:id="@+id/menu_change_charset"
-            android:title="Change charset encoding"
+            android:title="Re-Encoding Metadata"
             app:showAsAction="never" />
     </group>
 </menu>

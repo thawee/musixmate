@@ -21,40 +21,55 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:paddingBottom="50dp"
     tools:context=".ui.MediaBrowserActivity">
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
-<!--
         <com.lapism.searchview.widget.SearchView
             android:id="@+id/searchView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="com.lapism.searchview.widget.SearchBehavior"
-            android:background="@color/colorPrimary_alpha_xxx"
-            app:search_logo="1002"
-            app:search_shape="2001"
-            app:search_theme="3000"
-            app:search_version="4000"
-            app:search_version_margins="5001"
+            android:background="@color/colorPrimaryDark_light"
+            app:search_logo="hamburger_arrow"
+            app:search_shape="rounded"
+            app:search_theme="light"
+            app:search_version="toolbar"
+            app:search_version_margins="toolbar"
             app:search_hint="Music Mate"
             />
-            -->
+        <!--
         <com.lapism.searchview.SearchView
             android:id="@+id/searchView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/colorPrimary_alpha_xxx"
+            android:background="@color/colorPrimaryDark_light"
             app:search_version="toolbar"
             app:search_hint="@string/app_name"
-            app:search_theme="play_store"
+            app:search_theme="light"
             app:search_show_progress="false"
             app:search_voice="false"
+            app:search_version_margins="toolbar_small"
             app:layout_behavior="com.lapism.searchview.SearchBehavior" />
-
+        -->
+        <TextView
+            android:id="@+id/header_storage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:ellipsize="start"
+            android:gravity="center_horizontal|center_vertical"
+            android:singleLine="true"
+            android:textSize="9dp"
+            android:textColor="@color/material_color_grey_300"
+            android:background="@drawable/shape_round_format_storage"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:layout_marginLeft="@dimen/spacing_small"
+            android:layout_marginRight="@dimen/spacing_small"
+            android:layout_marginBottom="@dimen/spacing_small"
+            tools:text="Storage"/>
     </android.support.design.widget.AppBarLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -88,35 +103,36 @@ If you need to drag items, SwipeRefreshLayout must be disabled! -->
                     android:ellipsize="end"
                     android:gravity="left"
                     android:maxLines="1"
-                    android:textSize="16dp"
-                    android:textColor="@color/white"
+                    android:textSize="14dp"
+                    android:textColor="@color/material_color_grey_300"
                     android:layout_marginTop="@dimen/spacing_xsmall"
-                    android:layout_marginLeft="@dimen/spacing_medium"
-                    android:layout_marginBottom="@dimen/spacing_medium"
+                    android:layout_marginLeft="@dimen/spacing_xsmall"
+                    android:layout_marginBottom="@dimen/spacing_small"
                     tools:text="Header"/>
             </LinearLayout>
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="28dp"
+                android:layout_marginTop="24dp"
                 android:fitsSystemWindows="true"
                 android:background="@drawable/img_back"
                 tools:listitem="@layout/view_list_item"/>
- </FrameLayout>
-        </android.support.v4.widget.SwipeRefreshLayout>
+        </FrameLayout>
+    </android.support.v4.widget.SwipeRefreshLayout>
+
     </LinearLayout>
-<android.support.design.widget.FloatingActionButton
-    android:id="@+id/fabListeningAction"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginRight="@dimen/spacing_large"
-    android:layout_marginBottom="@dimen/spacing_xlarge"
-    android:layout_gravity="bottom|right"
-    android:src="@drawable/ic_touch_app_white_24dp"
-    app:backgroundTint="@color/fab_listening_background"
-    app:fabSize="normal"
-    app:layout_anchor="@id/recycler_view"
-    app:layout_anchorGravity="bottom|end" />
-<include layout="@layout/fast_scroller"/>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fabListeningAction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="@dimen/spacing_large"
+        android:layout_marginBottom="@dimen/spacing_xlarge"
+        android:layout_gravity="bottom|right"
+        android:src="@drawable/ic_touch_app_white_24dp"
+        app:backgroundTint="@color/fab_listening_background"
+        app:fabSize="normal"
+        app:layout_anchor="@id/recycler_view"
+        app:layout_anchorGravity="bottom|end" />
+    <include layout="@layout/fast_scroller"/>
 </android.support.design.widget.CoordinatorLayout>

@@ -17,10 +17,11 @@ public final class R {
         public static int iv_shadow = 0x7f0c0003;
         public static int layout_left_menu = 0x7f0c0004;
         public static int layout_right_menu = 0x7f0c0005;
-        public static int sv_left_menu = 0x7f0c0006;
-        public static int sv_menu_holder = 0x7f0c0007;
-        public static int sv_right_menu = 0x7f0c0008;
-        public static int tv_title = 0x7f0c0009;
+        public static int sv_header_holder = 0x7f0c0006;
+        public static int sv_left_menu = 0x7f0c0007;
+        public static int sv_menu_holder = 0x7f0c0008;
+        public static int sv_right_menu = 0x7f0c0009;
+        public static int tv_title = 0x7f0c000a;
     }
     public static final class layout {
         public static int residemenu_custom = 0x7f0f0001;

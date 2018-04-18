@@ -7,7 +7,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,24 +20,31 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
+import android.text.Spannable;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.transition.Slide;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
-import com.lapism.searchview.SearchView;
-import com.special.ResideMenu.ResideMenu;
-import com.special.ResideMenu.ResideMenuItem;
+import com.jaeger.library.StatusBarUtil;
+import com.lapism.searchview.Search;
+import com.lapism.searchview.widget.SearchView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import apincer.android.provider.StorageProvider;
+import apincer.android.residemenu.ResideMenu;
+import apincer.android.residemenu.ResideMenuItem;
+import apincer.android.storage.StorageUtils;
 import apincer.android.uamp.Constants;
 import apincer.android.uamp.FileManagerService;
 import apincer.android.uamp.MediaItemService;
@@ -45,7 +53,7 @@ import apincer.android.uamp.R;
 import apincer.android.uamp.glide.GlideApp;
 import apincer.android.uamp.model.MediaItem;
 import apincer.android.uamp.provider.MediaItemProvider;
-import apincer.android.uamp.ui.view.LinearDividerItemDecoration;
+import apincer.android.uamp.ui.view.DividerItemDecoration;
 import apincer.android.uamp.utils.LogHelper;
 import apincer.android.uamp.utils.StringUtils;
 import apincer.android.uamp.utils.UIUtils;
@@ -70,6 +78,7 @@ public class MediaBrowserActivity extends AppCompatActivity implements
     private List<Integer> changedPositions = new ArrayList<>();
     private SearchView mSearchView;
     private TextView mHeaderTitle;
+    private TextView mHeaderStorage;
     private int displayPosition =-1;
 
     // reside menu
@@ -79,7 +88,6 @@ public class MediaBrowserActivity extends AppCompatActivity implements
     private ResideMenuItem mRMenuItemSimilar;
     private ResideMenuItem mRMenuItemSimilarTitles;
     private ResideMenuItem mRMenuItemHiRes;
-    private ResideMenuItem mRMenuItemPlayed;
     private ResideMenuItem mRMenuItemSettings;
     private ResideMenuItem mRMenuItemAbout;
 
@@ -121,7 +129,7 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                     // We consume the event
                 }
                 return true;
-            case R.id.action_edit:
+            case R.id.action_edit_metadata:
                 changedPositions.clear();
                 List<MediaItem> items = new ArrayList();
                 for (int position : selected) {
@@ -130,7 +138,7 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                     items.add(mItem);
                 }
                 mActionModeHelper.destroyActionModeIfCan();
-                return MediaTagEditorActivity.navigateForResult(this, items);
+                return MetadataActivity.startActivity(this, items);
             case R.id.action_transfer_file:
                 doMoveMediaItems(selected);
                 mLibraryAdapter.clearSelection();
@@ -221,14 +229,12 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                         for(MediaItem item:itemsList) {
                             FileManagerService.addToMove(item);
                         }
-                       // startProgressBar();
                         // Construct our Intent specifying the Service
                         Intent intent = new Intent(getApplicationContext(), FileManagerService.class);
                         // Add extras to the bundle
                         intent.putExtra(Constants.KEY_COMMAND, Constants.COMMAND_MOVE);
                         // Start the service
                         startService(intent);
-                       // setResultData(Constants.COMMAND_MOVE,null,null);
                         dialog.dismiss();
                     }
                 })
@@ -255,7 +261,6 @@ public class MediaBrowserActivity extends AppCompatActivity implements
     @Override
     public final void onActivityResult(final int requestCode, final int resultCode, final Intent resultData) {
         if (requestCode == MusicService.REQUEST_CODE_EDIT_MEDIA_TAG) {
-           // String action = resultData==null?"":resultData.getStringExtra("action");
             for (int changedPosition : changedPositions) {
                 MediaItem item = (MediaItem) mLibraryAdapter.getItem(changedPosition);
                 if (item == null || !mProvider.isMediaFileExist(item)) {
@@ -268,19 +273,19 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                     mLibraryAdapter.notifyItemChanged(changedPosition);
                 }
             }
-            //mLibraryAdapter.notifyDataSetChanged();
             mLibraryAdapter.updateHeader();
         }else if (requestCode == MusicService.REQUEST_CODE_SD_PERMISSION) {
            if (resultCode == Activity.RESULT_OK) {
                 // Get Uri from Storage Access Framework.
                 // Persist access permissions.
                 this.getContentResolver().takePersistableUriPermission(resultData.getData(), (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION));
-            }
+                MediaItemService.startService(getApplicationContext(),"load");
+           }
         }
     }
 
     @Override
-    public boolean onItemClick(View view,int position) {
+    public boolean onItemClick(View view, final int position) {
         if (mLibraryAdapter == null) {
             return false;
         }
@@ -296,16 +301,33 @@ public class MediaBrowserActivity extends AppCompatActivity implements
             // Handle the item click listener
             IFlexible flexibleItem = mLibraryAdapter.getItem(position);
             if (flexibleItem instanceof MediaItem) {
+                final MediaItem item = (MediaItem) flexibleItem;
                 changedPositions.clear();
-                changedPositions.add(position);
-                if(!MediaTagEditorActivity.navigateForResult(this, (MediaItem) flexibleItem)) {
-                    FileManagerService.addToDelete((MediaItem) flexibleItem);
-                    // Construct our Intent specifying the Service
-                    Intent intent = new Intent(getApplicationContext(), FileManagerService.class);
-                    // Add extras to the bundle
-                    intent.putExtra(Constants.KEY_COMMAND, apincer.android.uamp.Constants.COMMAND_DELETE);
-                    // Start the service
-                    startService(intent);
+                if(MediaItemProvider.getInstance().isMediaFileExist(item)) {
+                    changedPositions.add(position);
+                    List<MediaItem> items = new ArrayList();
+                    items.add(item);
+                    return MetadataActivity.startActivity(this, items);
+                }else {
+                    CustomAlertDialogue.Builder alert = new CustomAlertDialogue.Builder(this)
+                            .setStyle(CustomAlertDialogue.Style.DIALOGUE)
+                            .setTitle(getString(R.string.alert_error_title))
+                            .setMessage(getString(R.string.alert_invalid_media_file, item.getMetadata().getTitle()))
+                            .setNegativeText("OK")
+                            .setNegativeColor(R.color.negative)
+                            .setNegativeTypeface(Typeface.DEFAULT_BOLD)
+                            .setOnNegativeClicked(new CustomAlertDialogue.OnNegativeClicked() {
+                                @Override
+                                public void OnClick(View view, Dialog dialog) {
+                                    MediaItemProvider.getInstance().removeFromDatabase(item.getMetadata());
+                                    mLibraryAdapter.removeItem(position);
+                                    mLibraryAdapter.updateHeader();
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setDecorView(getWindow().getDecorView())
+                            .build();
+                    alert.show();
                 }
             }
             // We don't need to activate anything
@@ -327,6 +349,7 @@ public class MediaBrowserActivity extends AppCompatActivity implements
         if (!mExitSnackbar.isShown()) {
             mExitSnackbar.show();
         } else {
+            stopService(new Intent(getApplicationContext(),MusicService.class));
             finish();
             mExitSnackbar.dismiss();
         }
@@ -387,7 +410,6 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                 mLibraryAdapter.notifyDataSetChanged();
                 SmoothScrollLinearLayoutManager layoutManager = (SmoothScrollLinearLayoutManager) mRecyclerView.getLayoutManager();
                 layoutManager.smoothScrollToPosition(mRecyclerView,null,displayPosition==0?displayPosition:(displayPosition-1));
-                //mRecyclerView.scrollToPosition(displayPosition);
             }
         }
 
@@ -405,13 +427,13 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                     title = "Recently Played Songs";
                     break;
                 case SIMILAR_SONGS:
-                    title = "Similar Songs (Title & Artist)";
+                    title = "Similar Title & Artist";
                     break;
                 case SIMILAR_TITLES:
                     title = "Similar Title";
                     break;
                 case NEW_SONGS:
-                    title = "NEW! Songs";
+                    title = "Non-Managed Songs";
                     break;
                 case HI_RES_AUDIO:
                     title = "High-Resolution Songs";
@@ -420,29 +442,58 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                     title = "Music Library";
                     break;
             }
-            title = title +" ("+getItemCount() + " songs)";
+            title = title + ": "+getItemCount() + " songs - ";
+            long duration = 0;
+            for(MediaItem item: mediaItems) {
+                    duration = duration + item.getMetadata().getAudioDuration();
+            }
+            title = title+ MediaItemProvider.formatDuration(duration, true);
             mHeaderTitle.setText(title);
+
+            Map<String, StorageProvider.RootInfo> infos = MediaItemProvider.getInstance().getRootPaths();
+            String storage = "";
+            StorageUtils utils = new StorageUtils(getApplicationContext());
+            List<String> storages = new ArrayList();
+            for(StorageProvider.RootInfo info: infos.values()) {
+                if(!MediaItemProvider.isDeviceStorage(info)){
+                    long free = utils.getPartitionSize(info.path.getAbsolutePath(), false);
+                    long total = utils.getPartitionSize(info.path.getAbsolutePath(), true);
+                    String storageTitle = MediaItemProvider.getStorageTitle(info) + ": ";
+                    storages.add(StringUtils.formatStorageSize(free));
+                    storages.add(StringUtils.formatStorageSize(total));
+                    storage = storage + storageTitle + StringUtils.formatStorageSize(free) + " free of " + StringUtils.formatStorageSize(total) + " | ";
+                }
+            }
+            if(!StringUtils.isEmpty(storage)) {
+                String originalText = StringUtils.trimToEmpty(storage.substring(0, storage.lastIndexOf("|")));
+                Spannable spanText = Spannable.Factory.getInstance().newSpannable(originalText);
+                for (String sTitle : storages) {
+                    int indx = originalText.indexOf(sTitle);
+                    if (indx >= 0 && !StringUtils.isEmpty(sTitle)) {
+                        spanText.setSpan(new ForegroundColorSpan(getColor(R.color.quality_hires)), indx, indx + sTitle.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        spanText.setSpan(new StyleSpan(Typeface.BOLD), indx, indx + sTitle.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
+                }
+                mHeaderStorage.setText(spanText, TextView.BufferType.SPANNABLE);
+            }
         }
 
         public void setupMediaItems() {
                     if (browserMode == BROWSER_MODE.SIMILAR_SONGS) {
                         mediaItems.clear();
-                        mediaItems.addAll(MediaItemService.getSimilarSongs());
+                        mediaItems.addAll(MediaItemProvider.getInstance().getSimilarArtistAndTitle());
                     }else if (browserMode == BROWSER_MODE.SIMILAR_TITLES) {
                         mediaItems.clear();
-                        mediaItems.addAll(MediaItemService.getSimilarTitle());
+                        mediaItems.addAll(MediaItemProvider.getInstance().getSimilarTitle());
                     } else if (browserMode == BROWSER_MODE.NEW_SONGS) {
                         mediaItems.clear();
-                        mediaItems.addAll(MediaItemService.getNewMediaItems());
+                        mediaItems.addAll(MediaItemProvider.getInstance().getNewMediaItems());
                     } else if(browserMode == BROWSER_MODE.HI_RES_AUDIO) {
                         mediaItems.clear();
-                        mediaItems.addAll(MediaItemService.getHiResMediaItems());
-                    } else if(browserMode == BROWSER_MODE.RECENTLY_PLAYED) {
-                        mediaItems.clear();
-                        mediaItems.addAll(MediaItemService.getPlayedItems());
+                        mediaItems.addAll(MediaItemProvider.getInstance().getHiresMediaItems());
                     } else {
                         mediaItems.clear();
-                        mediaItems.addAll(MediaItemService.getMediaItems());
+                        mediaItems.addAll(MediaItemProvider.getInstance().getMediaItems());
                     }
                     updateDataSet(mediaItems);
                     notifyDataSetChanged();
@@ -488,7 +539,6 @@ public class MediaBrowserActivity extends AppCompatActivity implements
     private MediaItemProvider mProvider;
     private BROWSER_MODE browserMode = BROWSER_MODE.ALL_SONGS;
 
-
     private void initActivityTransitions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Slide transition = new Slide();
@@ -500,11 +550,11 @@ public class MediaBrowserActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+       // getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         super.onCreate(savedInstanceState);
         initActivityTransitions();
         setContentView(R.layout.activity_browser);
-
+        StatusBarUtil.setColor(this, getColor(R.color.colorPrimaryDark_light));
         setUpPermissions();
 
         // Initialize the views
@@ -521,8 +571,9 @@ public class MediaBrowserActivity extends AppCompatActivity implements
         setUpRecycleView();
         setUpFloatingAction();
         setUpActionModeHelper(SelectableAdapter.Mode.IDLE);
-        loadMediaItems(BROWSER_MODE.ALL_SONGS, true);
+        loadMediaItems(BROWSER_MODE.ALL_SONGS);
         setUpSwipeToRefresh();
+        mLibraryAdapter.notifyDataSetChanged();
     }
 
     private void setUpPermissions() {
@@ -542,15 +593,15 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                     .setDecorView(getWindow().getDecorView())
                     .build();
             alertPermissions.show();
+        }else {
+            MediaItemService.startService(getApplicationContext(),"load");
         }
     }
 
     @TargetApi(Build.VERSION_CODES.M)
     private void setUpPermissionSAF() {
-        //if( this.getContentResolver().getPersistedUriPermissions().isEmpty()) {
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-            startActivityForResult(intent, MusicService.REQUEST_CODE_SD_PERMISSION);
-       // }
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        startActivityForResult(intent, MusicService.REQUEST_CODE_SD_PERMISSION);
     }
 
     private void extractDisplayPosition(Intent intent) {
@@ -573,17 +624,18 @@ public class MediaBrowserActivity extends AppCompatActivity implements
         mResideMenu.setSwipeDirectionDisable(ResideMenu.DIRECTION_RIGHT);
         mResideMenu.setBackground(R.drawable.bg);
         mResideMenu.attachToActivity(this);
-        //mResideMenu.setMenuListener(menuListener);
-        //valid scale factor is between 0.0f and 1.0f. leftmenu' width is 150dip.
-        mResideMenu.setScaleValue(0.5f);
+        //valid scale factor is between 0.0f and 1.0f. leftmenu' width is 180dip.
+        mResideMenu.setScaleValue(0.6f);
+       // LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+       // View customView = inflater.inflate(R.layout.view_list_header, null);
+       // mResideMenu.setCustomHeader(customView);
 
         // items
         mRMenuItemLibrary = new ResideMenuItem(this, R.drawable.ic_library_music_black_24dp,     "Music Library");
+        mRMenuItemHiRes = new ResideMenuItem(this, R.drawable.ic_library_music_black_24dp,     "Hi-Res Library");
         mRMenuItemNew = new ResideMenuItem(this, R.drawable.ic_filter_new_black_24dp,     "#NEW Songs");
-        mRMenuItemSimilar = new ResideMenuItem(this, R.drawable.ic_filter_2_black_24dp,     "#SIMILAR Songs");
-        mRMenuItemSimilarTitles = new ResideMenuItem(this, R.drawable.ic_filter_1_black_24dp,     "#SIMILAR Titles");
-       // mRMenuItemHiRes = new ResideMenuItem(this, R.drawable.ic_filter_hq_black_24dp,     "Hi-Res Songs");
-       // mRMenuItemPlayed = new ResideMenuItem(this, R.drawable.ic_filter_played_black_24dp,     "Played Songs");
+        mRMenuItemSimilar = new ResideMenuItem(this, R.drawable.ic_filter_2_black_24dp,     "#Similar Songs");
+        mRMenuItemSimilarTitles = new ResideMenuItem(this, R.drawable.ic_filter_1_black_24dp,     "#Similar Titles");
         mRMenuItemSettings = new ResideMenuItem(this, R.drawable.ic_settings_applications_black_24dp,     "Settings");
         mRMenuItemAbout = new ResideMenuItem(this, R.drawable.ic_copyright_black_24dp,     "About");
 
@@ -594,38 +646,32 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                 if(v == mRMenuItemLibrary) {
                     // music library
                     displayPosition = 0;
-                    mSearchView.close(false);
-                    loadMediaItems(BROWSER_MODE.ALL_SONGS,true);
+                    mSearchView.close( );
+                    loadMediaItems(BROWSER_MODE.ALL_SONGS);
+                    mResideMenu.closeMenu();
+                }else if(v == mRMenuItemHiRes) {
+                    // similar titles
+                    displayPosition = 0;
+                    mSearchView.close( );
+                    loadMediaItems(BROWSER_MODE.HI_RES_AUDIO);
                     mResideMenu.closeMenu();
                 }else if(v == mRMenuItemSimilar) {
                     // similar titles
                     displayPosition = 0;
-                    mSearchView.close(false);
-                    loadMediaItems(BROWSER_MODE.SIMILAR_SONGS,true);
+                    mSearchView.close();
+                    loadMediaItems(BROWSER_MODE.SIMILAR_SONGS);
                     mResideMenu.closeMenu();
                 }else if(v == mRMenuItemSimilarTitles) {
                     // similar titles
                     displayPosition = 0;
-                    mSearchView.close(false);
-                    loadMediaItems(BROWSER_MODE.SIMILAR_TITLES,true);
+                    mSearchView.close();
+                    loadMediaItems(BROWSER_MODE.SIMILAR_TITLES);
                     mResideMenu.closeMenu();
             }else if(v == mRMenuItemNew) {
                     // untagged titles
                     displayPosition = 0;
-                    mSearchView.close(false);
-                    loadMediaItems(BROWSER_MODE.NEW_SONGS,true);
-                    mResideMenu.closeMenu();
-                }else if(v==mRMenuItemHiRes) {
-                    // hi-res
-                    displayPosition = 0;
-                    mSearchView.close(false);
-                    loadMediaItems(BROWSER_MODE.HI_RES_AUDIO,true);
-                    mResideMenu.closeMenu();
-                } else if(v==mRMenuItemPlayed) {
-                    // recently played
-                    displayPosition = 0;
-                    mSearchView.close(false);
-                    loadMediaItems(BROWSER_MODE.RECENTLY_PLAYED,true);
+                    mSearchView.close();
+                    loadMediaItems(BROWSER_MODE.NEW_SONGS);
                     mResideMenu.closeMenu();
                 }else if(v==mRMenuItemSettings) {
                     // settings
@@ -640,18 +686,16 @@ public class MediaBrowserActivity extends AppCompatActivity implements
         };
 
         mRMenuItemLibrary.setOnClickListener(onClickListener);
+        mRMenuItemHiRes.setOnClickListener(onClickListener);
         mRMenuItemNew.setOnClickListener(onClickListener);
         mRMenuItemSimilar.setOnClickListener(onClickListener);
         mRMenuItemSimilarTitles.setOnClickListener(onClickListener);
-       // mRMenuItemHiRes.setOnClickListener(onClickListener);
-       // mRMenuItemPlayed.setOnClickListener(onClickListener);
         mRMenuItemSettings.setOnClickListener(onClickListener);
         mRMenuItemAbout.setOnClickListener(onClickListener);
 
         //add to reside menu
-       // mResideMenu.addMenuItem(mRMenuItemHiRes, ResideMenu.DIRECTION_LEFT);
         mResideMenu.addMenuItem(mRMenuItemLibrary, ResideMenu.DIRECTION_LEFT);
-        //mResideMenu.addMenuItem(mRMenuItemPlayed, ResideMenu.DIRECTION_LEFT);
+        mResideMenu.addMenuItem(mRMenuItemHiRes, ResideMenu.DIRECTION_LEFT);
         mResideMenu.addMenuItem(mRMenuItemNew, ResideMenu.DIRECTION_LEFT);
         mResideMenu.addMenuItem(mRMenuItemSimilarTitles, ResideMenu.DIRECTION_LEFT);
         mResideMenu.addMenuItem(mRMenuItemSimilar, ResideMenu.DIRECTION_LEFT);
@@ -659,17 +703,10 @@ public class MediaBrowserActivity extends AppCompatActivity implements
         mResideMenu.addMenuItem(mRMenuItemAbout, ResideMenu.DIRECTION_LEFT);
     }
 
-    private void loadMediaItems(BROWSER_MODE mode, boolean withProgress) {
+    private void loadMediaItems(BROWSER_MODE mode) {
         browserMode = mode;
-
-        // if all songs, refresh from media store
-        if(browserMode==BROWSER_MODE.ALL_SONGS) {
-            MediaItemService.startService(getApplicationContext(),"load");
-        }
-
         mLibraryAdapter.resetAdapter();
         mLibraryAdapter.setupMediaItems();
-
     }
 
     @Override
@@ -678,24 +715,13 @@ public class MediaBrowserActivity extends AppCompatActivity implements
     }
 
     private int getItemPositionForAllSongs(int mediaId) {
-        MediaItem[] items = (MediaItem[]) MediaItemService.getMediaItems().toArray(new MediaItem[0]);
+        MediaItem[] items = (MediaItem[]) MediaItemProvider.getInstance().getMediaItems().toArray(new MediaItem[0]);
         for(int i=0; i<items.length;i++) {
             MediaItem item = items[i];
             if(item.getId() == mediaId) {
                 return i;
             }
         }
-/*
-        Iterator itr = items.iterator();
-        int index = 0;
-        while(itr.hasNext()) {
-            MediaItem item = (MediaItem) itr.next();
-            if(item.getId() == mediaId) {
-                return index;
-            }
-            index++;
-        }*/
-
         return -1;
     }
 
@@ -716,7 +742,6 @@ public class MediaBrowserActivity extends AppCompatActivity implements
             public boolean onLongClick(View v) {
                 hideKeyboard();
                 MusicService.getRunningService().playNextSong();
-                //scrollToListening();
                 return true;
             }
         });
@@ -742,29 +767,6 @@ public class MediaBrowserActivity extends AppCompatActivity implements
     }
 
     private int scrollToPosition(int offset, int position) {
-        /*int position = -1;
-
-        int count = mediaItems.size();
-        for (int i = 0; i < count; i++) {
-            IFlexible flex = mediaItems.get(i);
-            if (item.equals(flex)) {
-                position = i;
-                break;
-            }
-        }
-*/
-        /*
-        int count = mLibraryAdapter.getItemCount();
-        for (int i = 0; i < count; i++) {
-            IFlexible flex = mLibraryAdapter.getItem(i);
-            if(item.equals(flex)) {
-               position = i;
-               break;
-             }
-        }
-        */
-
-      //  int position = item.getViewPosition();
         if(position>-1) {
             int positionWithOffset = position - offset;
             if (positionWithOffset < 0) {
@@ -772,7 +774,6 @@ public class MediaBrowserActivity extends AppCompatActivity implements
             }
             mRecyclerView.scrollToPosition(positionWithOffset);
         }
-
         return position;
     }
 
@@ -796,29 +797,30 @@ public class MediaBrowserActivity extends AppCompatActivity implements
         IntentFilter filter = new IntentFilter(FileManagerService.ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(operationReceiver, filter);
 
-        filter = new IntentFilter(MediaItemService.ACTION);
-        LocalBroadcastManager.getInstance(this).registerReceiver(mediaItemsReceiver, filter);
-
         filter = new IntentFilter(MusicService.ACTION);
         LocalBroadcastManager.getInstance(this).registerReceiver(playingReceiver, filter);
 
-       // mWaveLineView.onResume();
+        if (mSnackbar != null) {
+            mSnackbar.dismiss();
+            mSnackbar = null;
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         // Unregister the listener when the application is paused
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mediaItemsReceiver);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(operationReceiver);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(playingReceiver);
-      //  mWaveLineView.onPause();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-       // mWaveLineView.release();
+        if (mSnackbar != null) {
+            mSnackbar.dismiss();
+            mSnackbar = null;
+        }
     }
 
     @Override public boolean onOptionsItemSelected(MenuItem item) {
@@ -830,7 +832,6 @@ public class MediaBrowserActivity extends AppCompatActivity implements
     }
 
     private void setUpActionModeHelper(@SelectableAdapter.Mode int mode) {
-        //this = ActionMode.Callback instance
         mActionModeHelper = new ActionModeHelper(mLibraryAdapter, R.menu.menu_context, this) {
             // Override to customize the title
             @Override
@@ -842,57 +843,41 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                             getString(R.string.action_selected_many, Integer.toString(count)));
                 }
             }
-        }.withDefaultMode(mode);
+        }
+        .disableDragOnActionMode(true)
+        .disableSwipeOnActionMode(true)
+        .withDefaultMode(mode);
         mLibraryAdapter.setMode(mode);
     }
 
     protected void setUpSearchView() {
+        mHeaderStorage = findViewById(R.id.header_storage);
         mHeaderTitle = findViewById(R.id.header_title);
         mHeaderTitle.setOnLongClickListener(new View.OnLongClickListener() {
                                                 @Override
                                                 public boolean onLongClick(View v) {
-                                                    scrollToPosition(0, 10);
+                                                    scrollToPosition(0, 0);
                                                     return false;
                                                 }
                                             });
         mSearchView = findViewById(R.id.searchView); // from API 26
         if (mSearchView != null) {
-            mSearchView.setShouldClearOnClose(false);
-            mSearchView.setOnOpenCloseListener(new SearchView.OnOpenCloseListener() {
+            mSearchView.setOnQueryTextListener(new Search.OnQueryTextListener() {
                 @Override
-                public boolean onClose() {
-
-                    return false;
-                }
-
-                @Override
-                public boolean onOpen() {
-                    return false;
-                }
-            });
-            mSearchView.setOnNavigationIconClickListener(new SearchView.OnNavigationIconClickListener() {
-                @Override
-                public void onNavigationIconClick(float state) {
-                    mResideMenu.openMenu(ResideMenu.DIRECTION_LEFT);
-                }
-            });
-
-            mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                @Override
-                public boolean onQueryTextSubmit(String query) {
-                    //mSearchView.close(false);
-                    filterItems(query);
-
+                public boolean onQueryTextSubmit(CharSequence query) {
+                    filterItems(query.toString());
                     return true;
                 }
 
                 @Override
-                public boolean onQueryTextChange(String newText) {
-                    //if(!StringUtils.isEmpty(newText)) {
-                        //mSearchView.close(false);
-                        filterItems(newText);
-                    //}
-                    return false;
+                public void onQueryTextChange(CharSequence newText) {
+                    filterItems(newText.toString());
+                }
+            });
+            mSearchView.setOnLogoClickListener(new Search.OnLogoClickListener() {
+                @Override
+                public void onLogoClick() {
+                    mResideMenu.openMenu(ResideMenu.DIRECTION_LEFT);
                 }
             });
         }
@@ -905,6 +890,7 @@ public class MediaBrowserActivity extends AppCompatActivity implements
         if(MusicService.getRunningService()!=null && MusicService.getRunningService().getListeningSong()!=null) {
             if(browserMode == BROWSER_MODE.ALL_SONGS && !mLibraryAdapter.hasFilter()) {
                 if(mActionModeHelper==null || mActionModeHelper.getActionMode()==null || mActionModeHelper.getActionMode().equals(SelectableAdapter.Mode.IDLE)){
+                    fabListeningAction.setImageBitmap(buildPlayerIcon());
                     ViewCompat.animate(fabListeningAction)
                             .scaleX(1f).scaleY(1f)
                             .alpha(1f).setDuration(200)
@@ -913,6 +899,14 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                 }
             }
         }
+    }
+
+    private Bitmap buildPlayerIcon() {
+        Bitmap bitmap = MusicService.getRunningService().getPlayerIcon();
+        if(bitmap==null) {
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_touch_app_white_24dp);
+        }
+        return bitmap;
     }
 
     private void hideFloatingActionBar() {
@@ -941,14 +935,16 @@ public class MediaBrowserActivity extends AppCompatActivity implements
                 // Passing true as parameter we always animate the changes between the old and the new data set
                 mSwipeRefreshLayout.setRefreshing(true);
                 mActionModeHelper.destroyActionModeIfCan();
-                loadMediaItems(browserMode, false);
+                loadMediaItems(browserMode);
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });
     }
 
     protected void setUpRecycleView() {
-            // Initialize Adapter and RecyclerView
+        // Initialize Adapter and RecyclerView
+       // mediaItems.clear();
+       // mediaItems.addAll(MediaItemProvider.getInstance().getMediaItems());
         mLibraryAdapter = new  MediaItemAdapter(mediaItems,GlideApp.with(this));
         mLibraryAdapter.addListener(this);
         mLibraryAdapter.setDisplayHeadersAtStartUp(false);
@@ -972,7 +968,8 @@ public class MediaBrowserActivity extends AppCompatActivity implements
             // NOTE: Use default item animator 'canReuseUpdatedViewHolder()' will return true if
             // a Payload is provided. FlexibleAdapter is actually sending Payloads onItemChange.
             //mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        RecyclerView.ItemDecoration itemDecoration = new LinearDividerItemDecoration(this, Color.WHITE,2);
+      //  RecyclerView.ItemDecoration itemDecoration = new LinearDividerItemDecoration(this, Color.WHITE,2);
+        RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this, R.drawable.shadow_below);
 
         mRecyclerView.addItemDecoration(itemDecoration);
 
@@ -1035,38 +1032,6 @@ public class MediaBrowserActivity extends AppCompatActivity implements
         context.startActivity(starter);
     }
 
-    private BroadcastReceiver mediaItemsReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            int resultCode = intent.getIntExtra(Constants.KEY_RESULT_CODE, RESULT_CANCELED);
-            if (resultCode == RESULT_OK) {
-               // int mediaId = intent.getIntExtra(Constants.KEY_MEDIA_ID, -1);
-                String command = intent.getStringExtra(Constants.KEY_COMMAND);
-                String status = intent.getStringExtra(Constants.KEY_STATUS);
-                String message = intent.getStringExtra(Constants.KEY_MESSAGE);
-
-                if(Constants.COMMAND_LOAD.equalsIgnoreCase(command) && Constants.STATUS_SUCCESS.equalsIgnoreCase(status)) {
-                    if(message!=null) {
-                        Snacky.builder().setActivity(MediaBrowserActivity.this)
-                                .setText(message)
-                                .setDuration(Snacky.LENGTH_LONG)
-                                .setMaxLines(1)
-                                .success()
-                                .show();
-                    }
-                    int cnt = mLibraryAdapter.getItemCount();
-                    if(cnt>0) {
-                        for (int i = 0; i < cnt; i++) {
-                            mLibraryAdapter.notifyItemChanged(i);
-                        }
-                    }else {
-                        mLibraryAdapter.setupMediaItems();
-                    }
-                }
-            }
-        }
-    };
-
     // Define the callback for what to do when data is received
     private BroadcastReceiver operationReceiver = new BroadcastReceiver() {
         @Override
@@ -1075,8 +1040,6 @@ public class MediaBrowserActivity extends AppCompatActivity implements
             if (resultCode == RESULT_OK) {
                 String status = intent.getStringExtra(Constants.KEY_STATUS);
                 String message = intent.getStringExtra(Constants.KEY_MESSAGE);
-               // int total = intent.getIntExtra("totalItems",-1);
-               // int current = intent.getIntExtra("currentItem",-1);
                 int mediaId = intent.getIntExtra(Constants.KEY_MEDIA_ID, -1);
                 String command = intent.getStringExtra(Constants.KEY_COMMAND);
 

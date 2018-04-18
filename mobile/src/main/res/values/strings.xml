@@ -151,13 +151,10 @@
     <string name="preference_rename">File renaming</string>
     <string name="preference_rename_sub">Choose how to rename files depending on their tags</string>
     <string name="preferences_rename_choose">File renaming</string>
-    <string name="preference_target_charset_sub">Choose preferred charset for music tags</string>
     <string name="preferences_sub_advanced">Advanced</string>
     <string name="preferences_sub_tags">Tags</string>
-    <string name="preference_charset">Tag Encoding</string>
-    <string name="preference_charsets_encoding">Tags Charset Encoding Options</string>
-    <string name="MetaDataEncoding">Tag Encoding</string>
-    <string name="MetaDataEncodingSummary">Choose the encoding of music tags if you track with difference encoding than latin or UTF-8</string>
+    <string name="MetaDataEncoding">Metadata Encoding</string>
+    <string name="MetaDataEncodingSummary">Choose the encoding to include in options list on encoding menu</string>
 
     <!-- Action -->
     <string name="action_search">Search...</string>
@@ -188,5 +185,8 @@
 
     <!-- internal defaults -->
     <string name="max_DB_range" translatable="false">-150</string>
+
+    <string name="search_on">Search On:</string>
+
 
 </resources>

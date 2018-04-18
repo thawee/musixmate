@@ -10,13 +10,16 @@ import com.github.moduth.blockcanary.BlockCanaryContext;
 import com.github.moduth.blockcanary.internal.BlockInfo;
 import com.squareup.leakcanary.LeakCanary;
 
+import org.greenrobot.greendao.database.Database;
+
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import apincer.android.uamp.provider.MediaItemProvider;
+import apincer.android.uamp.model.DaoMaster;
+import apincer.android.uamp.model.DaoSession;
 import apincer.android.uamp.utils.LogHelper;
 import timber.log.Timber;
 
@@ -26,12 +29,18 @@ public class MusixMateApp extends Application {
     private static Logger jAudioTaggerLogger1 = Logger.getLogger("org.jaudiotagger.audio");
     private static Logger jAudioTaggerLogger2 = Logger.getLogger("org.jaudiotagger");
 
+    private static DaoSession daoSession;
+
     @Override public void onCreate() {
         super.onCreate();
 
         // start service
         Intent serviceIntent = new Intent(this, MusicService.class);
         startService(serviceIntent);
+
+        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "uampdb");
+        Database db = helper.getWritableDb();
+        daoSession = new DaoMaster(db).newSession();
 
         if (LeakCanary.isInAnalyzerProcess(this)) {
             // This process is dedicated to LeakCanary for heap analysis.
@@ -188,11 +197,9 @@ public class MusixMateApp extends Application {
             }
         }).start();
 
-        MediaItemProvider.initialize(this);
-
         // TURN OFF log for J audio tagger
-        jAudioTaggerLogger1.setLevel(Level.OFF);
-        jAudioTaggerLogger2.setLevel(Level.OFF);
+        jAudioTaggerLogger1.setLevel(Level.WARNING);
+        jAudioTaggerLogger2.setLevel(Level.WARNING);
 /*
         TagOptionSingleton.getInstance().setPadNumbers(true);
 
@@ -220,5 +227,9 @@ public class MusixMateApp extends Application {
         @Override protected void log(int priority, String tag, String message, Throwable t) {
             LogHelper.logToFile("GLIDE", Log.getStackTraceString(t));
         }
+    }
+
+    public static DaoSession getDaoSession() {
+        return daoSession;
     }
 }

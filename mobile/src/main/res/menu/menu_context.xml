@@ -5,12 +5,18 @@
 		android:title="@string/action_delete"
 		android:icon="@drawable/ic_delete_black_24dp"
 		app:showAsAction="always"/>
-
+	<item
+		android:icon="@drawable/ic_label_black_24dp"
+		android:id="@+id/action_edit_metadata"
+		android:title="Edit Metadata"
+		app:showAsAction="always"/>
+	<!--
 	<item
 		android:icon="@drawable/ic_label_black_24dp"
 		android:id="@+id/action_edit"
 		android:title="Edit Music"
 		app:showAsAction="always"/>
+		-->
 	<item
 		android:icon="@drawable/ic_move_to_inbox_black_24dp"
 		android:id="@+id/action_transfer_file"

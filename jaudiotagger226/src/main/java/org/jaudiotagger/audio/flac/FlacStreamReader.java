@@ -37,6 +37,18 @@ public class FlacStreamReader
         this.loggingName =loggingName;
     }
 
+
+    public void initStream() throws IOException, CannotReadException {
+        //Begins tag parsing
+        if (fc.size() == 0)
+        {
+            //Empty File
+            throw new CannotReadException("Error: File empty"+ " " + loggingName);
+        }
+        fc.position(0);
+        startOfFlacInFile = 0;
+    }
+
     /**
      * Reads the stream block to ensure it is a flac file
      *
@@ -99,4 +111,5 @@ public class FlacStreamReader
     {
         return startOfFlacInFile;
     }
+
 }

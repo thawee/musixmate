@@ -88,14 +88,22 @@ public class FlacTagWriter
 
             //Read existing data
             FlacStreamReader flacStream = new FlacStreamReader(fc, fileName + " ");
-            try
-            {
-                flacStream.findStream();
-            }
-            catch (CannotReadException cre)
-            {
-                throw new CannotWriteException(cre.getMessage());
-            }
+
+          /*  if(TagOptionSingleton.getInstance().isRemoveID3FromFlacOnSave()) {
+                // Start from position 0, ID3 Tag (if exists) from FLAC file
+                try {
+                    flacStream.initStream();
+                } catch (CannotReadException cre) {
+                    throw new CannotWriteException(cre.getMessage());
+                }
+            }else { */
+                //Read existing data
+                try {
+                    flacStream.findStream();
+                } catch (CannotReadException cre) {
+                    throw new CannotWriteException(cre.getMessage());
+                }
+          //  }
 
             boolean isLastBlock = false;
             while (!isLastBlock)
@@ -170,9 +178,18 @@ public class FlacTagWriter
             //Number of bytes required for new tagdata and other metadata blocks
             int neededRoom = newTagSize + otherBlocksRequiredSize;
 
-            //Go to start of Flac within file
-            fc.position(flacStream.getStartOfFlacInFile());
-
+            /*
+            if(TagOptionSingleton.getInstance().isRemoveID3FromFlacOnSave()) {
+                // Start from position 0, ID3 Tag (if exists) from FLAC file
+                try {
+                    flacStream.initStream();
+                } catch (CannotReadException cre) {
+                    throw new CannotWriteException(cre.getMessage());
+                }*/
+           // }else {
+                //Go to start of Flac within file
+                fc.position(flacStream.getStartOfFlacInFile());
+           // }
             logger.config(fileName + ":Writing tag available bytes:" + availableRoom + ":needed bytes:" + neededRoom);
 
             //There is enough room to fit the tag without moving the audio just need to
@@ -302,7 +319,6 @@ public class FlacTagWriter
         writeOtherMetadataBlocks(fc, blockInfo);
         fc.write(tc.convert(tag, FlacTagCreator.DEFAULT_PADDING));
         long writePosition = fc.position();
-
 
         fc.position(readPosition);
         while (fc.position() < originalFileSize)

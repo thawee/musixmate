@@ -30,8 +30,8 @@
         android:theme="@style/AppTheme">
 
         <provider
-            android:authorities="apincer.android.uamp.documents"
-            android:name="apincer.android.uamp.provider.MediaFileProvider"
+            android:name="apincer.android.uamp.provider.MediaItemProvider"
+            android:authorities="apincer.android.uamp.documents.MediaItemProvider"
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="android.permission.MANAGE_DOCUMENTS">
@@ -52,32 +52,17 @@
             </intent-filter>
         </activity>
 
-        <!-- Music Tag Editor activity
-        android:windowSoftInputMode="adjustPan|stateHidden"
-        -->
-        <activity
-            android:name=".ui.MediaTagEditorActivity"
-            android:parentActivityName=".ui.MediaBrowserActivity"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustPan"
-            android:label="@string/app_name">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.MediaBrowserActivity"/>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.APP_MUSIC"/>
-                <data android:scheme="file" android:host="*"/>
-                <data android:mimeType="audio/*"/>
-                <data android:pathPattern=".*\.mp3"/>
-                <data android:pathPattern=".*\.flac"/>
-                <data android:pathPattern=".*\.wav"/>
-                <data android:pathPattern=".*\.m4a"/>
-                <data android:pathPattern=".*\.alac"/>
-                <data android:pathPattern=".*\.acc"/>
-            </intent-filter>
-        </activity>
+        <!-- Music Tag Editor activity -->
+       <activity
+           android:name=".ui.MetadataActivity"
+           android:parentActivityName=".ui.MediaBrowserActivity"
+           android:screenOrientation="portrait"
+           android:windowSoftInputMode="adjustPan"
+           android:label="@string/app_name">
+           <meta-data
+               android:name="android.support.PARENT_ACTIVITY"
+               android:value=".ui.MediaBrowserActivity"/>
+       </activity>
 
         <activity
             android:name=".ui.SettingsActivity"
@@ -89,9 +74,6 @@
             android:name=".ui.AboutActivity"
             android:screenOrientation="portrait"/>
 
-        <!-- Main music service, provides media browsing and media playback services to
-         consumers through MediaBrowserService and MediaSession. Consumers connect to it through
-         MediaBrowser (for browsing) and MediaController (for play session control) -->
         <service
             android:name=".MusicService"
             android:exported="false"

@@ -31,33 +31,26 @@
     </style>
 
     <style name="AppTheme.Base" parent="Theme.AppCompat.Light.NoActionBar">
+
+        <!-- required for selection menus -->
         <item name="windowActionModeOverlay">true</item>
 
         <!-- status bar transparent -->
         <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:windowTranslucentNavigation">true</item>
 
-        <item name="colorPrimary">@color/colorPrimary_light</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark_light</item>
+        <item name="colorPrimary">@color/colorPrimaryDark_light</item>
+        <item name="colorPrimaryDark">@color/colorPrimary_light</item>
         <item name="colorAccent">@color/colorAccent_light</item>
 
         <!-- For selection -->
         <item name="selectableItemBackground">@drawable/selector_item</item>
         <item name="primaryTextSelector">@drawable/primary_text_selector_light</item>
 
-        <!-- Spinner -->
-        <item name="android:spinnerStyle">@style/Spinner</item>
-        <item name="android:spinnerItemStyle">@style/SpinnerItem</item>
-
     </style>
 
     <style name="Spinner" parent="Widget.AppCompat.Spinner">
         <item name="android:dropDownWidth">160dp</item>
-    </style>
-
-    <style name="SpinnerItem" parent="Widget.AppCompat.TextView.SpinnerItem">
-        <item name="android:background">@drawable/selector_item_light</item>
-        <item name="android:textAppearance">@style/TextAppearanceSpinnerItem</item>
     </style>
 
     <style name="TextAppearanceSpinnerItem" parent="TextAppearance.AppCompat.Widget.TextView.SpinnerItem">

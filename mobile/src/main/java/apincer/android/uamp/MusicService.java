@@ -12,7 +12,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
@@ -34,16 +37,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import apincer.android.uamp.model.MediaItem;
-import apincer.android.uamp.model.MediaMetadata;
 import apincer.android.uamp.provider.MediaItemProvider;
 import apincer.android.uamp.receiver.AndroidReceiver;
 import apincer.android.uamp.receiver.HFPlayerReader;
+import apincer.android.uamp.receiver.ListeningReceiver;
 import apincer.android.uamp.receiver.NotificationReader;
 import apincer.android.uamp.receiver.RADSONEReader;
-import apincer.android.uamp.receiver.SonyReceiver;
-import apincer.android.uamp.receiver.TPlayerReader;
-import apincer.android.uamp.receiver.UAPPReceiver;
-import apincer.android.uamp.receiver.VIVOReceiver;
 import apincer.android.uamp.ui.MediaBrowserActivity;
 import apincer.android.uamp.utils.LogHelper;
 import apincer.android.uamp.utils.StringUtils;
@@ -54,6 +53,9 @@ import apincer.android.uamp.utils.StringUtils;
 
 public class MusicService extends AccessibilityService {
     public static final String ACTION = "com.apincer.uamp.MusicService";
+
+    public Bitmap DEAFULT_PLAYER_ICON;
+
     // android 5 SD card permissions
     public static final int REQUEST_CODE_SD_PERMISSION = 1010;
     public static final int REQUEST_CODE_EDIT_MEDIA_TAG = 2020;
@@ -79,27 +81,19 @@ public class MusicService extends AccessibilityService {
 
     private NotificationCompat.Builder builder;
     private NotificationChannel mChannel;
-    private Object listeningReceiver;
+    private ListeningReceiver listeningReceiver;
 
     @Override
     public void onCreate() {
         super.onCreate();
         context = getApplicationContext();
+        DEAFULT_PLAYER_ICON = BitmapFactory.decodeResource(getResources(), R.drawable.ic_broken_image_black_24dp);
         //createNotificationChannel();
         registerReceiver(new AndroidReceiver(this));
-       // registerReceiver(new GonemadReceiver(this));
-       // registerReceiver(new HTCReceiver(this));
-      //  registerReceiver(new JRStudioReceiver(this));
-      //  registerReceiver(new SamsungReceiver(this));
-        registerReceiver(new SonyReceiver(this));
-       // registerReceiver(new MiuiReceiver(this));
-        registerReceiver(new UAPPReceiver(this));
-        registerReceiver(new VIVOReceiver(this));
 
         registerReader(new RADSONEReader(this));
-        registerReader(new TPlayerReader(this));
+       // registerReader(new TPlayerReader(this));
         registerReader(new HFPlayerReader(this));
-
 
         instance = this;
     }
@@ -129,9 +123,13 @@ public class MusicService extends AccessibilityService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unregisterReceivers();
+        if(builder!=null) {
+            builder.setOngoing(false);
+            displayNotification(context, builder.build());
+        }
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.cancel(NOTIFICATION_ID);
+        unregisterReceivers();
         instance = null;
     }
 
@@ -209,11 +207,7 @@ public class MusicService extends AccessibilityService {
 
         // display song info from music library
         if(listeningSong!=null) {
-            MediaItemService.addPlaying(listeningSong);
-           // if(mAutoScrollToListening) {
-                sendBroadcast("playing", listeningSong.getId());
-           //     mAutoScrollToListening = false;
-           // }
+           sendBroadcast("playing", listeningSong.getId());
         }
 
         SharedPreferences prefs =
@@ -242,13 +236,22 @@ public class MusicService extends AccessibilityService {
         try {
             if(item==null) {
                 layoutId = R.layout.view_notification_missing;
+
             }
             RemoteViews contentView = new RemoteViews(getPackageName(), layoutId);
-            contentView.setImageViewResource(R.id.notification_coverart, R.drawable.ic_broken_image_black_24dp);
             builder.setContent(contentView);
             int panelLabelColor = getColor(R.color.now_playing);
             int panelColor = getColor(R.color.grey200);
             int textColor = Color.WHITE;
+
+            // get icon from package
+            Bitmap ico = getPlayerIcon();
+            ico = ico==null?DEAFULT_PLAYER_ICON:ico;
+            contentView.setImageViewBitmap(R.id.notification_coverart, ico);
+            Palette paletteIco = Palette.from(ico).generate();
+            panelColor = paletteIco.getDominantColor(panelColor);
+            panelLabelColor = paletteIco.getMutedColor(panelLabelColor);
+
             if (item != null) {
                 Bitmap bmp = MediaItemProvider.getInstance().getSmallArtwork(item);
                 if (bmp != null) {
@@ -272,15 +275,17 @@ public class MusicService extends AccessibilityService {
             }else {
                 contentView.setTextViewText(R.id.notification_title, currentTitle);
                 contentView.setTextViewText(R.id.notification_artist, getSubtitle(currentAlbum, currentArtist));
+                contentView.setTextViewText(R.id.notification_player, getPlayerName());
+                contentView.setTextColor(R.id.notification_player, textColor);
             }
 
             contentView.setTextColor(R.id.notification_title, textColor);
             contentView.setTextColor(R.id.notification_artist, textColor);
 
-            Bitmap background = getBackground(panelLabelColor, 1024, 60, getApplicationContext());
+            Bitmap background = buildBackground(panelLabelColor, 1024, 60, getApplicationContext());
            // background.
 
-            contentView.setImageViewBitmap(R.id.notification_bgcolor, getBackground(panelColor, 1024, 60, getApplicationContext()));
+            contentView.setImageViewBitmap(R.id.notification_bgcolor, buildBackground(panelColor, 1024, 60, getApplicationContext()));
             contentView.setImageViewBitmap(R.id.notification_text_bgcolor, background);
 
             builder.setContentIntent(getPendingIntent(item));
@@ -294,30 +299,24 @@ public class MusicService extends AccessibilityService {
 
     private int getQualityColor(MediaItem item) {
         int qualityColor = getColor(R.color.quality_normal);
-        if(item!=null && item.getTag()!=null) {
-            MediaMetadata.MediaQuality quality = item.getMetadata().getQuality();
-            switch (quality) {
-                case LOW:
-                    qualityColor = getColor(R.color.quality_low);
-                    break;
-                case NORMAL:
-                    qualityColor = getColor(R.color.quality_normal);
-                    break;
-                case GOOD:
-                    qualityColor = getColor(R.color.quality_good);
-                    break;
-                case HIGH:
-                    qualityColor = getColor(R.color.quality_high);
-                    break;
-                case HIRES:
-                    qualityColor = getColor(R.color.quality_hires);
-                    break;
+        if(item!=null) {
+            int quality = item.getMetadata().getAudioEncodingQuality();
+            if (quality == MediaItem.MEDIA_QUALITY_LOW) {
+                qualityColor = getColor(R.color.quality_low);
+            }else if (quality == MediaItem.MEDIA_QUALITY_AVERAGE) {
+                qualityColor = getColor(R.color.quality_normal);
+            }else if (quality == MediaItem.MEDIA_QUALITY_GOOD) {
+                qualityColor = getColor(R.color.quality_good);
+            }else if (quality == MediaItem.MEDIA_QUALITY_HIGH) {
+                qualityColor = getColor(R.color.quality_high);
+            }else if (quality == MediaItem.MEDIA_QUALITY_HIRES) {
+                qualityColor = getColor(R.color.quality_hires);
             }
         }
         return qualityColor;
     }
 
-    public static Bitmap getBackground(int bgColor, int width, int height, Context context) {
+    public static Bitmap buildBackground(int bgColor, int width, int height, Context context) {
         try {
             // convert to HSV to lighten and darken
             int alpha = Color.alpha(bgColor);
@@ -352,6 +351,30 @@ public class MusicService extends AccessibilityService {
         }
     }
 
+    public ApplicationInfo getApplicationInfo(String packageName) {
+        ApplicationInfo ai;
+        try {
+            ai = getPackageManager().getApplicationInfo(packageName, 0);
+        } catch (final PackageManager.NameNotFoundException e) {
+            ai = null;
+        }
+        return ai;
+    }
+
+    public Bitmap getPlayerIcon() {
+        if(listeningReceiver!=null) {
+            return listeningReceiver.getPlayerIcon();
+        }
+        return null;
+    }
+
+    public String getPlayerName() {
+        if(listeningReceiver!=null) {
+            return listeningReceiver.getPlayerName();
+        }
+        return "UNKNOWN Player";
+    }
+
     private NotificationCompat.Builder createCustomNotificationBuilder(Context context) {
 
         return new NotificationCompat.Builder(context, null)
@@ -384,7 +407,7 @@ public class MusicService extends AccessibilityService {
     }
 
     public void playNextSong() {
-        if(listeningReceiver instanceof UAPPReceiver) {
+        if(ListeningReceiver.PACKAGE_UAPP.equals(listeningReceiver.getPlayerPackage())) {
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT);
             audioManager.dispatchMediaKeyEvent(event);
@@ -406,12 +429,12 @@ public class MusicService extends AccessibilityService {
     private void getListeningItem() {
         MediaItemProvider provider = MediaItemProvider.getInstance();
         if(provider!=null) {
-            MediaItemProvider.initialize(this);
-            provider = MediaItemProvider.getInstance();
+            try {
+                listeningSong = provider.searchMediaItem(currentTitle, currentArtist, currentAlbum);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
-        try {
-            listeningSong = provider.searchListeningMediaItem(currentTitle, currentArtist, currentAlbum);
-        }catch (Exception ex){}
     }
 
     public void finishNotification() {
@@ -437,7 +460,7 @@ public class MusicService extends AccessibilityService {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    public void setListeningReceiver(Object androidReceiver) {
+    public void setListeningReceiver(ListeningReceiver androidReceiver) {
         this.listeningReceiver = androidReceiver;
     }
 }
