@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/transparent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dialogue_margin_top"
+        android:layout_marginBottom="32dp"
+        android:layout_marginLeft="@dimen/spacing_medium"
+        android:layout_marginRight="@dimen/spacing_medium"
+        android:layout_gravity="center"
+        android:background="@drawable/btn_bg_view"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/text_margin_border"
+            android:layout_marginBottom="@dimen/text_title_message_space"
+            android:layout_marginLeft="@dimen/text_margin_border"
+            android:layout_marginRight="@dimen/text_margin_border"
+            android:gravity="center"
+            android:text="Dialogue Title"
+            android:textSize="@dimen/text_title_size"
+            android:textColor="@color/text_default"/>
+
+        <TextView
+            android:id="@+id/message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/text_margin_bottom"
+            android:layout_marginLeft="@dimen/text_margin_border"
+            android:layout_marginRight="@dimen/text_margin_border"
+            android:gravity="center"
+            android:text="Sample Dialogue Message"
+            android:textSize="@dimen/text_message_size"
+            android:textColor="@color/text_default"
+            android:maxLines="4"
+            android:minLines="1"
+            android:scrollbars="vertical"/>
+
+        <apincer.android.banner.BannerLayout
+            android:id="@+id/recycler"
+            android:layout_width="320dp"
+            android:layout_height="120dp"
+            android:layout_marginLeft="@dimen/spacing_medium"
+            android:layout_marginRight="@dimen/spacing_medium"
+            android:gravity="center"
+            app:autoPlaying="false"
+            app:centerScale="1.2"
+            app:itemSpace="18"
+            app:moveSpeed="1.0"
+            app:showIndicator="false"/>
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,37 @@
+apply plugin: 'com.android.library'
+android {
+    compileSdkVersion build_versions.target_sdk
+    buildToolsVersion build_versions.build_tools
+
+    defaultConfig {
+        minSdkVersion build_versions.min_sdk
+        targetSdkVersion build_versions.target_sdk
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+}
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+    maven { url "https://jitpack.io" }
+    maven { url 'https://dl.bintray.com/tsubasap91/maven' }
+    maven { url 'http://dl.bintray.com/raphaelbussa/maven' }
+}
+
+dependencies {
+    // Support libraries
+    implementation deps.support.app_compat
+    implementation deps.support.design
+    // implementation 'com.android.support:appcompat-v7:'+project.supportLibVersion;
+   // implementation 'com.android.support:design:'+project.supportLibVersion;
+   // implementation 'com.github.searchy2:CustomAlertViewDialogue:2.3'
+}

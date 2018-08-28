@@ -13,79 +13,49 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-
-// Top-level build file where you can add configuration options common to
-// all sub-projects/modules.
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-ext {
-    //Author
-    developerId = "thawee"
-    developerName = "Thawee Prakaipetch"
-    developerEmail = "thaweemail@gmail.com"
+//apply from: 'dependencies.gradle'
 
-    //Library
-    applicationCode = 18
-    applicationVersion = "1.2.2"
-    applicationDate = " built on " + getDate()
-    applicationDescription = "Managing music collections on Android"
-    applicationName = "Music Mate"
 
-    //Support and Build tools version
-    minSdk = 25
-    targetSdk = 26
-    buildTools = "27.0.3"
-    supportLibVersion = "27.1.0"
-    constraintVersion = "1.1.0-beta2"
-    roomVersion = '1.0.0'
-
-    //Support Libraries dependencies
-    supportDependencies = [
-            design       : "com.android.support:design:${supportLibVersion}",
-            recyclerview : "com.android.support:recyclerview-v7:${supportLibVersion}",
-            cardview     : "com.android.support:cardview-v7:${supportLibVersion}",
-            appcompat    : "com.android.support:appcompat-v7:${supportLibVersion}",
-            customtabs   : "com.android.support:customtabs:${supportLibVersion}",
-            support      : "com.android.support:support-v13:${supportLibVersion}",
-            annotations  : "com.android.support:support-annotations:${supportLibVersion}",
-            constraintLayout: "com.android.support.constraint:constraint-layout:${constraintVersion}"
-    ]
-
-    licenseName = "The Apache Software License, Version 2.0"
-    licenseUrl = "http://www.apache.org/licenses/LICENSE-2.0.txt"
-    allLicenses = ["Apache-2.0"]
-    licenseDist = "repo"
-}
-
-def getDate() {
-    def date = new Date()
-    return date.format('yyyy.MM.dd')
-}
-
-//Avoid JavaDoc Lint failures when using Java8
-if (JavaVersion.current().isJava8Compatible()) {
-    allprojects {
-        tasks.withType(Javadoc) {
-            options.addStringOption('Xdoclint:none', '-quiet')
-            options.addStringOption('encoding', 'UTF-8')
-        }
+buildscript {
+    apply from: 'versions.gradle'
+    addRepos(repositories)
+    dependencies {
+        classpath deps.android_gradle_plugin
+        classpath 'com.google.gms:google-services:4.0.1'
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
     }
 }
 
+allprojects {
+    addRepos(repositories)
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+/*
 buildscript {
     repositories {
         google()
+        mavenCentral()
         jcenter()
         maven { url "http://dl.bintray.com/davideas/maven" }
         maven {url = "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     dependencies {
-        //classpath 'com.android.tools.build:gradle:2.3.1'
-        classpath 'com.android.tools.build:gradle:3.0.0'
+        //classpath 'com.android.tools.build:gradle:3.0.0'
+        classpath 'com.android.tools.build:gradle:3.1.0'
+        //classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.40"
+        //classpath "org.jetbrains.kotlin:kotlin-android-extensions:1.2.40"
         classpath 'com.google.gms:google-services:3.0.0'
         classpath "com.github.dcendents:android-maven-gradle-plugin:1.5"
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7"
         classpath "org.jfrog.buildinfo:build-info-extractor-gradle:3.1.1"
-        classpath 'org.greenrobot:greendao-gradle-plugin:3.2.2' // add plugin
+       // classpath 'org.greenrobot:greendao-gradle-plugin:3.2.2' // add plugin
+       // classpath 'com.github.stephanenicolas.ormgap:ormgap-plugin:3.0.4'
 
         //classpath "eu.davidea:grabver:0.7.0"
 
@@ -103,3 +73,6 @@ allprojects {
         maven {url  'http://dl.bintray.com/gigamole/maven/' }
     }
 }
+
+apply plugin: 'android-reporting'
+*/

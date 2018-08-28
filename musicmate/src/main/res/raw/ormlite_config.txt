@@ -1,0 +1,79 @@
+#
+# generated on 2018/08/08 01:55:23
+#
+# --table-start--
+dataClass=apincer.android.uamp.model.MediaMetadata
+tableName=MediaItem
+# --table-fields-start--
+# --field-start--
+fieldName=mediaPath
+id=true
+# --field-end--
+# --field-start--
+fieldName=lastModified
+columnName=lastModified
+# --field-end--
+# --field-start--
+fieldName=title
+columnName=title
+# --field-end--
+# --field-start--
+fieldName=artist
+# --field-end--
+# --field-start--
+fieldName=album
+# --field-end--
+# --field-start--
+fieldName=year
+# --field-end--
+# --field-start--
+fieldName=genre
+# --field-end--
+# --field-start--
+fieldName=track
+# --field-end--
+# --field-start--
+fieldName=disc
+# --field-end--
+# --field-start--
+fieldName=comment
+# --field-end--
+# --field-start--
+fieldName=grouping
+# --field-end--
+# --field-start--
+fieldName=composer
+# --field-end--
+# --field-start--
+fieldName=albumArtist
+# --field-end--
+# --field-start--
+fieldName=size
+# --field-end--
+# --field-start--
+fieldName=audioDuration
+# --field-end--
+# --field-start--
+fieldName=mediaType
+# --field-end--
+# --field-start--
+fieldName=lossless
+# --field-end--
+# --field-start--
+fieldName=audioEncodingQuality
+# --field-end--
+# --field-start--
+fieldName=audioBitCount
+# --field-end--
+# --field-start--
+fieldName=audioSamplingrate
+# --field-end--
+# --field-start--
+fieldName=audioBitRate
+# --field-end--
+# --field-start--
+fieldName=audioFormat
+# --field-end--
+# --table-fields-end--
+# --table-end--
+#################################

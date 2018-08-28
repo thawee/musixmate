@@ -16,6 +16,30 @@ Screenshots
 
 Support
 -------
+1. lis all broadcasts
+$dumpsys activity broadcasts history
+
+2. 
+dumpsys media.audio_flinger
+
+App Architecture
+----------------
+     UI
+     | 
+ ViewModel
+     |
+ Repository
+
+
+provider -- Data provider, db/rest
+model - Model class (interface)
+ui - fragment/activity
+viewmodel - extends AndroidViewModel
+
+AppExecutors.java -- 
+xxxRepository.java - rep
+XXXApp.java
+
 
 License
 -------

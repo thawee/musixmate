@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2014 The Android Open Source Project
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+<resources>
+
+    <string name="app_name">Music Mate</string>
+    <string name="app_descriptions">Music Mate - Managing Music Collections</string>
+    <string name="app_version">1.0.0rc6</string>
+    <string name="app_developer">Thawee Prakaipetch</string>
+    <string name="label_developer">Developer</string>
+
+    <string name="app_description">Managing music collections</string>
+    <string name="error_no_metadata">Unable to retrieve metadata.</string>
+    <string name="browse_title">Songs</string>
+    <string name="error_loading_media">Error Loading Media</string>
+    <string name="action_listen">Listen</string>
+    <string name="open_content_drawer">Open the main menu</string>
+    <string name="close_content_drawer">Close the main menu</string>
+    <string name="drawer_allmusic_title">Songs</string>
+    <string name="drawer_artist_title">Artists</string>
+    <string name="drawer_album_title">Albums</string>
+    <string name="drawer_similarity_title">Similarity</string>
+    <string name="drawer_preferences_title">Preferences</string>
+    <string name="drawer_listening_title">Now Listening</string>
+    <string name="drawer_delete_title">Delete File</string>
+    <string name="drawer_select_all_title">Select All</string>
+    <string name="drawer_select_none_title">Select None</string>
+    <string name="background_image_str">Background image for album art</string>
+    <string name="search_queue_title">Search results</string>
+    <string name="no_search_results">No search results.</string>
+    <string name="loading">Loading…</string>
+    <string name="menu_reload_media_items_title">Reload…</string>
+
+    <string name="tab_allmusic_title">Songs</string>
+    <string name="tab_artist_title">Artists</string>
+    <string name="tab_album_title">Albums</string>
+    <string name="tab_similarity_title">Similarity</string>
+
+    <!-- -->
+    <string name="editor_song_info">Song Information</string>
+    <string name="editor_album_info">Album Information</string>
+    <string name="editor_misc_info">Misc Information</string>
+    <string name="editor_others_info">Others Information</string>
+    <string name="editor_song_list">Song List (%1$s songs)</string>
+    <string name="editor_musicbrainz">MusicBrainz</string>
+
+    <string name="editor_label_title">Title</string>
+    <string name="editor_label_artist">Artist</string>
+    <string name="editor_label_genre">Genre</string>
+    <string name="editor_label_group">Group</string>
+    <string name="editor_label_composer">Composer</string>
+    <string name="editor_label_album">Album</string>
+    <string name="editor_label_album_artist">Album Artist</string>
+    <string name="editor_label_track">Track</string>
+    <string name="editor_label_disc">Disc</string>
+    <string name="editor_label_year">Year</string>
+
+    <string name="editor_hint_title">&lt;title&gt;</string>
+    <string name="editor_hint_artist">&lt;artist&gt;</string>
+    <string name="editor_hint_genre">&lt;genre&gt;</string>
+    <string name="editor_hint_group">&lt;group&gt;</string>
+    <string name="editor_hint_composer">&lt;composer&gt;</string>
+    <string name="editor_hint_album">&lt;album&gt;</string>
+    <string name="editor_hint_album_artist">&lt;album artist&gt;</string>
+    <string name="editor_hint_track">&lt;track&gt;</string>
+    <string name="editor_hint_disc">&lt;disc&gt;</string>
+    <string name="editor_hint_year">&lt;year&gt;</string>
+
+    <!-- alert -->
+    <string name="alert_many">%1$s/%2$s - %3$s</string>
+    <string name="alert_delete_title">Delete song from Android</string>
+    <string name="alert_delete_confirm">Confirm to delete \"%1$s\";\n\"%2$s\"</string>
+    <string name="alert_delete_success">\"%1$s\" is deleted</string>
+    <string name="alert_delete_inprogress">Deleting "%1$s\"</string>
+    <string name="alert_delete_start">Deleting "%1$s\"</string>
+    <string name="alert_delete_fail">Cannot delete \"%1$s\"</string>
+
+    <string name="alert_delete_title_many">Delete songs from Android</string>
+    <string name="alert_delete_confirm_many">Delete %1$s selected songs"</string>
+    <string name="alert_delete_success_many">%1$s songs are successfully deleted from Android</string>
+    <string name="alert_delete_inprogress_many">Deleting %1$s songs from Android</string>
+
+    <string name="alert_write_tag_title">Save tags</string>
+    <string name="alert_write_tag_inprogress">Saving tags on "%1$s\"</string>
+    <string name="alert_write_tag_start">Saving \"%1$s\"</string>
+    <string name="alert_write_tag_success">\"%1$s\" is updated</string>
+    <string name="alert_write_tag_fail">Cannot save \"%1$s\"</string>
+
+    <string name="alert_write_tag_title_many">Save tags</string>
+    <string name="alert_write_tag_inprogress_many">Writing tags to %1$s songs."</string>
+    <string name="alert_write_tag_success_many">%1$s songs are successfully updated.</string>
+    <string name="alert_write_tag_fail_many">Cannot update tags for %1$s songs"</string>
+
+    <string name="alert_organize_title">Move to Music Directory</string>
+    <string name="alert_organize_already">\"%1$s\" already in Music Directory, skipped.</string>
+    <string name="alert_organize_success">\"%1$s\" is organized</string>
+    <string name="alert_organize_inprogress">Moving \"%1$s\" to Music Directory;</string>
+    <string name="alert_organize_start">Moving \"%1$s\"</string>
+    <string name="alert_organize_fail">Cannot move \"%1$s\"</string>
+    <string name="alert_organize_confirm">Confirm to move \"%1$s\" to \"%2$s\"</string>
+
+
+    <string name="alert_organize_title_many">Move to Music Directory</string>
+    <string name="alert_organize_confirm_many">Organize %1$s selected songs</string>
+    <string name="alert_organize_success_many">%1$s songs are successfully move to Music Directory</string>
+    <string name="alert_organize_inprogress_many">Moving %1$s songs to Music Directory</string>
+    <string name="alert_organize_fail_many">Cannot move %1$s songs to Music Directory</string>
+
+    <string name="alert_back_to_exit">Press BACK again to exit</string>
+    <string name="alert_invalid_media_file">Media file for \"%1$s\" is not valid!</string>
+    <string name="alert_listening_not_found">Now playing \"%1$s\" is not found</string>
+    <string name="alert_listening_title">Now playing \"%1$s\" - \"%2$s\"</string>
+    <string name="alert_file_not_exists">This file is no longer available</string>
+    <string name="alert_media_file_not_save">Please reload, unsaved tags may be lost?</string>
+    <string name="alert_find_music_title">Find song information</string>
+    <string name="alert_find_music_information">Enquiry song information for\n  \"%1$s\" by \"%2$s\"</string>
+
+    <string name="alert_error_title">Problem</string>
+    <string name="alert_warning_title">Warning</string>
+
+    <string name="alert_btn_delete">DELETE</string>
+    <string name="alert_btn_cancel">CANCEL</string>
+    <string name="alert_btn_move">MOVE</string>
+    <string name="alert_btn_set">UPDATE</string>
+    <string name="alert_btn_ok">OK</string>
+
+    <string name="alert_select_tags">Tags and Cover Art</string>
+
+    <string name="progress_load_media_store">Loading Music Library...</string>
+    <string name="progress_update_media_store">Updating Android Media Store</string>
+    <string name="progress_download_artwork">Downloading artwork</string>
+
+    <string name="preference_cache">Clean cache</string>
+    <string name="preference_cache_sub">Free up some space cleaning cached data</string>
+    <string name="preference_folder_pick">Choose music folders</string>
+    <string name="preference_permission">SD Card permission</string>
+    <string name="preference_permission_sub">On Android 5+, due to Google restrictions, please enable SD card writing permissions</string>
+    <string name="preference_pick_sub">Decide which folders to scan for music files</string>
+    <string name="preference_rename">File renaming</string>
+    <string name="preference_rename_sub">Choose how to rename files depending on their tags</string>
+    <string name="preferences_rename_choose">File renaming</string>
+    <string name="preferences_sub_advanced">Advanced</string>
+    <string name="preferences_sub_tags">Tags</string>
+    <string name="MetaDataEncoding">Metadata Encoding</string>
+    <string name="MetaDataEncodingSummary">Choose the encoding to include in options list on encoding menu</string>
+
+    <!-- Action -->
+    <string name="action_search">Search...</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- Action Mode -->
+    <string name="action_delete">Delete</string>
+    <string name="action_select_all">Select All</string>
+    <string name="action_selected_one">%1$s song</string>
+    <string name="action_selected_many">%1$s songs</string>
+    <string name="action_deleted">Deleted</string>
+
+    <!-- Scrollable Headers/Footer/ProgressItem -->
+    <string name="no_more_load_retry">No more items to load. Refresh to retry.</string>
+    <string name="endless_disabled">No more items to load (max reached).</string>
+    <string name="endless_cancel">Cancelled by the user.</string>
+    <string name="endless_error">An error occurred while loading more items.</string>
+
+    <string name="cover_image">Matches coverart images</string>
+    <string name="cover_image_select">Click to pick image from Gallery</string>
+    <string name="matched_media_tag">Matches on MusicBrainz</string>
+    <string name="editor_musicbrainz_matched">Matches on MusicBrainz</string>
+    <string name="editor_music_spectrum">Music Spectrum</string>
+
+    <!-- Extras -->
+    <string name="no_items">No items</string>
+    <string name="err_no_edit">Nothing to modify</string>
+
+    <!-- internal defaults -->
+    <string name="max_DB_range" translatable="false">-150</string>
+
+    <string name="search_on">Search On:</string>
+
+
+</resources>

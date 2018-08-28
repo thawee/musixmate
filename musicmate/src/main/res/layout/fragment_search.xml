@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"    >
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#E4E6E3"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior">
+                <WebView
+                        android:id="@+id/webView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        />
+                <com.yalantis.filter.widget.Filter
+                    android:id="@+id/filter"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:collapsedBackground="@color/colorPrimary_light"
+                    app:expandedBackground="@color/colorPrimary_light"/>
+
+            </FrameLayout>
+</android.support.design.widget.CoordinatorLayout>

@@ -1,1 +1,1 @@
-include ':mobile',':jaudiotagger226',':library'
+include ':musicmate',':slideDateTimePicker',':vivohifi',':TripMate',':library',':library:jaudiotagger226',':library:library',':library:textdrawable'

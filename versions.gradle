@@ -1,0 +1,217 @@
+/**
+ * Shared file between builds so that they can all use the same dependencies and
+ * maven repositories.
+ **/
+ext.deps = [:]
+
+def versions = [:]
+versions.arch_core = "1.1.1"
+versions.room = "1.1.0"
+versions.lifecycle = "1.1.1"
+versions.support = "27.1.1"
+versions.dagger = "2.15"
+versions.junit = "4.12"
+versions.espresso = "3.0.1"
+versions.retrofit = "2.4.0"
+versions.okhttp_logging_interceptor = "3.9.0"
+versions.mockwebserver = "3.8.1"
+versions.apache_commons = "2.5"
+versions.mockito = "2.7.19"
+versions.mockito_all = "1.10.19"
+versions.dexmaker = "2.2.0"
+versions.constraint_layout = "1.0.2"
+versions.glide = "4.7.1"
+versions.timber = "4.6.1"
+versions.android_gradle_plugin = "3.1.2"
+versions.rxjava2 = "2.1.16"
+versions.rx_android = "2.0.2"
+versions.atsl_runner = "1.0.1"
+versions.atsl_rules = "1.0.1"
+versions.hamcrest = "1.3"
+versions.kotlin = "1.2.41"
+versions.paging = "1.0.0"
+versions.work = "1.0.0-alpha01"
+versions.navigation = "1.0.0-alpha01"
+versions.ormlite = "5.1"
+versions.gson = "2.8.2"
+versions.crashreporter = "1.0.9"
+versions.leakcanary = "1.5.4"
+versions.blockcanary = "1.5.0"
+versions.flexible_adapter = "5.0.5"
+versions.flexible_adapter_ui = "1.0.0-b5"
+versions.materialedittext = "2.1.4"
+versions.android_shape_imageview = "0.9.+@aar"
+versions.snacky = "1.0.3"
+versions.about_page = "0.1.1"
+versions.materialprogressbar = "1.4.2"
+versions.custom_permissions_dialogue = "1.8.1"
+versions.custom_alert_view_dialogue = "2.3.1"
+versions.styleabletoast = "2.1.2"
+versions.toprightmenu = "1.1.2"
+versions.statusbarutil = "1.5.1"
+versions.search_filter = "v1.0.4"
+versions.color_match_tabs_android = "v0.0.1"
+versions.floating_arc_menu = "1.1.0.2"
+versions.circleimageview = "1.3.0"
+versions.lapism_searchview = "27.1.1.0.0"
+versions.jellytoolbar = "v1.0"
+versions.shapeofview = "1.2.0"
+def deps = [:]
+
+def support = [:]
+support.annotations = "com.android.support:support-annotations:$versions.support"
+support.app_compat = "com.android.support:appcompat-v7:$versions.support"
+support.recyclerview = "com.android.support:recyclerview-v7:$versions.support"
+support.cardview = "com.android.support:cardview-v7:$versions.support"
+support.design = "com.android.support:design:$versions.support"
+support.v4 = "com.android.support:support-v4:$versions.support"
+support.palette = "com.android.support:palette-v7:$versions.support"
+support.core_utils = "com.android.support:support-core-utils:$versions.support"
+deps.support = support
+
+def room = [:]
+room.runtime = "android.arch.persistence.room:runtime:$versions.room"
+room.compiler = "android.arch.persistence.room:compiler:$versions.room"
+room.rxjava2 = "android.arch.persistence.room:rxjava2:$versions.room"
+room.testing = "android.arch.persistence.room:testing:$versions.room"
+deps.room = room
+
+def lifecycle = [:]
+lifecycle.runtime = "android.arch.lifecycle:runtime:$versions.lifecycle"
+lifecycle.extensions = "android.arch.lifecycle:extensions:$versions.lifecycle"
+lifecycle.java8 = "android.arch.lifecycle:common-java8:$versions.lifecycle"
+lifecycle.compiler = "android.arch.lifecycle:compiler:$versions.lifecycle"
+deps.lifecycle = lifecycle
+
+def arch_core = [:]
+arch_core.testing = "android.arch.core:core-testing:$versions.arch_core"
+deps.arch_core = arch_core
+
+def retrofit = [:]
+retrofit.runtime = "com.squareup.retrofit2:retrofit:$versions.retrofit"
+retrofit.gson = "com.squareup.retrofit2:converter-gson:$versions.retrofit"
+retrofit.mock = "com.squareup.retrofit2:retrofit-mock:$versions.retrofit"
+deps.retrofit = retrofit
+deps.okhttp_logging_interceptor = "com.squareup.okhttp3:logging-interceptor:${versions.okhttp_logging_interceptor}"
+
+def dagger = [:]
+dagger.runtime = "com.google.dagger:dagger:$versions.dagger"
+dagger.android = "com.google.dagger:dagger-android:$versions.dagger"
+dagger.android_support = "com.google.dagger:dagger-android-support:$versions.dagger"
+dagger.compiler = "com.google.dagger:dagger-compiler:$versions.dagger"
+dagger.android_support_compiler = "com.google.dagger:dagger-android-processor:$versions.dagger"
+
+deps.dagger = dagger
+
+def espresso = [:]
+espresso.core = "com.android.support.test.espresso:espresso-core:$versions.espresso"
+espresso.contrib = "com.android.support.test.espresso:espresso-contrib:$versions.espresso"
+espresso.intents = "com.android.support.test.espresso:espresso-intents:$versions.espresso"
+deps.espresso = espresso
+
+def atsl = [:]
+atsl.runner = "com.android.support.test:runner:$versions.atsl_runner"
+atsl.rules = "com.android.support.test:rules:$versions.atsl_runner"
+deps.atsl = atsl
+
+def mockito = [:]
+mockito.core = "org.mockito:mockito-core:$versions.mockito"
+mockito.all = "org.mockito:mockito-all:$versions.mockito_all"
+deps.mockito = mockito
+
+def kotlin = [:]
+kotlin.stdlib = "org.jetbrains.kotlin:kotlin-stdlib-jre7:$versions.kotlin"
+kotlin.test = "org.jetbrains.kotlin:kotlin-test-junit:$versions.kotlin"
+kotlin.plugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlin"
+kotlin.allopen = "org.jetbrains.kotlin:kotlin-allopen:$versions.kotlin"
+
+deps.kotlin = kotlin
+deps.paging = "android.arch.paging:runtime:$versions.paging"
+
+def ui = [:]
+ui.flexible_adapter = "eu.davidea:flexible-adapter:$versions.flexible_adapter"
+ui.flexible_adapter_ui  = "eu.davidea:flexible-adapter-ui:$versions.flexible_adapter_ui"
+ui.materialedittext = "com.rengwuxian.materialedittext:library:$versions.materialedittext"
+ui.android_shape_imageview = "com.github.siyamed:android-shape-imageview:$versions.android_shape_imageview"
+ui.snacky = "com.github.matecode:Snacky:$versions.snacky"
+ui.about_page = "com.github.husaynhakeem:about-page:$versions.about_page"
+ui.materialprogressbar = "me.zhanghai.android.materialprogressbar:library:$versions.materialprogressbar"
+ui.custom_permissions_dialogue = "com.github.searchy2:CustomPermissionsDialogue:$versions.custom_permissions_dialogue"
+ui.custom_alert_view_dialogue = "com.github.searchy2:CustomAlertViewDialogue:$versions.custom_alert_view_dialogue"
+ui.styleabletoast = "com.muddzdev:styleabletoast:$versions.styleabletoast"
+ui.toprightmenu = "com.zaaach:toprightmenu:$versions.toprightmenu"
+ui.statusbarutil = "com.jaeger.statusbarutil:library:$versions.statusbarutil"
+ui.search_filter = "com.github.Yalantis:SearchFilter:$versions.search_filter"
+ui.color_match_tabs_android = "com.github.Yalantis:ColorMatchTabsAndroid:$versions.color_match_tabs_android"
+ui.floating_arc_menu = "com.github.BrotherV:Floating-ArcMenu:$versions.floating_arc_menu"
+ui.circleimageview = "de.hdodenhof:circleimageview:$versions.circleimageview"
+ui.lapism_searchview = "com.lapism:searchview:$versions.lapism_searchview"
+ui.jellytoolbar = "com.github.yalantis:jellytoolbar:$versions.jellytoolbar"
+ui.shapeofview = "com.github.florent37:shapeofview:$versions.shapeofview"
+deps.ui = ui
+
+def glide = [:]
+glide.runtime = "com.github.bumptech.glide:glide:$versions.glide"
+glide.compiler = "com.github.bumptech.glide:compiler:$versions.glide"
+deps.glide = glide
+deps.dexmaker = "com.linkedin.dexmaker:dexmaker-mockito:$versions.dexmaker"
+deps.constraint_layout = "com.android.support.constraint:constraint-layout:$versions.constraint_layout"
+deps.timber = "com.jakewharton.timber:timber:$versions.timber"
+deps.junit = "junit:junit:$versions.junit"
+deps.mock_web_server = "com.squareup.okhttp3:mockwebserver:$versions.mockwebserver"
+deps.rxjava2 = "io.reactivex.rxjava2:rxjava:$versions.rxjava2"
+deps.rx_android = "io.reactivex.rxjava2:rxandroid:$versions.rx_android"
+deps.hamcrest = "org.hamcrest:hamcrest-all:$versions.hamcrest"
+deps.android_gradle_plugin = "com.android.tools.build:gradle:$versions.android_gradle_plugin"
+deps.ormlite = "com.j256.ormlite:ormlite-android:$versions.ormlite"
+deps.gson = "com.google.code.gson:gson:$versions.gson"
+deps.crashreporter = "com.balsikandar.android:crashreporter:$versions.crashreporter"
+deps.leakcanary = "com.squareup.leakcanary:leakcanary-android:$versions.leakcanary"
+deps.leakcanary_no_op = "com.squareup.leakcanary:leakcanary-android-no-op:$versions.leakcanary"
+deps.blockcanary_no_op = "com.github.markzhai:blockcanary-no-op:$versions.blockcanary"
+
+ext.deps = deps
+
+def build_versions = [:]
+build_versions.min_sdk = 25
+build_versions.target_sdk = 27
+build_versions.build_tools = "27.0.3"
+build_versions.build_date ="built on " + getDate()
+ext.build_versions = build_versions
+
+def developer = [:]
+developer.id = "thawee"
+developer.name = "Thawee Prakaipetch"
+developer.email = "thaweemail@gmail.com"
+ext.developer = developer
+
+def work = [:]
+work.runtime = "android.arch.work:work-runtime:$versions.work"
+work.testing = "android.arch.work:work-testing:$versions.work"
+work.firebase = "android.arch.work:work-firebase:$versions.work"
+deps.work = work
+
+def navigation = [:]
+navigation.runtime = "android.arch.navigation:navigation-runtime:$versions.navigation"
+navigation.runtime_ktx = "android.arch.navigation:navigation-runtime-ktx:$versions.navigation"
+navigation.fragment = "android.arch.navigation:navigation-fragment:$versions.navigation"
+navigation.fragment_ktx = "android.arch.navigation:navigation-fragment-ktx:$versions.navigation"
+navigation.safe_args_plugin = "android.arch.navigation:navigation-safe-args-gradle-plugin:$versions.navigation"
+navigation.testing_ktx = "android.arch.navigation:navigation-testing-ktx:$versions.navigation"
+deps.navigation = navigation
+
+ext.deps = deps
+
+def addRepos(RepositoryHandler handler) {
+    handler.google()
+    handler.jcenter()
+    handler.maven {url "https://maven.google.com" }
+    handler.maven {url = "https://oss.sonatype.org/content/repositories/snapshots/" } //For Snapshots
+    handler.maven {url  'http://dl.bintray.com/gigamole/maven/' }
+}
+ext.addRepos = this.&addRepos
+
+def getDate() {
+    def date = new Date()
+    return date.format('yyyy.MM.dd')
+}

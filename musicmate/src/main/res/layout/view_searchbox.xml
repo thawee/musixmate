@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/header_search_bar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/transparent">
+    <com.github.florent37.shapeofview.shapes.CutCornerView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/dimen_16_dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="@dimen/dimen_16_dp"
+        app:shape_cutCorner_topLeftSize="4dp"
+        app:shape_cutCorner_topRightSize="4dp"
+        app:shape_cutCorner_bottomLeftSize="4dp"
+        app:shape_cutCorner_bottomRightSize="4dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white">
+            <EditText
+                android:id="@+id/searchText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:textSize="18sp"
+                android:layout_marginLeft="12dp"
+                android:layout_marginRight="12dp"
+                android:textColor="@color/colorPrimaryDark"
+                android:maxLines="1"
+                android:inputType="textFilter"
+                android:drawableLeft="@drawable/ic_search_black_24dp"
+                android:imeOptions="actionSearch"
+                android:hint="Search"/>
+        </LinearLayout>
+    </com.github.florent37.shapeofview.shapes.CutCornerView>
+</LinearLayout>

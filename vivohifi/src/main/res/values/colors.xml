@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="dividerColor">#d2d2d2</color>
-    <color name="eightysevenblack">#de000000</color>
-    <color name="eightysevenwhite">#deffffff</color>
-    <color name="fiftyfourblack">#8a000000</color>
-    <color name="fiftyfourwhite">#8affffff</color>
-</resources>

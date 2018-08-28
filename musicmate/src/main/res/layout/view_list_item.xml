@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground">
+    <FrameLayout
+        android:id="@+id/item_imageFrame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="8dp"
+        android:layout_centerVertical="true"
+        android:background="@color/float_transparent">
+<!--
+        <ImageView
+            android:id="@+id/item_image_coverart"
+            android:visibility="visible"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_marginLeft="4dp"
+            android:scaleType="fitXY"/>
+-->
+        <com.github.siyamed.shapeimageview.RoundedImageView
+            android:id="@+id/item_image_coverart"
+            android:layout_width="58dp"
+            android:layout_height="58dp"
+            android:layout_marginLeft="4dp"
+            android:scaleType="fitXY"
+            app:siRadius="6dp"
+            app:siBorderWidth="2dp"
+            app:siBorderColor="@color/grey600"
+            app:siBorderAlpha="0.4"
+            app:siSquare="true"/>
+    </FrameLayout>
+    <LinearLayout
+        android:id="@+id/item_title_area"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_toRightOf="@id/item_imageFrame">
+        <TextView
+            android:textSize="18sp"
+            android:ellipsize="end"
+            android:id="@+id/item_title"
+            android:paddingTop="1dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Title"
+            android:textStyle="bold"
+            android:layout_weight="1"
+            android:textColor="@color/white"
+            android:maxLines="1"/>
+        <TextView
+            android:textSize="10sp"
+            android:ellipsize="marquee"
+            android:id="@+id/item_subtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Artist / Album"
+            android:textColor="@color/white"
+            android:singleLine="true"
+            android:layout_below="@id/item_title"  />
+    </LinearLayout>
+    <TextView
+        android:textSize="10sp"
+        android:textColor="@color/black"
+        android:gravity="center"
+        android:id="@+id/item_format"
+        android:background="@drawable/shape_round_format_normal"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="6dp"
+        android:minWidth="30dp"
+        android:minHeight="12dp"
+        android:text="FLAC"
+        android:layout_toRightOf="@id/item_imageFrame"
+        android:layout_below="@id/item_title_area" />
+
+    <TextView
+        android:textSize="10sp"
+        android:textColor="@color/black"
+        android:gravity="center"
+        android:id="@+id/item_sampling_rate"
+        android:background="@drawable/shape_round_format_normal"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="6dp"
+        android:minWidth="60dp"
+        android:minHeight="12dp"
+        android:text="24bit/192kHz"
+        android:layout_toRightOf="@id/item_format"
+        android:layout_below="@id/item_title_area" />
+
+    <TextView
+        android:textSize="10sp"
+        android:textColor="@color/black"
+        android:gravity="center"
+        android:id="@+id/item_bitrate"
+        android:background="@drawable/shape_round_format_normal"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="6dp"
+        android:minWidth="40dp"
+        android:minHeight="12dp"
+        android:text="1062Kbps"
+        android:layout_toRightOf="@id/item_sampling_rate"
+        android:layout_below="@id/item_title_area" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/item_title_area"
+        android:orientation="horizontal">
+
+        <TextView
+            android:textSize="10sp"
+            android:textColor="@color/black"
+            android:gravity="center"
+            android:id="@+id/item_duration"
+            android:background="@drawable/shape_round_format_normal"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="6dp"
+            android:minWidth="20dp"
+            android:minHeight="12dp"
+            android:text="00:00"  />
+        <TextView
+            android:id="@+id/item_file_size"
+            android:textSize="10sp"
+            android:textColor="@color/black"
+            android:gravity="center"
+            android:background="@drawable/shape_round_format_normal"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="6dp"
+            android:minWidth="20dp"
+            android:minHeight="12dp"
+            android:text="10.00 Mb"
+             />
+    </LinearLayout>
+
+    <!--
+    <TextView
+        android:textSize="8sp"
+        android:ellipsize="marquee"
+        android:id="@+id/item_extra"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="File Path"
+        android:textColor="@color/white"
+        android:layout_marginTop="2dp"
+        android:paddingTop="1dp"
+        android:singleLine="true"
+        android:layout_toRightOf="@id/item_imageFrame"
+        android:layout_below="@id/item_format" />
+        -->
+</RelativeLayout>
